@@ -1,5 +1,5 @@
 /**
- * M1 spike scenario `boot.verification` — the E2E contract lives here: every
+ * M1 dsh scenario `boot.verification` — the E2E contract lives here: every
  * expected event emits exactly one structured log entry through the unified
  * logger, in the order declared by tools/e2e/scenarios/boot-verification.json.
  * The verdict is a one-to-one expected<->logged match on these lines only;
@@ -24,7 +24,7 @@ import { fileURLToPath } from 'upstream/shims/url.js';
 import * as fsPromises from 'node:fs/promises';
 
 const SCENARIO = 'boot.verification';
-const log = createLogger('m1.spike');
+const log = createLogger('dsh.scenario');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   log.debug('scenario failed', { reason });

@@ -197,7 +197,7 @@ export const wsWriteFile = (path, bytes, mode) => {
 
 /** Real-disk write-through (W6-U, 2026-09-28) — every write face funnels
  * through wsWriteFile, so the mirror lives here: the mounted workspace root
- * IS a real directory on the desktop spike (the profile container's tmp),
+ * IS a real directory on the desktop dsh (the profile container's tmp),
  * and the subprocess seam's children read THAT disk. A successful VFS write
  * mirrors byte-identically onto it (parents mkdir -p'd, idempotent).
  * Best-effort by design — the VFS stays the world of record; the mirror

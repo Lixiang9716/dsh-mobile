@@ -2,7 +2,7 @@ import Foundation
 import WebKit
 
 /// Canonical E2E emitter for carrier-only drives: the same envelope as the
-/// runtimes' carrierEvent (`dsh.spike.log:` prefix, unified-logger shape),
+/// runtimes' carrierEvent (`dsh.runtime.log:` prefix, unified-logger shape),
 /// with retention for the outcome's canonicalLines. Serial queue: emission
 /// order = call order across all caller queues.
 final class CarrierEventLog {

@@ -2,9 +2,9 @@
 'use strict';
 /**
  * Byte helpers for the sharp face's codecs (CJS — this package loads through
- * the userland cjs-loader on the spike and plain node elsewhere, so it must
+ * the userland cjs-loader on the dsh and plain node elsewhere, so it must
  * carry no ESM imports). Everything is plain Uint8Array arithmetic over the
- * runtime's Buffer global (DshBuffer on the spike — a Uint8Array subclass).
+ * runtime's Buffer global (DshBuffer on the dsh — a Uint8Array subclass).
  */
 
 /** u16 big-endian read. */

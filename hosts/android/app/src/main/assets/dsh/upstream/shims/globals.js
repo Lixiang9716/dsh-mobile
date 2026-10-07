@@ -410,7 +410,7 @@ if (globalThis.Intl === undefined) {
         const zone = options.timeZone === undefined ? 'UTC' : options.timeZone;
         const key = Object.prototype.hasOwnProperty.call(zoneTable, zone) ? zone : undefined;
         if (key === undefined) {
-          throw new RangeError(`Intl.DateTimeFormat: time zone '${zone}' is outside the spike zone table`);
+          throw new RangeError(`Intl.DateTimeFormat: time zone '${zone}' is outside the dsh zone table`);
         }
         this.zone = ZONE_ALIAS[key] ?? key;
         this.options = { ...options, timeZone: this.zone };
@@ -476,21 +476,21 @@ if (globalThis.DOMException === undefined) {
 // controller.client.spec spies HTMLAnchorElement.prototype.click). The
 // minimal honest surface: a real class (prototype spyable), href/download
 // properties, a no-op click (this runtime has no navigation seam); every
-// OTHER tag fails loud — the spike serves no general DOM.
+// OTHER tag fails loud — the dsh serves no general DOM.
 if (globalThis.HTMLAnchorElement === undefined) {
   globalThis.HTMLAnchorElement = class HTMLAnchorElement {
     constructor() {
       this.href = '';
       this.download = '';
     }
-    click() { /* no navigation seam in the spike runtime */ }
+    click() { /* no navigation seam in the dsh runtime */ }
   };
 }
 if (globalThis.document === undefined) {
   globalThis.document = {
     createElement(tag) {
       if (tag === 'a') return new globalThis.HTMLAnchorElement();
-      throw new Error(`document.createElement('${String(tag)}'): not served in this runtime — the spike serves only the anchor download gesture`);
+      throw new Error(`document.createElement('${String(tag)}'): not served in this runtime — the dsh serves only the anchor download gesture`);
     },
   };
 }

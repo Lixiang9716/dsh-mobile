@@ -115,7 +115,7 @@ export const vfsRealpath = (path) => {
 
 export const realpathCallback = (path, callback) => {
   if (typeof callback !== 'function') {
-    throw new TypeError('node:fs.realpath: a callback is required (the spike serves the callback face; promise users go through fs/promises)');
+    throw new TypeError('node:fs.realpath: a callback is required (the dsh serves the callback face; promise users go through fs/promises)');
   }
   try {
     callback(null, vfsRealpath(path));

@@ -59,7 +59,7 @@ const fileURLToPathWindows = (host, path) => {
 export const fileURLToPath = (input, options) => {
   const windows = typeof options === 'object' && options !== null ? options.windows === true : false;
   const href = typeof input === 'string' ? input : String(input?.href ?? input);
-  // A scheme-less absolute path is already the spike's path space — identity.
+  // A scheme-less absolute path is already the dsh's path space — identity.
   if (!href.startsWith('file:')) {
     // ':///path' is a path URL a caller stringified through a file:-expecting
     // API — the empty-scheme serialization. Strip the marker, keep the path.

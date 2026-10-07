@@ -19,7 +19,7 @@ ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 CAPTURE="$ROOT/hosts/android/ci/logcat-capture.sh"
 cd "$ROOT"
 
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
 OUT=${DSH_PARITY_OUT:-hosts/android/artifacts/upstream-parity}
 GOLDEN="$ROOT/test/e2e/fixtures/upstream-parity-reference.jsonl"
@@ -33,7 +33,7 @@ die() { echo "::error::run-upstream-parity: $*" >&2; exit 1; }
 
 mkdir -p "$OUT"
 
-# ---- device + boot, one bounded poll (as run-spike-e2e.sh) -----------------
+# ---- device + boot, one bounded poll (as run-dsh-e2e.sh) -----------------
 if [ "$(uname)" = "Linux" ] && [ ! -w /dev/kvm ]; then
     die "/dev/kvm missing or not writable — KVM acceleration unavailable"
 fi
@@ -56,13 +56,13 @@ done
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # The logcat clear races a reader's initial snapshot: lines buffered BEFORE
-# the clear (the previous step's scenarios leave `dsh.spike.result: ALL`
+# the clear (the previous step's scenarios leave `dsh.runtime.result: ALL`
 # tags behind) can still reach this stream and instantly satisfy the
 # completion wait, truncating the capture before this run logged anything
 # ("no parity/event records", seen 2026-09-24). logcat-capture.sh start
 # clears, attaches with the canary tag in the specs, and pins the capture
 # point with a canary line the streamer can only see once attached.
-CANARY=$("$CAPTURE" start -f "$STREAM" dsh.spike dsh.spike.result)
+CANARY=$("$CAPTURE" start -f "$STREAM" dsh.dsh dsh.runtime.result)
 cleanup() {
     "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true
 }
@@ -76,12 +76,12 @@ done
 
 # Both conditions: the scenario's own evidence (stale completion tags cannot
 # fake it) and the completion tag itself. wait judges the CANARY VIEW ONLY —
-# the raw stream still carries the PREVIOUS step's buffered `dsh.spike.result:
+# the raw stream still carries the PREVIOUS step's buffered `dsh.runtime.result:
 # ALL` + scenario lines that pierced `logcat -c` (the 2026-09-24 race, seen
 # again 2026-09-29: the truncation was canary-pinned but the wait grepped the
 # raw stream, so a stale completion tag satisfied it instantly and the
 # canary-truncated capture came up empty — "no parity/event records").
-"$CAPTURE" wait -f "$STREAM" "$CANARY" 300 "upstream.parity" "dsh.spike.result: ALL" || {
+"$CAPTURE" wait -f "$STREAM" "$CANARY" 300 "upstream.parity" "dsh.runtime.result: ALL" || {
     echo "::error::upstream.parity scenario did not complete within 300s" >&2
     tail -80 "$STREAM" >&2
     exit 1
@@ -90,8 +90,8 @@ sleep 0.3          # let the completion-tag line itself flush
 trap - EXIT
 cleanup
 
-"$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.spike.result: ALL/q' > "$OUT/logs.txt"
-grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
+"$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.runtime.result: ALL/q' > "$OUT/logs.txt"
+grep 'dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 
 # ---- extract the projected records and diff against the golden -------------
 node - "$OUT" <<'EXTRACT'
@@ -133,4 +133,4 @@ cat > "$OUT/receipt.json" <<EOF
 EOF
 
 say "artifacts: $OUT"
-grep 'dsh.spike.result' "$OUT/logs.txt" || true
+grep 'dsh.runtime.result' "$OUT/logs.txt" || true

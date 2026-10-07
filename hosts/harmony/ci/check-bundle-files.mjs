@@ -9,7 +9,7 @@
  * Index.ets's BUNDLE_FILES is the MATERIALIZATION LIST: every bundle-root
  * relative file the runtime half loads must be copied from rawfile into the
  * app cache dir before startSpike/hostStart. Two silent-drift directions
- * burned the m1 spike once (surprise ledger: a stale copy survived because
+ * burned the m1 dsh once (surprise ledger: a stale copy survived because
  * nothing compared the lists):
  *
  *   a rawfile file missing from BUNDLE_FILES  → never materialized; the

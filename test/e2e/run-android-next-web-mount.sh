@@ -6,7 +6,7 @@
 # → fullscreen viewer, all driven through the page's own composer).
 #
 # Evidence discipline: the canary-pinned, line-buffered logcat capture bounded
-# at the first `dsh.spike.result: ALL` line (run-upstream-parity.sh's rule —
+# at the first `dsh.runtime.result: ALL` line (run-upstream-parity.sh's rule —
 # stale completion tags from earlier steps cannot truncate the capture), one
 # checker verdict per manifest, and a screenshot per leg (human evidence only
 # — never a checker input). Every wait is a polled condition with a deadline
@@ -14,7 +14,7 @@
 set -eu
 
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 OUT=${DSH_NEXT_OUT:-hosts/android/artifacts/nextweb-mount}
 SCEN=test/e2e/scenarios
 
@@ -55,11 +55,11 @@ run_leg() {
     # Line-buffered stream (stdio block buffering would starve the greps) +
     # canary pin (the clear races the reader's initial snapshot).
     canary="dsh-begin-$$-$leg"
-    adb logcat -s dsh.spike dsh.spike.result dsh.canary > "$stream" 2>/dev/null &
+    adb logcat -s dsh.runtime dsh.runtime.result dsh.canary > "$stream" 2>/dev/null &
     streamer=$!
     cleanup() {
         kill "$streamer" 2>/dev/null || true
-        pkill -f "logcat -s dsh.spike" 2>/dev/null || true
+        pkill -f "logcat -s dsh.runtime" 2>/dev/null || true
     }
     trap cleanup EXIT INT TERM
     adb shell log -t dsh.canary "$canary" >/dev/null
@@ -78,7 +78,7 @@ run_leg() {
     # Both conditions: the scenario's own evidence (stale completion tags
     # cannot fake it) and the completion tag itself.
     dline=$(( $(date +%s) + 330 ))
-    until grep -q "$evidence" "$stream" && grep -q "dsh.spike.result: ALL" "$stream"; do
+    until grep -q "$evidence" "$stream" && grep -q "dsh.runtime.result: ALL" "$stream"; do
         if [ "$(date +%s)" -ge "$dline" ]; then
             tail -80 "$stream" >&2
             die "$leg: scenario did not complete within 330s"
@@ -91,8 +91,8 @@ run_leg() {
 
     adb exec-out screencap -p > "$out/$shot_name" 2>/dev/null || true
     awk -v c="$canary" 'index($0, c) {seen=1} seen' "$stream" \
-        | sed '/dsh.spike.result: ALL/q' > "$out/logs.txt"
-    grep 'dsh.spike.log:' "$out/logs.txt" > "$out/scenario.jsonl" || true
+        | sed '/dsh.runtime.result: ALL/q' > "$out/logs.txt"
+    grep 'dsh.runtime.log:' "$out/logs.txt" > "$out/scenario.jsonl" || true
     rm -f "$stream"
 
     node test/e2e/check.mjs --manifest "$SCEN/$manifest" \

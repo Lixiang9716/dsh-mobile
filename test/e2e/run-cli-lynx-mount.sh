@@ -10,7 +10,7 @@
 #   stub face: driver/skin-stub.js — the plain-text transcription.
 #
 # Evidence discipline mirrors runtime/dsh/ci/run-settings-surfaces-e2e.sh:
-# per face, logs.txt + scenario.jsonl (the dsh.spike.log: lines) + verdict.json
+# per face, logs.txt + scenario.jsonl (the dsh.runtime.log: lines) + verdict.json
 # (test/e2e/check.mjs one-to-one against test/e2e/scenarios/lynx-mount.json
 # and lynx-mount-stub.json) + receipt.json — the receipt is written only at
 # the end, after BOTH checkers passed (a failed run never leaves one). The
@@ -51,7 +51,7 @@ run_face() { # FACE MANIFEST
   echo "lynx-mount: face $1 -> $ART"
   mkdir -p "$ART"
   node test/e2e/lynx-mount.mjs --skin "$1" > "$ART/logs.txt"
-  grep '^dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl"
+  grep '^dsh.runtime.log:' "$ART/logs.txt" > "$ART/scenario.jsonl"
   node test/e2e/check.mjs \
     --manifest "$ROOT/test/e2e/scenarios/$2" \
     --log "$ART/logs.txt" \

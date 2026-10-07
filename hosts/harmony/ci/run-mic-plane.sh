@@ -22,7 +22,7 @@ CLT=${DSH_CLT:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools
 HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 [ -x "$HDC" ] || HDC=$(find "$CLT" -name hdc -type f | head -1)
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry/cache
 OUT=hosts/harmony/artifacts/mic-plane
 mkdir -p "$OUT/screens"
@@ -100,10 +100,10 @@ fi
 kill "$streamer" 2>/dev/null || true
 wait "$streamer" 2>/dev/null || true
 trap - EXIT
-grep 'dsh.spike' "$STREAM" > "$OUT/logs.txt" || true
+grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
 
 "$HDC" file recv "$BASE/dsh-mic-plane-capture.log" "$OUT/mic-plane-capture.txt" >/dev/null
-grep -h '^dsh.spike.log:' "$OUT/mic-plane-capture.txt" > "$OUT/scenario.jsonl" || true
+grep -h '^dsh.runtime.log:' "$OUT/mic-plane-capture.txt" > "$OUT/scenario.jsonl" || true
 
 FAIL=0
 node test/e2e/check.mjs --manifest test/e2e/scenarios/harmony-mic-plane.json \

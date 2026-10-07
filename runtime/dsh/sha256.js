@@ -2,7 +2,7 @@
 /**
  * Pure-JS SHA-256 (FIPS 180-4) for the M3 install pipeline.
  *
- * WHY hand-rolled: the spike runtime exposes exactly two crypto seams
+ * WHY hand-rolled: the dsh runtime exposes exactly two crypto seams
  * (crypto.getRandomValues + btoa — see host/dsh_runtime_host.c) and the frozen
  * gateway has no digest primitive, so there is no async digest to call. The
  * upstream util-crypto package ships base64/uuid only. Content addressing

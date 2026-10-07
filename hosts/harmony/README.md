@@ -41,7 +41,7 @@ ONE launch on the emulator now proves the host end to end in two phases:
   set widens per the binding descriptor.
 - `entry/src/main/cpp/napi_init.cpp` — `startSpike(bundleRoot, capturePath, fsRoot)`
   runs the regression trio synchronously (each on its own `dsh_runtime_t`, one
-  `dsh.spike.verdict:` line per scenario). The binding phase exposes the same
+  `dsh.dsh.verdict:` line per scenario). The binding phase exposes the same
   runtime FINE-GRAINED (`hostStart`/`hostEval`/`hostEvent`/`hostBusDeliver`/
   `hostSettle`/`hostCarrierLine`/`hostStatus`/`hostFree`): ArkTS drives it per
   event, and every mutator still runs on the ArkTS main thread, which stays the
@@ -74,7 +74,7 @@ it is what a RELEASE launch runs: routes -> listen -> the web-boot runtime
 composes the boot wire -> `web.boot` rows into the index render pipeline ->
 ArkWeb mounts the origin. No drive, no probe, no record. The EVIDENCE half
 is `model/OfficialPhase.ets`, which attaches to that seat through its hook
-properties and adds the canonical `dsh.spike.log:` records, the same-origin
+properties and adds the canonical `dsh.runtime.log:` records, the same-origin
 probes, the proof legs below and the verdicts. A release build therefore
 serves the official UI on a plain launch (`--ps dsh.e2e.leg <leg>` refuses
 loud by name — rule 5), and the harness behaviour below is unchanged.
@@ -108,7 +108,7 @@ records):
    attaches the mux journal stream, collects the 19 frames (11-event
    baseline + the 8-event live turn 2), and reads the rendered state.
    The runtime half stays resident; the verdict is the drive's
-   (`dsh.spike.verdict: harmony.session.live-read`).
+   (`dsh.dsh.verdict: harmony.session.live-read`).
 4. **harmony.composer.live-write** (W-HARMONY4) — the SESSION WRITE surface: a
    fresh runtime boots the spine and the web-boot producer composes WITH
    the write surface (`harmony-composer-live-write.js` → `upstream/web-write.js`):
@@ -124,7 +124,7 @@ records):
    (user/message → agent-loop events → assistant deltas → turn/end,
    11 events) streamed live over the mux and rendered in the official DOM
    (the reply screenshot). Everything the spine does not implement stays
-   structured-unavailable. Verdict: `dsh.spike.verdict:
+   structured-unavailable. Verdict: `dsh.dsh.verdict:
    harmony.composer.live-write`.
 
 The spine closure travels in `rawfile/dsh/` byte-identical to the
@@ -146,36 +146,36 @@ the ArkTS main thread, the ONE serial JS runtime thread. The bus-seam
 callbacks that fire while JS runs only queue or send (never re-enter the
 runtime); settlement rides later UI-callback ticks.
 
-## The carrier spike (landed)
+## The carrier dsh (landed)
 
-The original carrier spike that embedded the merged runtime core spike
+The original carrier dsh that embedded the merged runtime core dsh
 ([runtime/dsh/README.md](../../runtime/dsh/README.md)) and verified scenario
 `boot.verification` on the local HarmonyOS emulator. Evidence:
-[artifacts/m1-spike/](artifacts/m1-spike/) (logs, sink capture, verdict, screenshot,
+[artifacts/m1-dsh/](artifacts/m1-dsh/) (logs, sink capture, verdict, screenshot,
 receipt).
 
 Layout:
 
 - `build-profile.json5` / `hvigorfile.ts` / `oh-package.json5` / `hvigor/` — project level
   (hvigor 6.x, modelVersion 5.0.0, `compatibleSdkVersion: "26.0.0"`).
-- `AppScope/` — app identity (`com.dshmobile.spike`).
+- `AppScope/` — app identity (`com.dshmobile.host`).
 - `entry/src/main/cpp/` — the NAPI library (`libdruntime.so`): CMake compiles
   `runtime/dsh/host/dsh_runtime_host.c`, `gateway_smoke.cpp`, plus the pinned
   quickjs-ng 0.17.0 sources (`dtoa.c libregexp.c libunicode.c quickjs.c`) through
   hvigor's externalNativeOptions. CMake runs `runtime/dsh/vendor/ensure.sh`
   first, so the vendor tree is always materialized before compiling.
-- `entry/src/main/ets/pages/Index.ets` — materializes the bundled spike (byte-identical
+- `entry/src/main/ets/pages/Index.ets` — materializes the bundled dsh (byte-identical
   rawfile copies of `logger.js`, `gateway.js`, `registry.js`, the three scenarios, the
   three system plugins, and the vendored util-crypto package) into the app cache dir
   preserving layout, then calls `startSpike` ONCE and shows the returned verdict.
-- `entry/src/main/resources/rawfile/dsh/` — the bundled spike JS (kept byte-identical
+- `entry/src/main/resources/rawfile/dsh/` — the bundled dsh JS (kept byte-identical
   to the `runtime/dsh/` and `system-plugins/` originals; the boot-verification.js copy
   was found stale after the first-session slimming landed upstream and is refreshed here — drift
   in these copies is silent otherwise, see the surprise ledger).
 
-Log capture: the C sink forwards each canonical `dsh.spike.log:` line unmodified to
-hilog (domain `0xD5E0`, tag `dsh.spike`, `%{public}s`) AND appends it to a capture file
-under the app cache dir (`haps/entry/cache/dsh-spike-capture.log`), pulled via
+Log capture: the C sink forwards each canonical `dsh.runtime.log:` line unmodified to
+hilog (domain `0xD5E0`, tag `dsh.dsh`, `%{public}s`) AND appends it to a capture file
+under the app cache dir (`haps/entry/cache/dsh-dsh-capture.log`), pulled via
 `hdc file recv` as the truncation-proof second capture.
 
 ## Build and run (CLT 26.0.0.821)
@@ -226,10 +226,10 @@ HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 "$HDC" shell power-shell wakeup            # unlock the emulator screen first
 "$HDC" shell uinput -T -m 400 1600 400 400 300
 "$HDC" shell hilog -r                      # clear, then launch
-"$HDC" shell aa start -b com.dshmobile.spike -a EntryAbility
-"$HDC" shell hilog -x | grep dsh.spike     # four `dsh.spike.verdict:` lines expected
-"$HDC" file recv /data/app/el2/100/base/com.dshmobile.spike/haps/entry/cache/dsh-spike-capture.log .
-"$HDC" file recv /data/app/el2/100/base/com.dshmobile.spike/haps/entry/cache/dsh-host-capture.log .
+"$HDC" shell aa start -b com.dshmobile.host -a EntryAbility
+"$HDC" shell hilog -x | grep dsh.dsh     # four `dsh.dsh.verdict:` lines expected
+"$HDC" file recv /data/app/el2/100/base/com.dshmobile.host/haps/entry/cache/dsh-dsh-capture.log .
+"$HDC" file recv /data/app/el2/100/base/com.dshmobile.host/haps/entry/cache/dsh-host-capture.log .
 "$HDC" shell snapshot_display -f /data/local/tmp/m5-screenshot.jpeg
 "$HDC" file recv /data/local/tmp/m5-screenshot.jpeg .
 

@@ -1,6 +1,6 @@
 {
   "scenario": "gateway.bridge-smoke",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
     { "event": "fs.write.ok", "match": { "written": 17 } },

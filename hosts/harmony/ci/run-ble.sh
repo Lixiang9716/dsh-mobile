@@ -24,7 +24,7 @@ CLT=${DSH_CLT:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools
 HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 [ -x "$HDC" ] || HDC=$(find "$CLT" -name hdc -type f | head -1)
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry/cache
 
 case "$MODE" in
@@ -107,8 +107,8 @@ done
 kill "$streamer" 2>/dev/null || true
 wait "$streamer" 2>/dev/null || true
 trap - EXIT
-grep 'dsh.spike' "$STREAM" > "$OUT/logs.txt" || true
-grep -h '^dsh.spike.log:' "$OUT/ble-capture.txt" > "$OUT/scenario.jsonl" || true
+grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
+grep -h '^dsh.runtime.log:' "$OUT/ble-capture.txt" > "$OUT/scenario.jsonl" || true
 
 if node test/e2e/check.mjs --manifest test/e2e/scenarios/$SCEN.json \
     --log "$OUT/ble-capture.txt" \

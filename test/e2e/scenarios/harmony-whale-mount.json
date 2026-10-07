@@ -1,6 +1,6 @@
 {
   "scenario": "harmony.whale.mount",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "client.selected", "match": { "client": "dsh-web-client-whale", "source": "launch" } },
     { "event": "webclient.mounted", "match": { "client": "dsh-web-client-whale", "path": "/index.html" } },

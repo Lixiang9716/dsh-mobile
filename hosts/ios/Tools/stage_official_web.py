@@ -8,8 +8,8 @@ reference. A user-facing build has no runner: a plain launch must reach the
 official DSH Web UI with nothing staged from outside. So the release build
 EMBEDS the same two trees as app bundle resources:
 
-    DSHSpike.app/official-web/dist/**                    ← the official dist
-    DSHSpike.app/official-web/plugins/npm/@deepseek-ai/** ← the client bundles
+    DSHHost.app/official-web/dist/**                    ← the official dist
+    DSHHost.app/official-web/plugins/npm/@deepseek-ai/** ← the client bundles
 
 (the same `official-web/{dist,plugins}` layout hosts/harmony's rawfile
 carries, so both hosts name the tree identically).
@@ -26,7 +26,7 @@ short copy would ship a broken client, so it fails loud instead (rules.md
 rule 5). Missing source trees are fatal in Release and named explicitly.
 
 usage: stage_official_web.py Release \
-           /path/to/DerivedData/Build/Products/Release-iphonesimulator/DSHSpike.app
+           /path/to/DerivedData/Build/Products/Release-iphonesimulator/DSHHost.app
 """
 
 import hashlib

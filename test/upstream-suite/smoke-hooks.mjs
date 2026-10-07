@@ -38,7 +38,7 @@ export async function resolve(specifier, context, nextResolve) {
   }
   // Bundle-root ABSOLUTE specifiers (the shape the npm-bridges rows and
   // the quickjs host's static bare map both speak): '/x' is the runtime/
-  // spike bundle's own root, not the machine's. Without this the Node
+  // dsh bundle's own root, not the machine's. Without this the Node
   // reference leg dies on the first spec whose boot graph pulls a bridge
   // target (the loop spec: office tools → fflate — 2026-09-29).
   if (specifier.startsWith('/')) {

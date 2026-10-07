@@ -4,7 +4,7 @@
 # the user-facing launch runs, selected by the launch configuration
 # (-dsh-web-client dsh-web-client-next), served with zero injection rows.
 #
-# Builds DSHSpike (the client rides the embedded webclient tree — no dist
+# Builds DSHHost (the client rides the embedded webclient tree — no dist
 # staging, nothing vendored), launches in NEXT-WEB mode, and waits for the
 # drive to complete: the page boots from its own modules, opens the mux,
 # the probe drives OUR UI like a user (new session → type → send), a REAL
@@ -21,8 +21,8 @@ cd "$ROOT"
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART=""
 SKIP_BUILD=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -63,7 +63,7 @@ runtime/dsh/vendor/ensure.sh
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/4 regenerate the embedded bundle + xcodebuild (simulator, udid $UDID)"
   python3 hosts/ios/Tools/gen_bundle_header.py
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -109,13 +109,13 @@ wait_line "index.served" 300 || fail_deadline "index.served never appeared"
 shot 01-next-boot-screen
 
 log "waiting for the carrier drive to complete (terminal marker)"
-wait_line "spike: sequence next-web=" 180 || fail_deadline "terminal marker never appeared"
+wait_line "dsh: sequence next-web=" 180 || fail_deadline "terminal marker never appeared"
 sleep 1
 shot 02-final-state
 
 # ---- checkers -----------------------------------------------------------------
 log "5/5 running checkers"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 if node test/e2e/check.mjs --manifest test/e2e/scenarios/nextweb-mount.json \
     --log "$LOG" --out "$ART/verdict-nextweb-mount.json"; then
   echo "==================== E2E summary ($ART) ===================="

@@ -1,5 +1,5 @@
 /**
- * M1 spike scenario `carrier.loopback` — the local-carrier E2E contract,
+ * M1 dsh scenario `carrier.loopback` — the local-carrier E2E contract,
  * same discipline as boot-verification: every expected event emits exactly one
  * structured log entry through the unified logger, in the order declared by
  * tools/e2e/scenarios/carrier-loopback.json, and the verdict is a

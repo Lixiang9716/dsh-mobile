@@ -1,6 +1,6 @@
 #!/bin/sh
 # run-host-e2e.sh — one invocation drives the whole on-emulator host E2E
-# (the Android twin is hosts/android/ci/run-spike-e2e.sh; the platform
+# (the Android twin is hosts/android/ci/run-dsh-e2e.sh; the platform
 # toolchain is documented in hosts/harmony/README.md):
 #
 #   build (unless DSH_SKIP_BUILD=1) -> install -> launch ->
@@ -28,7 +28,7 @@ CLT=${DSH_CLT:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools
 HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 OUT=${1:-hosts/harmony/artifacts/m5-host}
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry/cache
 
 if [ "${DSH_SKIP_BUILD:-0}" != "1" ]; then
@@ -159,21 +159,21 @@ done
 kill "$streamer" 2>/dev/null || true
 wait "$streamer" 2>/dev/null || true
 trap - EXIT
-grep 'dsh.spike' "$STREAM" > "$OUT/logs.txt" || true
+grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
 
-"$HDC" file recv "$BASE/dsh-spike-capture.log" "$OUT/sink-capture.txt" >/dev/null
+"$HDC" file recv "$BASE/dsh-dsh-capture.log" "$OUT/sink-capture.txt" >/dev/null
 "$HDC" file recv "$BASE/dsh-host-capture.log" "$OUT/binding-capture.txt" >/dev/null
 "$HDC" file recv "$BASE/dsh-official-capture.log" "$OUT/official-capture.txt" >/dev/null
 "$HDC" file recv "$BASE/dsh-httpfetch-capture.log" "$OUT/httpfetch-capture.txt" >/dev/null
 "$HDC" file recv "$BASE/dsh-session-capture.log" "$OUT/session-capture.txt" >/dev/null
 "$HDC" file recv "$BASE/dsh-write-capture.log" "$OUT/write-capture.txt" >/dev/null
 
-# scenario.jsonl: the canonical dsh.spike.log lines of THIS run, extracted
+# scenario.jsonl: the canonical dsh.runtime.log lines of THIS run, extracted
 # from the run's own capture files (trio + binding + official phases, in run
 # order) — same extraction convention as hosts/android/ci/run-android-full.sh
-# and hosts/harmony/artifacts/m1-spike (grep of a real capture, never
+# and hosts/harmony/artifacts/m1-dsh (grep of a real capture, never
 # synthesized).
-grep -h '^dsh.spike.log:' "$OUT/sink-capture.txt" "$OUT/binding-capture.txt" \
+grep -h '^dsh.runtime.log:' "$OUT/sink-capture.txt" "$OUT/binding-capture.txt" \
     "$OUT/official-capture.txt" "$OUT/httpfetch-capture.txt" \
     "$OUT/session-capture.txt" "$OUT/write-capture.txt" \
     > "$OUT/scenario.jsonl"

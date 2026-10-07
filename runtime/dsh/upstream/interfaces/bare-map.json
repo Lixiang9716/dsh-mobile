@@ -5,7 +5,7 @@
  "extracted": "wave-7 opener, 2026-09-27, from host/dsh_runtime_host.c (dsh_node_shim + dsh_map_bare), upstream/shims/npm-bridges{,-b,-c,-pi-ai}.js and upstream/shims/runtime-modules.js",
  "resolutionOrder": [
   "1. runtime-defined modules (__dshModuleDefine registry: runtime-modules.js + npm-bridges rows) — checked FIRST; a registration SHADOWS the bare map (documented replay semantics: a second define replaces)",
-  "2. dsh:util-crypto (legacy spike specifier)",
+  "2. dsh:util-crypto (legacy dsh specifier)",
   "3. node:<builtin> -> the C SHIMS table (dsh_node_shim); an unmapped node: specifier fails loud (rule 5)",
   "4. @deepseek-ai/dsh-llm[/sub] aliases, then the generic @deepseek-ai/dsh-* vendored probe (DSH_MAP_VENDORED_PROBE 'pkg|sub' marker; the probe serves both staging families + exports-map subpath shapes)",
   "5. the named npm pins of dsh_map_bare (cordis/cosmokit/schemastery/zod/js-yaml/fast-check/pure-rand/cordis-plugin-loader/include, dsh-client-modules)",
@@ -142,14 +142,14 @@
    "provider": "FAIL LOUD",
    "since": "standing rule",
    "registeredBy": "host/dsh_runtime_host.c dsh_node_shim",
-   "note": "Only builtins the vendored closure actually imports are mapped; anything else fails loud at import time naming the specifier (rule 5): 'no spike shim for node builtin ...'"
+   "note": "Only builtins the vendored closure actually imports are mapped; anything else fails loud at import time naming the specifier (rule 5): 'no dsh shim for node builtin ...'"
   },
   {
    "specifier": "dsh:util-crypto",
    "provider": "npm-pin dsh util-crypto@0.1.6-alpha.2 (vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js)",
    "since": "pre-wave (M1 legacy)",
    "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
-   "note": "legacy spike specifier, kept working on the alpha.2 pin"
+   "note": "legacy dsh specifier, kept working on the alpha.2 pin"
   },
   {
    "specifier": "@deepseek-ai/dsh-llm",

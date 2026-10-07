@@ -12,7 +12,7 @@
  * SVG is a subset rasterizer with a bitmap font; metadata fidelity is
  * structural presence, not profile content).
  *
- * This file is CJS: on the spike it loads through the userland cjs-loader
+ * This file is CJS: on the dsh it loads through the userland cjs-loader
  * (both the bare-table path for createLazyRequire('sharp') and the
  * requireCjsPackage ESM bridge row), on node through plain require.
  */

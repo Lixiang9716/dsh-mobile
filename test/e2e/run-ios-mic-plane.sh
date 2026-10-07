@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test/e2e/run-ios-mic-plane.sh — the capability plane's microphone E2E
-# driver (`mic.plane`): launches DSHSpike in -dsh-mode mic-plane and
+# driver (`mic.plane`): launches DSHHost in -dsh-mode mic-plane and
 # verifies the captured log against the scenario + audit manifests. Sibling
 # of run-ios-device-plane.sh's machinery; the verdict is logs only.
 #
@@ -21,8 +21,8 @@ UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/mic-plane"
 SKIP_BUILD=0
 SKIP_INSTALL=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 DEADLINE=$((SECONDS + 600))
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -49,8 +49,8 @@ log() { echo "run-ios-mic-plane: $*"; }
 
 # ---- 1. build ---------------------------------------------------------------
 if [ "$SKIP_BUILD" = "0" ]; then
-  log "1/5 building DSHSpike"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  log "1/5 building DSHHost"
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination 'platform=iOS Simulator,id='"$UDID" \
     -derivedDataPath hosts/ios/DerivedData -quiet >/dev/null
 else
@@ -103,13 +103,13 @@ done
 log "4/5 waiting for the scenario verdict (deadline $((DEADLINE - SECONDS))s)"
 tail_deadline=$DEADLINE
 while [ "$SECONDS" -lt "$tail_deadline" ]; do
-  if grep -q 'spike: mic-plane drive finished' "$LOG" 2>/dev/null; then
-    grep 'spike: mic-plane drive finished' "$LOG"
+  if grep -q 'dsh: mic-plane drive finished' "$LOG" 2>/dev/null; then
+    grep 'dsh: mic-plane drive finished' "$LOG"
     break
   fi
   sleep 2
 done
-if ! grep -q 'spike: mic-plane drive finished' "$LOG" 2>/dev/null; then
+if ! grep -q 'dsh: mic-plane drive finished' "$LOG" 2>/dev/null; then
   echo "run-ios-mic-plane: DEADLINE EXPIRED — terminal marker never appeared" >&2
   tail -n 50 "$LOG" >&2 2>/dev/null || true
   exit 1
@@ -119,7 +119,7 @@ fi
 log "5/5 running checkers"
 mkdir -p "$ART/screens"
 xcrun simctl io "$UDID" screenshot "$ART/screens/01-final.png" >/dev/null 2>&1 || true
-grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" > "$ART/scenario.jsonl" || true
 grep '^dsh.gateway.audit:' "$LOG" > "$ART/gateway-audit.jsonl" || true
 PASS=0; FAIL=0
 run_check() { # MANIFEST OUT

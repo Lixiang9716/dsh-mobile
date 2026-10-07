@@ -1,6 +1,6 @@
 {
   "scenario": "install.full-cycle",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
     { "event": "config.layer", "match": { "layer": "base", "keys": ["webClient", "slots"] } },

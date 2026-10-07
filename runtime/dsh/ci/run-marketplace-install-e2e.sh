@@ -124,7 +124,7 @@ node ci/market-test-indexes.mjs "$CATALOG" "$MARKET_URL" "$SEED_1" "$SEED_2" "$S
     --env "DSH_MARKET_URL=$MARKET_URL" > logs-marketplace-install.txt
 mkdir -p "$ART_DIR"
 cp logs-marketplace-install.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-marketplace-install.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-marketplace-install.txt > "$ART_DIR/scenario.jsonl"
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/marketplace-install.json" \
     --log logs-marketplace-install.txt \

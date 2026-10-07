@@ -1,6 +1,6 @@
 {
   "scenario": "userland.shell",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "plugin", "match": { "name": "dsh-shell-ish", "tool": "ish" } },
     { "event": "guest.machine", "match": { "command": "uname -m", "exitCode": 0, "stdout": "aarch64\n" } },

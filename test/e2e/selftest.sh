@@ -86,7 +86,7 @@ expect_pass "$UIOC" "$TMP/uia-clean.log"
 $PROBE --dump "$TD/ui-probe-occlusion.uiautomator.xml" --scenario ui.occlusion \
     --append "$TMP/uia-occ.log" >/dev/null
 expect_fail_at "$UIOC" "$TMP/uia-occ.log" 0
-grep -q 'DSH Spike Host' "$TMP/v.json" ||
+grep -q 'DSH Dsh Host' "$TMP/v.json" ||
   { echo "selftest: FAIL  occlusion verdict does not name the occluder"; FAILURES=$((FAILURES + 1)); }
 
 $PROBE --dump "$TD/ui-probe-clean.wda.json" --scenario ui.occlusion \

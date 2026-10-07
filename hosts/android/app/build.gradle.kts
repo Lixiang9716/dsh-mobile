@@ -103,7 +103,7 @@ val stageWebPlugins = tasks.register<Copy>("stageWebPlugins") {
 }
 
 android {
-    namespace = "com.dshmobile.spike"
+    namespace = "com.dshmobile.host"
     compileSdk = 35
 
     // aapt2's default ignore pattern excludes EVERY dotfile ('.*') from
@@ -146,7 +146,7 @@ private fun com.android.build.api.dsl.ApplicationExtension.dshBuildTypes() {
         // The harness (debug) is the verification vehicle: full structured
         // logging, the E2E drives run. The release build is what a user
         // gets: the define reaches BOTH halves — BuildConfig.DSH_RELEASE in
-        // Kotlin and -DDSH_RELEASE in the spike .so (where the shared C host
+        // Kotlin and -DDSH_RELEASE in the dsh .so (where the shared C host
         // injects globalThis.__DSH_RELEASE__, which strips the JS logger to
         // the critical set) — and the drives refuse to start.
         release {
@@ -154,7 +154,7 @@ private fun com.android.build.api.dsl.ApplicationExtension.dshBuildTypes() {
             buildConfigField("boolean", "DSH_RELEASE", "true")
             externalNativeBuild {
                 cmake {
-                    // The spike target is C-ONLY (CMakeLists: project(… C)), so
+                    // The dsh target is C-ONLY (CMakeLists: project(… C)), so
                     // the define must ride cFlags — cppFlags covers C++ sources
                     // and silently reaches nothing here.
                     cFlags += "-DDSH_RELEASE=1"
@@ -180,7 +180,7 @@ private fun com.android.build.api.dsl.ApplicationExtension.dshSourceSets(
 
 private fun com.android.build.api.dsl.ApplicationExtension.dshDefaultConfig() {
     defaultConfig {
-        applicationId = "com.dshmobile.spike"
+        applicationId = "com.dshmobile.host"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

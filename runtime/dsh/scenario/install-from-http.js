@@ -39,7 +39,7 @@ import { buildNotesTgz, NOTES_MANIFEST_BYTES } from 'fixtures/dsh-notes.js';
 import { NOTES_PLUGIN_SOURCE } from 'fixtures/dsh-notes-source.js';
 
 const SCENARIO = 'install.from-http';
-const log = createLogger('m3.spike');
+const log = createLogger('m3.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const onStep = (name, fields) => emit(`install.${name}`, fields);
 const fail = (reason) => {
@@ -152,7 +152,7 @@ const fetchInstallPhase = async (registry, packageBytes) => {
  * the page never renders it), then the one the plugin actually owns. */
 const projectSlots = () => {
   log.debug('project toolbar slots', { count: 2 });
-  project({ kind: 'slot.register', id: 'debug.console', label: 'debug', by: 'dsh.spike' });
+  project({ kind: 'slot.register', id: 'debug.console', label: 'debug', by:'dsh.runtime' });
   project({ kind: 'slot.register', id: 'notes.toolbar', label: 'notes', by: 'dsh-notes' });
 };
 

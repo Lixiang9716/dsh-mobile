@@ -1,0 +1,487 @@
+package com.dshmobile.host
+
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Color
+import android.os.Bundle
+import android.view.Gravity
+import android.view.ViewGroup
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.LinearLayout
+import android.widget.TextView
+import java.io.File
+
+/**
+ * M4 rt host activity. Two launch modes:
+ * - default (no extras): copies the rt bundle from assets into
+ *   filesDir/rt (the C host fopen()s real paths), then drives ALL THREE
+ *   regression scenarios (boot.verification + gateway.bridge-smoke + session.mock-llm) on
+ *   the serial runtime thread and shows the combined verdict.
+ * - `--ez dsh.m4 true`: the M4 completion session — the loopback carrier
+ *   serves the embedded Web Client into a real WebView and the full
+ *   nine-primitive gateway binding runs UI-driven (BindingHost).
+ * The E2E assertion is the captured log, never the screen — views are human
+ * evidence only.
+ */
+class MainActivity : Activity() {
+
+    /** The per-tree asset manifest stamp (syncAssetDir). */
+    private val assetStampName = ".dsh-asset-stamp"
+
+    private lateinit var verdictView: TextView
+    private var spikeHost: BindingHost? = null
+    private var webView: WebView? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (BuildFlavor.isRelease) {
+            bootRelease()
+            return
+        }
+        verdictView = TextView(this).apply {
+            setBackgroundColor(Color.BLACK)
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+            setPadding(64, 64, 64, 64)
+            textSize = 16f
+            text = "dsh rt host: booting quickjs-ng..."
+        }
+        if (intent.getBooleanExtra(EXTRA_SUITE, false)) {
+            startBinding(savedInstanceState, parity = true, suite = intent.getStringExtra(EXTRA_SPEC))
+        } else if (intent.getBooleanExtra(EXTRA_PARITY, false)) {
+            startBinding(savedInstanceState, parity = true)
+        } else if (intent.getBooleanExtra(EXTRA_LLM, false)) {
+            startBinding(savedInstanceState, llm = true)
+        } else if (intent.getBooleanExtra(EXTRA_M4, false)) {
+            startBinding(savedInstanceState, llm = false)
+        } else if (intent.getBooleanExtra(EXTRA_WHALE, false)) {
+            startBinding(savedInstanceState, whale = true)
+        } else if (intent.getBooleanExtra(EXTRA_DEVICE_PLANE, false)) {
+            startBinding(savedInstanceState, devicePlane = true)
+        } else if (intent.getBooleanExtra(EXTRA_CAMERA_PLANE, false)) {
+            startBinding(savedInstanceState, cameraPlane = true)
+        } else if (intent.getBooleanExtra(EXTRA_BLE, false)) {
+            startBinding(savedInstanceState, ble = true, bleMock = intent.getBooleanExtra(EXTRA_BLE_MOCK, false))
+        } else if (intent.getBooleanExtra(EXTRA_MIC_PLANE, false)) {
+            startBinding(savedInstanceState, micPlane = true)
+        } else if (intent.getBooleanExtra(EXTRA_NEXT, false)) {
+            startNextWeb()
+        } else if (intent.getBooleanExtra(EXTRA_WEB, false)) {
+            startOfficialWeb()
+        } else if (intent.getBooleanExtra(EXTRA_SESSION, false)) {
+            startSessionLive()
+        } else if (intent.getBooleanExtra(EXTRA_WRITE, false)) {
+            startWriteLive()
+        } else {
+            setContentView(verdictView)
+            JsRuntime.post {
+                materializeBundle()
+                val verdict = JsRuntime.runOnce(filesDir.absolutePath)
+                runOnUiThread { verdictView.text = verdict }
+            }
+        }
+    }
+
+    /**
+     * The theme is NoActionBar (issue #179): the window is edge-to-edge on the
+     * enforced-API-35 look, so the WEBVIEW owns the top of the screen — and
+     * the system status-bar / cutout region swallowed touches to whatever the
+     * page put there (the settings dialog's whole tab strip, its Close
+     * button, the sidebar's New-session icon). Inset the content by the
+     * system bars so every page element lands at a touchable coordinate; the
+     * page viewport simply starts below them. Registered here — after the
+     * content view exists — and re-dispatched, because an insets listener
+     * attached before setContentView() never sees the first dispatch.
+     */
+    override fun onResume() {
+        super.onResume()
+        val content = findViewById<android.view.ViewGroup>(android.R.id.content) ?: return
+        content.setOnApplyWindowInsetsListener { view, insets ->
+            view.setPadding(0, statusBarInsetTop(insets), 0, 0)
+            insets
+        }
+        content.requestApplyInsets()
+        BindingHost.dispatchResume()
+    }
+
+    /** Top inset of the system bars + display cutout, in pixels (issue #179). */
+    private fun statusBarInsetTop(insets: android.view.WindowInsets): Int =
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            insets.getInsets(
+                android.view.WindowInsets.Type.statusBars()
+                    or android.view.WindowInsets.Type.displayCutout(),
+            ).top
+        } else {
+            @Suppress("DEPRECATION")
+            insets.systemWindowInsetTop
+        }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        BindingHost.dispatchNotifyResponse(intent)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        BindingHost.dispatchPause()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        spikeHost?.onActivityResult(requestCode, resultCode, data)
+        serve?.onActivityResult(requestCode, resultCode, data)
+    }
+
+    /** The camera runtime-permission resume (the burst's second consent
+     * layer): routed to the live host when one is driving. */
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        spikeHost?.onRequestPermissionsResult(requestCode, grantResults)
+    }
+
+    private fun startBinding(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false) {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        layout.addView(
+            verdictView,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ),
+        )
+        val view = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            webViewClient = WebViewClient()
+        }
+        layout.addView(
+            view,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f,
+            ),
+        )
+        setContentView(layout)
+        webView = view
+        // The gateway core reads filesDir/rt at construction: materialize
+        // the bundle FIRST (runtime thread), then construct the host.
+        JsRuntime.post {
+            materializeBundle()
+            runOnUiThread {
+                spikeHost = startHost(llm, view, parity, suite, whale, devicePlane, cameraPlane, ble, bleMock, micPlane)
+            }
+        }
+        view.post { BindingHost.dispatchNotifyResponse(intent) }
+    }
+
+    /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream),
+     * the whale creation-client mount, or the M4 binding — with the same
+     * carrier + WebView flow. */
+    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false): BindingHost {
+
+        val onVerdict = { verdict: String -> verdictView.text = verdict }
+        return when {
+            suite != null -> BindingHost.startSuite(this, view, onVerdict, suite)
+            parity -> BindingHost.startParity(this, view, onVerdict)
+            whale -> BindingHost.startWhale(this, view, onVerdict)
+            devicePlane -> BindingHost.startDevicePlane(this, view, onVerdict)
+            cameraPlane -> BindingHost.startCameraPlane(this, view, onVerdict)
+            ble -> BindingHost.startBle(this, view, onVerdict, bleMock)
+            micPlane -> BindingHost.startMicPlane(this, view, onVerdict)
+            llm -> BindingHost.startLlm(this, view, onVerdict)
+            else -> BindingHost.start(this, view, onVerdict)
+        }
+    }
+
+    companion object {
+        const val EXTRA_M4 = "dsh.m4"
+        const val EXTRA_LLM = "dsh.llm"
+        const val EXTRA_WEB = "dsh.web"
+        const val EXTRA_SESSION = "dsh.session"
+        const val EXTRA_WRITE = "dsh.write"
+        const val EXTRA_PARITY = "dsh.parity"
+        const val EXTRA_SUITE = "dsh.suite"
+        const val EXTRA_SPEC = "dsh.spec"
+        const val EXTRA_WHALE = "dsh.whale"
+        const val EXTRA_DEVICE_PLANE = "dsh.deviceplane"
+        const val EXTRA_CAMERA_PLANE = "dsh.cameraplane"
+        const val EXTRA_BLE = "dsh.ble"
+        const val EXTRA_BLE_MOCK = "dsh.blemock"
+        const val EXTRA_MIC_PLANE = "dsh.micplane"
+        const val EXTRA_NEXT = "dsh.next"
+        /** The Web Client the release boot serves (string extra; the iOS
+         * launch arg -dsh-web-client's sibling — a client selection, not a
+         * drive, so the release build accepts it). */
+        const val EXTRA_WEB_CLIENT = "dsh.web.client"
+    }
+
+    /**
+     * The official-web session (`android.officialweb.mount`): the loopback
+     * carrier serves the vendored official dist with the runtime-composed
+     * boot wire into a real WebView; the web-boot runtime composes the
+     * official boot graph over the bus seam (OfficialWebSession).
+     */
+    private fun startOfficialWeb() {
+        val view = drivenWebView { OfficialWebSession.dispatchPageFinished() }
+        webView = view
+        // The carrier + drive read filesDir trees: materialize FIRST (runtime
+        // thread: rt bundle + official dist + web-plugins), then start.
+        JsRuntime.post {
+            materializeBundle()
+            syncAssetDir("official-web", File(filesDir, "official-web"))
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            runOnUiThread {
+                session = OfficialWebSession.start(this, view, onFinished = { verdict ->
+                    verdictView.text = verdict
+                })
+            }
+        }
+    }
+
+    private var session: OfficialWebSession? = null
+    private var serve: SessionServe? = null
+    private var sessionLive: SessionLiveSession? = null
+    private var sessionWrite: SessionWriteSession? = null
+    private var nextWeb: NextWebSession? = null
+
+    /**
+     * The nextweb.mount drive (`android.nextweb.mount`): the SELF-HOSTED web
+     * client on the SessionServe seat the user-facing launch runs — selected
+     * by client id (dsh-web-client-next), zero injection rows, the same
+     * /api + remote.mux surface. The probe drives OUR page like a user
+     * (new session → type → send → stop → create) through real agent-loop
+     * turns over the carrier's scripted SSE endpoint; the creation row (the
+     * present tool) rides the interactive config. Kotlin sibling of hosts/ios
+     * NextWebRuntime (the drive class holds the probe chain).
+     */
+    private fun startNextWeb() {
+        val view = drivenWebView { NextWebSession.dispatchPageFinished() }
+        webView = view
+        // The seat reads filesDir trees: materialize FIRST (runtime thread:
+        // rt bundle incl. webclient-next + web-plugins), then drive.
+        JsRuntime.post {
+            materializeBundle()
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            runOnUiThread {
+                nextWeb = NextWebSession.start(this, view) { verdict ->
+                    verdictView.text = verdict
+                }
+            }
+        }
+    }
+
+    /** The driven-mode chrome: the verdict strip over a full-bleed WebView
+     * wired to the shared `dshProbe` bridge and the given page-finished
+     * dispatcher (the four page-driving modes' identical construction). */
+    private fun drivenWebView(onPageFinished: () -> Unit): WebView {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        layout.addView(
+            verdictView,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ),
+        )
+        val view = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            addJavascriptInterface(PROBE_BRIDGE, "dshProbe")
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    onPageFinished()
+                }
+            }
+        }
+        layout.addView(
+            view,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f,
+            ),
+        )
+        setContentView(layout)
+        return view
+    }
+
+    /**
+     * The user-facing boot: the official DSH Web Client over the FULL DSH
+     * runtime — the SessionServe seat (the sibling of hosts/ios
+     * SessionServe.swift). The spine (scenario/composer-web-live.js) boots
+     * the vendored DSH packages with the INTERACTIVE surfaces (the commands
+     * registry + the skill plane), claims the write/settings surfaces and
+     * the mux streams over the bus seam, and goes resident: the page's own
+     * composer drives real agent turns. The model route is the staged
+     * credential file when present, else the carrier's scripted endpoint
+     * (the whole UI works either way). No verification drive, no verdict
+     * panel, no per-event E2E record — the "release" half of AGENTS.md
+     * constraint 5 / rules.md rule L4. A launch that asks for an E2E drive
+     * is refused LOUD (rule 5): this binary has no drives.
+     */
+    private fun bootRelease() {
+        val requested = listOf(EXTRA_M4, EXTRA_LLM, EXTRA_WEB, EXTRA_SESSION, EXTRA_WRITE, EXTRA_PARITY, EXTRA_SUITE, EXTRA_SPEC)
+            .firstOrNull { intent.getBooleanExtra(it, false) }
+        if (requested != null) {
+            error(
+                "DSHHost release build: refusing '$requested'. This is the " +
+                    "user-facing distribution build — the verification drives, the " +
+                    "verdict panel and the per-event E2E log stream are compiled out " +
+                    "(AGENTS.md constraint 5, rules.md rule L4). Install the harness " +
+                    "variant (dsh-android-harness) to drive E2E legs.",
+            )
+        }
+        val view = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            addJavascriptInterface(PROBE_BRIDGE, "dshProbe")
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    OfficialWebSession.dispatchPageFinished()
+                }
+            }
+        }
+        setContentView(view)
+        webView = view
+        // The carrier + runtime read filesDir trees: materialize FIRST, then
+        // serve. No verdict callback — a user-facing boot has nothing to assert.
+        JsRuntime.post {
+            materializeBundle()
+            syncAssetDir("official-web", File(filesDir, "official-web"))
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            runOnUiThread {
+                val client = intent.getStringExtra(EXTRA_WEB_CLIENT)
+                    ?: SessionServe.CLIENT_ID
+                serve = SessionServe.start(
+                    this, view,
+                    credential = SessionServeConfig.loadCredential(this),
+                    clientID = client,
+                )
+            }
+        }
+    }
+
+    /** The probe's page-side result sink (JavaBridge thread → session). The
+     * drives are addressed; each dispatcher no-ops when its session is not
+     * the live one (the modes never run concurrently). */
+    private val PROBE_BRIDGE = object : Any() {
+        @JavascriptInterface
+        fun post(json: String) {
+            OfficialWebSession.dispatchProbeResult(json)
+            SessionLiveSession.dispatchProbeResult(json)
+            SessionWriteSession.dispatchProbeResult(json)
+            NextWebSession.dispatchProbeResult(json)
+        }
+    }
+
+    /**
+     * The session-live session (`android.session.live-read`): the FULL upstream
+     * agent spine boots on-device and claims `/api/session.list` + the mux
+     * `session/journal` streams over the bus seam, so the official page gets
+     * REAL session data (SessionLiveSession). Same WebView + carrier shape
+     * as the official-web mode; the scripted mock-llm route is the model
+     * boundary (E2E determinism, logged as such).
+     */
+    private fun startSessionLive() {
+        val view = drivenWebView { SessionLiveSession.dispatchPageFinished() }
+        webView = view
+        // The carrier + drive read filesDir trees: materialize FIRST (runtime
+        // thread: rt bundle + official dist + web-plugins), then start.
+        JsRuntime.post {
+            materializeBundle()
+            syncAssetDir("official-web", File(filesDir, "official-web"))
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            runOnUiThread {
+                sessionLive = SessionLiveSession.start(this, view) { verdict ->
+                    verdictView.text = verdict
+                }
+            }
+        }
+    }
+
+    /**
+     * The write-live session (`android.composer.live-write`): the spine + the
+     * official write surface over the bus seam (SessionWriteSession); the
+     * probe drives the REAL composer (pick the workspace, type, send) and
+     * the page's own message produces a real upstream turn rendered back
+     * into the official UI. Same WebView + carrier shape as the
+     * session-live mode.
+     */
+    private fun startWriteLive() {
+        val view = drivenWebView { SessionWriteSession.dispatchPageFinished() }
+        webView = view
+        // The carrier + drive read filesDir trees: materialize FIRST (runtime
+        // thread: rt bundle + official dist + web-plugins), then start.
+        JsRuntime.post {
+            materializeBundle()
+            syncAssetDir("official-web", File(filesDir, "official-web"))
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            runOnUiThread {
+                sessionWrite = SessionWriteSession.start(this, view) { verdict ->
+                    verdictView.text = verdict
+                }
+            }
+        }
+    }
+
+    /** Copies the asset rt bundle to filesDir/rt preserving the layout. */
+    private fun materializeBundle() {
+        syncAssetDir("dsh", File(filesDir, "dsh"))
+    }
+
+    /** The asset-set stamp written INSIDE each synced tree: the exact sorted
+     * relative-path manifest of what the current APK ships. */
+    private fun collectAssetNames(assetPath: String, prefix: String, names: MutableSet<String>) {
+        val children = assets.list(assetPath).orEmpty()
+        if (children.isEmpty()) {
+            names.add(prefix)
+            return
+        }
+        for (child in children) {
+            collectAssetNames("$assetPath/$child", if (prefix.isEmpty()) child else "$prefix/$child", names)
+        }
+    }
+
+    /** Reconciles one served tree with the APK's assets (loop-g): an
+     * overwrite-only copy let every entry an OLDER APK shipped survive
+     * `install -r` forever — the device's files/rt/vendor/dsh carried
+     * 274 pre-lean dirs the current closure never materializes, and no
+     * clean-install proof could pass over them. The stamped manifest makes
+     * drift loud and self-healing: matching stamp → no-op; missing or
+     * differing stamp (first boot after this fix, a lean change, a new
+     * file) → wipe the tree and re-materialize exactly the shipped set.
+     * Crash-safe: the stamp lands only after the copy completes. Trees are
+     * app-owned scratch (the workspace lives under files/profiles/, and the
+     * presets seed re-delivers its rows every boot), so the wipe never
+     * takes user data with it. */
+    private fun syncAssetDir(assetPath: String, target: File) {
+        val stamp = File(target, assetStampName)
+        val names = sortedSetOf<String>()
+        collectAssetNames(assetPath, "", names)
+        val desired = names.joinToString("\n")
+        if (stamp.isFile && stamp.readText() == desired) return
+        if (target.exists()) target.deleteRecursively()
+        target.mkdirs()
+        for (rel in names) {
+            val out = File(target, rel)
+            out.parentFile?.mkdirs()
+            copyAssetFile("$assetPath/$rel", out)
+        }
+        stamp.writeText(desired)
+    }
+
+    private fun copyAssetFile(assetPath: String, target: File) {
+        assets.open(assetPath).use { input ->
+            target.outputStream().use { output -> input.copyTo(output) }
+        }
+    }
+}

@@ -18,8 +18,8 @@
  *
  *   T4-a `/system/app`                     → in-band refusal: the workspace
  *                                            root anchor + "maybe you meant
- *                                            …/spike/system/app?"
- *   T4-b `spike/../plugins/registry.json`  → resolves; the seeded registry
+ *                                            …/dsh/system/app?"
+ *   T4-b `dsh/../plugins/registry.json`  → resolves; the seeded registry
  *                                            content comes back
  *   T4-c `/system/definitely-not-here-xyz` → absence semantics (not found),
  *                                            NO anchor refusal
@@ -59,7 +59,7 @@ const REGISTRY_JSON = JSON.stringify({
   plugins: [{ name: 'probe-plugin', enabled: true }],
 });
 
-const log = createLogger('real.agent.loop.spike');
+const log = createLogger('real.agent.loop.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   const message = reason instanceof Error ? reason.message : String(reason);
@@ -195,7 +195,7 @@ const probeAnchoredRefusal = async (ctx, session) => {
 const probeRelativeResolves = async (ctx, session) => {
   log.debug('T4-b begin', {});
 
-  const b = await probe(ctx, session, 2, '请使用 read 工具读取文件 spike/../plugins/registry.json，原样告诉我文件内容。');
+  const b = await probe(ctx, session, 2, '请使用 read 工具读取文件 dsh/../plugins/registry.json，原样告诉我文件内容。');
   demand(b.calls.length > 0, 'T4-b: the model produced no tool call');
   demand(b.resultText.includes(REGISTRY_MARKER),
     `T4-b: the registry content did not resolve — result: ${b.resultText.slice(0, 260)}`);

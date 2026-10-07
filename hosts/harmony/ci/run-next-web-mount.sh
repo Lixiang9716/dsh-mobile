@@ -12,7 +12,7 @@ set -eu
 CLT=${HOS_CLT_HOME:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools}
 HDC=${HDC_PATH:-$CLT/sdk/default/openharmony/toolchains/hdc}
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry/cache
 CAPTURE=$BASE/dsh-nextweb-capture.log
 OUT=${1:-hosts/harmony/artifacts/nextweb-mount}
@@ -88,14 +88,14 @@ pull_verified=0
 for _ in 1 2 3; do
     "$HDC" file recv "$CAPTURE" "$OUT/logs.txt" >/dev/null 2>&1 \
         || die "capture file $CAPTURE never landed"
-    if grep -q "creation.opened" "$OUT/logs.txt" && grep -q "dsh.spike.verdict" "$OUT/logs.txt"; then
+    if grep -q "creation.opened" "$OUT/logs.txt" && grep -q "dsh.dsh.verdict" "$OUT/logs.txt"; then
         pull_verified=1
         break
     fi
     sleep 3
 done
 [ "$pull_verified" = "1" ] || die "capture pull kept missing the terminal records"
-grep '^dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 
 node test/e2e/check.mjs --manifest test/e2e/scenarios/harmony-nextweb-mount.json \
     --log "$OUT/logs.txt" --out "$OUT/verdict-harmony-nextweb-mount.json"

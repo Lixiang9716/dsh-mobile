@@ -137,7 +137,7 @@ const readdirMiss = (canonical, insideWorkspace) => {
     return refusal;
   }
   const absent = enoent('readdir', canonical);
-  absent.message = `node:fs.readdirSync: no such directory in the spike runtime's served views — ${absent.message}${wsRootHint(canonical)}`;
+  absent.message = `node:fs.readdirSync: no such directory in the dsh runtime's served views — ${absent.message}${wsRootHint(canonical)}`;
   return absent;
 };
 

@@ -18,7 +18,7 @@
 
 typedef struct dsh_runtime dsh_runtime_t;
 
-/* Receives each canonical E2E line, already prefixed "dsh.spike.log: ".
+/* Receives each canonical E2E line, already prefixed "dsh.runtime.log: ".
  * Platforms print it to their native log (NSLog / logcat / hilog) or stdout
  * (CLI). Called only from the thread that drives the runtime. */
 typedef struct dsh_runtime_sink {

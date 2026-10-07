@@ -1,6 +1,6 @@
 {
   "scenario": "shim.exposure-probe",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "probe/start", "match": { "legs": 5, "survey": "DSH_MODULE_MANIFEST + tools/shim-exposure.mjs" } },
     { "event": "probe/session-persistence", "match": { "errorClasses": 4, "verdict": "carry name+sessionId+message" } },

@@ -3,7 +3,7 @@
 
     <!-- Loopback carrier: any socket (even 127.0.0.1) requires INTERNET, and
          the WebView loads the carrier origin over cleartext loopback only
-         (the spike's transport never leaves the device). -->
+         (the dsh's transport never leaves the device). -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- The v1.5.0 haptic primitive maps onto the platform vibrator. -->
@@ -32,7 +32,7 @@
         android:maxSdkVersion="30" />
 
     <application
-        android:label="DSH Spike Host"
+        android:label="DSH Dsh Host"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true">
 
@@ -53,7 +53,7 @@
              completion). grantUriPermissions lets the share target read it. -->
         <provider
             android:name=".ShareFilesProvider"
-            android:authorities="com.dshmobile.spike.share"
+            android:authorities="com.dshmobile.host.share"
             android:exported="false"
             android:grantUriPermissions="true" />
     </application>

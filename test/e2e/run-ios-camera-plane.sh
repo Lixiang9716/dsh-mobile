@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test/e2e/run-ios-camera-plane.sh — the capability plane's camera E2E leg on
-# the SIMULATOR (`camera.plane`): launches DSHSpike in -dsh-mode camera-plane
+# the SIMULATOR (`camera.plane`): launches DSHHost in -dsh-mode camera-plane
 # and verifies the captured log against the scenario + audit manifests. No UI
 # driving: the simulator has no camera, so the scenario's honest posture is
 # exactly what this leg pins — cameraCapture rejects `unavailable` (the
@@ -19,8 +19,8 @@ UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/camera-plane"
 SKIP_BUILD=0
 SKIP_INSTALL=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -38,8 +38,8 @@ log() { echo "run-ios-camera-plane: $*"; }
 
 # ---- 1. build ---------------------------------------------------------------
 if [ "$SKIP_BUILD" = "0" ]; then
-  log "1/4 building DSHSpike"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  log "1/4 building DSHHost"
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination 'platform=iOS Simulator,id='"$UDID" \
     -derivedDataPath hosts/ios/DerivedData -quiet >/dev/null
 else
@@ -84,7 +84,7 @@ done
 # for the terminal marker (rule 8: poll the condition, never a timed pause).
 log "4/4 waiting for the scenario's terminal marker"
 marker_deadline=$((SECONDS + 180))
-until grep -q "spike: camera-plane drive finished" "$LOG" 2>/dev/null; do
+until grep -q "dsh: camera-plane drive finished" "$LOG" 2>/dev/null; do
   [ "$SECONDS" -ge "$marker_deadline" ] && {
     echo "run-ios-camera-plane: terminal marker never appeared" >&2
     tail -50 "$LOG" >&2 2>/dev/null || true
@@ -94,7 +94,7 @@ until grep -q "spike: camera-plane drive finished" "$LOG" 2>/dev/null; do
 done
 
 # ---- checkers ---------------------------------------------------------------
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 grep '^dsh.gateway.audit:' "$LOG" >"$ART/gateway-audit.jsonl" || true
 PASS=0; FAIL=0
 run_check() { # MANIFEST OUT

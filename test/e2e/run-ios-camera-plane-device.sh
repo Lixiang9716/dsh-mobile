@@ -10,7 +10,7 @@
 #
 # Prerequisites (a simulator leg never needs these):
 #   - a physical iPhone in Developer Mode, attached;
-#   - a signing identity (Xcode managed or manual) for org.dsh.DSHSpike —
+#   - a signing identity (Xcode managed or manual) for org.dsh.DSHHost —
 #     this machine has none today, so the build step names the fix when it
 #     fails;
 #   - FIRST RUN ONLY: someone taps "Allow" on the OS camera prompt (the
@@ -27,7 +27,7 @@ UDID="${DSH_E2E_UDID:-}"
 ART="hosts/ios/artifacts/camera-plane-device"
 SKIP_BUILD=0
 SKIP_INSTALL=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
+APP_BUNDLE_ID=org.dsh.DSHHost
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -53,15 +53,15 @@ if ! xcrun xctrace list devices 2>/dev/null | grep -F "$UDID" | grep -qv 'Simula
   exit 1
 fi
 
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphoneos/DSHSpike.app
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphoneos/DSHHost.app
 LOG="$ART/logs.txt"
 command -v node >/dev/null 2>&1 || { echo "run-ios-camera-plane-device: FAIL: node not on PATH" >&2; exit 1; }
 mkdir -p "$ART"
 
 # ---- 1. build (device slice; needs a signing identity) ----------------------
 if [ "$SKIP_BUILD" = "0" ]; then
-  log "1/4 building DSHSpike for device (requires a signing identity)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  log "1/4 building DSHHost for device (requires a signing identity)"
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination 'platform=iOS,id='"$UDID" \
     -derivedDataPath hosts/ios/DerivedData -allowProvisioningUpdates -quiet
 else
@@ -92,7 +92,7 @@ log "4/4 first run: tap Allow on the OS camera prompt when it appears"
 log "(the camera-permission ui-wait marker is the hook); then the scenario"
 log "finishes alone. Waiting for the terminal marker (deadline 600s)..."
 marker_deadline=$((SECONDS + 600))
-until grep -q "spike: camera-plane drive finished" "$LOG" 2>/dev/null; do
+until grep -q "dsh: camera-plane drive finished" "$LOG" 2>/dev/null; do
   [ "$SECONDS" -ge "$marker_deadline" ] && {
     echo "run-ios-camera-plane-device: terminal marker never appeared" >&2
     exit 1
@@ -101,7 +101,7 @@ until grep -q "spike: camera-plane drive finished" "$LOG" 2>/dev/null; do
 done
 
 # ---- checkers ---------------------------------------------------------------
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 grep '^dsh.gateway.audit:' "$LOG" >"$ART/gateway-audit.jsonl" || true
 PASS=0; FAIL=0
 run_check() { # MANIFEST OUT

@@ -16,11 +16,11 @@ import { fromBase64 as fromBase64Shim } from 'upstream/shims/buffer.js';
  * and an `open()` FileHandle with the members fs-local's atomic write path
  * uses (writeFile/chmod/sync/stat/read/close). Operations on the seeded
  * read-only views stay honest refusals: seed data cannot be mutated inside
- * the spike runtime, and pretending otherwise would corrupt nothing but
+ * the dsh runtime, and pretending otherwise would corrupt nothing but
  * trust. Reads serve both views.
  *
  * The async shape is not decoration: importing the package failed outright
- * until this module existed (`no spike shim for node:fs/promises`), because
+ * until this module existed (`no dsh shim for node:fs/promises`), because
  * an ESM named import from a missing module is a link error, not a lazy one.
  * The same logic pins every name fs-local imports at its lib entrypoint — a
  * missing export is a link error even if the call site is never reached.
@@ -195,7 +195,7 @@ export const readlink = async (path) => readlinkSync(path);
 export const mkdir = async (path, options) => {
   const res = await _wsMkdir(path, options);
   // Write-through (W5-R, 2026-09-28): directories under the profile
-  // container exist for REAL on the desktop spike — a spawned child reads
+  // container exist for REAL on the desktop dsh — a spawned child reads
   // the real disk, so the VFS mkdir mirrors onto it (idempotent).
   try {
     if (typeof path === 'string' && path.startsWith('/') && res !== undefined) {
@@ -288,7 +288,7 @@ export const writeFile = async (path, data, options) => {
 const refuseAsync = (name) => async () => {
   throw new Error(
     `node:fs/promises.${name}: the staged fs view is read-only — `
-    + 'seed data cannot be mutated inside the spike runtime');
+    + 'seed data cannot be mutated inside the dsh runtime');
 };
 /** cp(src, dest[, options]) — a REAL recursive copy between the two staged
  * views: reads go through the sync face (which serves the seeded read-only

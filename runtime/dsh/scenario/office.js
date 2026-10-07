@@ -31,7 +31,7 @@ const SCENARIO = 'office';
 const AGENT_ID = 'main';
 const SESSION_ID = 's-office-0001';
 
-const log = createLogger('m2.spike');
+const log = createLogger('dsh.scenario');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   const error = reason instanceof Error ? reason : null;

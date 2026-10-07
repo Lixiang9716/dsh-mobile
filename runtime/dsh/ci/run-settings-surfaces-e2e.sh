@@ -52,7 +52,7 @@ trap cleanup EXIT INT TERM
     --env "DSH_SETTINGS_LLM_BASEURL=http://127.0.0.1:1" > logs-settings-surfaces.txt
 mkdir -p "$ART_DIR"
 cp logs-settings-surfaces.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-settings-surfaces.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-settings-surfaces.txt > "$ART_DIR/scenario.jsonl"
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/settings-surfaces.json" \
     --log logs-settings-surfaces.txt \

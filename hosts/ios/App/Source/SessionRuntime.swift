@@ -8,7 +8,7 @@ import UIKit
 /// starts only when the Web Client is mounted AND connected (the host.info
 /// readiness signal), so the token deltas stream live into the rendered
 /// page. Carrier-side evidence is logged through the canonical
-/// `dsh.spike.log:` envelope. M3: `-dsh-profile install-full-cycle` runs the
+/// `dsh.runtime.log:` envelope. M3: `-dsh-profile install-full-cycle` runs the
 /// on-device fetch-install drive (`install.from-http` + carrier evidence
 /// `install.carrier-evidence`) — the config patch selects the ACTIVE Web Client and
 /// the toolbar slot allow-set, the carrier self-hosts the plugin package,
@@ -454,7 +454,7 @@ final class SessionRuntime {
 
     // ---- carrier-side canonical evidence --------------------------------------
 
-    /// One E2E record in the canonical envelope (`dsh.spike.log:` prefix,
+    /// One E2E record in the canonical envelope (`dsh.runtime.log:` prefix,
     /// unified-logger shape) so the carrier's own mount/connection events
     /// ride the same checker stream as the JS scenario's.
     private func carrierEvent(_ event: String, _ fields: [String: Any]) {

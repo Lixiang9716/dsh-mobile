@@ -24,7 +24,7 @@ import { sha256Hex } from '../sha256.js';
 import * as ShellIsh from 'system-plugins/dsh-shell-ish/index.js';
 
 const SCENARIO = 'userland.shell';
-const log = createLogger('ish.spike');
+const log = createLogger('ish.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const DELIVERABLE = 'ish-deliverable.txt';
 

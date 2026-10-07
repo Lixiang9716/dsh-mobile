@@ -18,7 +18,7 @@
  *     (registry + dsh-fs + dsh-subprocess-quickjs + dsh-ui), started by the
  *     host.info readiness event after eval.
  *
- * The sink receives each canonical E2E line ("dsh.spike.log: {...") from
+ * The sink receives each canonical E2E line ("dsh.runtime.log: {...") from
  * dsh_runtime_host and forwards it, byte-unmodified, to (a) hilog under
  * domain 0xD5E0 / tag "dsh.rt" (hilog requires printing through its
  * format string, hence "%{public}s"), and (b) a capture file under the

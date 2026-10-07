@@ -29,7 +29,7 @@ const TURN1_TEXT = 'Say hello';
 const TURN2_TEXT = 'Track the parity check';
 const EXPECTED_TEXT = 'Hello from upstream'; // the mock server's successText
 
-const log = createLogger('m2.spike');
+const log = createLogger('dsh.scenario');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   const error = reason instanceof Error ? reason : null;

@@ -42,7 +42,7 @@ cd "$ROOT"
 CLT=${DSH_CLT:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools}
 HDC_BIN=${DSH_HDC:-"$CLT/sdk/default/openharmony/toolchains/hdc"}
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry/cache
 OUT=${1:-${DSH_PARITY_OUT:-hosts/harmony/artifacts/device-parity}}
 GOLDEN="$ROOT/test/e2e/fixtures/upstream-parity-reference.jsonl"
@@ -194,8 +194,8 @@ stop_streamer
 
 hdc file recv "$BASE/dsh-parity-capture.log" "$PARITY_OUT/capture.txt" >/dev/null 2>&1 \
     || die "parity capture pull failed — no $BASE/dsh-parity-capture.log on $DSH_HDC_TARGET"
-grep 'dsh.spike' "$STREAM" > "$PARITY_OUT/logs.txt" || true
-grep -h '^dsh.spike.log:' "$PARITY_OUT/capture.txt" > "$PARITY_OUT/scenario.jsonl" || true
+grep'dsh.runtime' "$STREAM" > "$PARITY_OUT/logs.txt" || true
+grep -h '^dsh.runtime.log:' "$PARITY_OUT/capture.txt" > "$PARITY_OUT/scenario.jsonl" || true
 
 if [ "$status" != "done" ]; then
     if grep -q 'scenario\.failed' "$STREAM" "$PARITY_OUT/capture.txt" 2>/dev/null; then
@@ -272,8 +272,8 @@ stop_streamer
 
 hdc file recv "$BASE/dsh-nextweb-capture.log" "$TOOLROWS_OUT/capture.txt" >/dev/null 2>&1 \
     || die "tool-rows capture pull failed — no $BASE/dsh-nextweb-capture.log on $DSH_HDC_TARGET"
-grep 'dsh.spike' "$STREAM" > "$TOOLROWS_OUT/logs.txt" || true
-grep -h '^dsh.spike.log:' "$TOOLROWS_OUT/capture.txt" > "$TOOLROWS_OUT/scenario.jsonl" || true
+grep'dsh.runtime' "$STREAM" > "$TOOLROWS_OUT/logs.txt" || true
+grep -h '^dsh.runtime.log:' "$TOOLROWS_OUT/capture.txt" > "$TOOLROWS_OUT/scenario.jsonl" || true
 
 # The assertion: the roster all-healthy + the four tool rows NAMED in the
 # composed inventory (a row exists only when its preset composed — which

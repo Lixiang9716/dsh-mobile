@@ -31,7 +31,7 @@ const PROMPT = '用 write 工具在当前工作区真实创建一个番茄时钟
   + 'card.json（显示倒计时和开始/重置按钮的卡片）。不要只在回复里给代码：用工具把每个文件写到磁盘上，'
   + '写完后用 read 工具核对 pomodoro-clock/manifest.json 存在，最后告诉我创建了哪些文件。';
 
-const log = createLogger('real.create.spike');
+const log = createLogger('real.create.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const project = (event) => {
   log.debug('projection push', { kind: event.kind });

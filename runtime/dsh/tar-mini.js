@@ -1,9 +1,9 @@
 /**
  * tar-mini — a minimal POSIX ustar writer + reader for the M3 install
- * pipeline (the spike package format). Uncompressed tar, on purpose: a
+ * pipeline (the dsh package format). Uncompressed tar, on purpose: a
  * package "tgz" is gzip+tar and the frozen gateway has no inflate primitive
  * — the digest/verify/unpack semantics under test are the tar layer, so the
- * spike ships an uncompressed archive and the gzip transport coding lands
+ * dsh ships an uncompressed archive and the gzip transport coding lands
  * with the real fetch-based installer. Everything is deterministic
  * (mtime 0, uid/gid 0, empty uname/gname) so fixture bytes — and therefore
  * digests — are reproducible run to run.

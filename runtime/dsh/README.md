@@ -1,6 +1,6 @@
 # runtime/dsh/
 
-The core spike (the runtime-and-host-spikes phase, then the first
+The core dsh (the runtime-and-host-spikes phase, then the first
 on-device session): quickjs-ng shim running a pinned upstream pure-logic
 package, with the E2E verdict emitted as structured logs. The first-session
 phase replaces the canned gateway responses with a REAL dispatch bridge to the platform
@@ -11,7 +11,7 @@ embedder plus a typed JS shim (`gateway.js`).
   tree is untracked by design; run it before any build.
 - `vendor/quickjs-ng/0.17.0/` — verbatim quickjs-ng library sources
   (untracked; materialized by `ensure.sh`). `quickjs-libc` is deliberately
-  excluded: the spike host provides its own minimal glue.
+  excluded: the dsh host provides its own minimal glue.
 - `vendor/ensure-dsh.sh` + `vendor/dsh/*@0.1.6-alpha.2/` + `vendor/npm/` —
   the VENDORED UPSTREAM DSH RUNTIME closure (D9): each package is
   the verbatim upstream tarball, pinned by tgz sha256 in the ensure script
@@ -36,10 +36,10 @@ embedder plus a typed JS shim (`gateway.js`).
   both directions, `GatewayError` rejections, `httpFetch` body as an
   AsyncIterable fed by host events, abortable via `__dshGatewayAbort`.
 - `sha256.js` — a ~100-line pure-JS SHA-256 for content addressing. The
-  spike host exposes only `crypto.getRandomValues` + `btoa` and the frozen
+  dsh host exposes only `crypto.getRandomValues` + `btoa` and the frozen
   gateway has no digest primitive, so install ships its own (cross-checked
   against `node:crypto` over NIST-style vectors incl. block boundaries).
-- `tar-mini.js` — a minimal POSIX ustar writer + reader. The spike package
+- `tar-mini.js` — a minimal POSIX ustar writer + reader. The dsh package
   format is UNCOMPRESSED tar on purpose: a real tgz is gzip+tar and the
   gateway has no inflate primitive; the digest/verify/unpack semantics under
   test live in the tar layer, and the gzip transport coding lands with the
@@ -82,7 +82,7 @@ embedder plus a typed JS shim (`gateway.js`).
   everywhere.
 - `llm.js` — the OpenAI-compatible STREAMING chat client
   (`streamChat`): POST `{baseUrl}/chat/completions` with `stream:true`,
-  parsed as SSE with an incremental UTF-8 decoder (the spike host ships no
+  parsed as SSE with an incremental UTF-8 decoder (the dsh host ships no
   TextDecoder) and a partial-line-tolerant splitter. The fetch impl is a
   PARAMETER with the gateway `httpFetch` response shape; `reasoning_content`
   deltas ride `llm.reasoning.delta`, content deltas `llm.delta` (the
@@ -91,23 +91,23 @@ embedder plus a typed JS shim (`gateway.js`).
   logged; the llm-live-stream scenario audits every sink line for the key).
 - `config-layer.js` — the FIRST of the three UI-plugin levels
   (ARCHITECTURE.md §6): `cordis.patch`-style LAYERED OVERRIDES (base →
-  hostFace → profile → overlay; JSON in the spike, documented in the module
+  hostFace → profile → overlay; JSON in the dsh, documented in the module
   — the frozen gateway has no YAML parser). Objects merge recursively,
   arrays (the slot allow-set) replace; the session stack consumes the
   resolved config to select the active Web Client and gate toolbar slots.
 - `fixtures/` — the `dsh-notes` fixture plugin: its ESM source (as data) and
   a builder that packages it into a deterministic ustar archive at scenario
-  time (the spike JS cannot shell out to tar/npm). The `tampered` variant
+  time (the dsh JS cannot shell out to tar/npm). The `tampered` variant
   appends attacker bytes so the integrity-rejection case exercises a real
   drifting package.
-- `__dshModuleDefine` — a spike-host seam (host/dsh_runtime_host.c): registers
+- `__dshModuleDefine` — a dsh-host seam (host/dsh_runtime_host.c): registers
   a module SOURCE under a specifier so `import(specifier)` resolves to it.
   Needed because the gateway fs scopes are NOT the ESM loader's filesystem
   (the loader reads the bundle root from disk; installed plugins land in the
   host's storage scope) — real hosts will load installed modules from their
-  storage directly; the spike proves the registry chain with the smallest
+  storage directly; the dsh proves the registry chain with the smallest
   possible seam. Not a gateway primitive.
-- `registry.js` — the spike service registry: installs plugins as
+- `registry.js` — the dsh service registry: installs plugins as
   `{manifest, module}`, validates the manifest statically, calls the
   declared activate hook; capability negotiation stays the gateway's job.
 - `system-plugins` — symlink to the repo-root `system-plugins/` tree, so
@@ -117,11 +117,11 @@ embedder plus a typed JS shim (`gateway.js`).
   hub) must be imported under ONE canonical specifier, or the two
   specifiers yield two module instances with two listener sets.
 - `manifest.json` — the scenario bundle's plugin manifest
-  (`dsh.spike.scenario`); the embedder reads it from
+  (`dsh.dsh.scenario`); the embedder reads it from
   `bundle_root/manifest.json` and enforces the declared capabilities.
 - `scenario/boot-verification.js` — the `boot.verification` E2E scenario: ESM
   package load, host Web-API shims, gateway negotiation. (The canned
-  gateway-call blocks from the spike phase are GONE — real primitive dispatch lives in the first-session
+  gateway-call blocks from the dsh phase are GONE — real primitive dispatch lives in the first-session
   scenarios below.)
 - `scenario/gateway-bridge-smoke.js` — the `gateway.bridge-smoke` E2E scenario,
   runnable headless on the desktop CLI: deferred settlement (later-tick),
@@ -245,7 +245,7 @@ embedder plus a typed JS shim (`gateway.js`).
   the upstream error-finish protocol (`llm.transport.error`). Evidence:
   `runtime/dsh/artifacts/macos-cli-upstream-session/`, runner
   `runtime/dsh/ci/run-upstream-e2e.sh`.
-- `web/` — the spike Presentation page (`index.html` + `carrier-page.js`),
+- `web/` — the dsh Presentation page (`index.html` + `carrier-page.js`),
   served as static files by a host carrier; it knows only the WS protocol.
 - `host/` — the platform-neutral C shim every platform host links
   (`dsh_runtime_host.c` + `main_cli.c` desktop driver + `build.sh`).
@@ -259,7 +259,7 @@ Run `vendor/ensure.sh` first, then link
 libunicode,quickjs}.c`, then from a SINGLE thread:
 
 1. `dsh_runtime_new(bundle_root, &sink)` — sink receives canonical
-   `dsh.spike.log: {...}` lines; print them to the native log unmodified.
+   `dsh.runtime.log: {...}` lines; print them to the native log unmodified.
 2. register the gateway bridge BEFORE eval:
    - `dsh_runtime_set_gateway_dispatch(s, on_call, ud)` — every
      `__dshGatewayCall(name, argsJson)` gets a monotonic `call_id` (from 1)
@@ -306,7 +306,7 @@ alive and shuttle one-JSON-line messages:
   check `dsh_runtime_complete`/`dsh_runtime_pass` after each deliver.
 
 The message vocabulary (`bus.ready`, `host.hello`, `ws.hello`, `ws.send`,
-`ws.message`) is spike-local; the first on-device session replaces it with the real session
+`ws.message`) is dsh-local; the first on-device session replaces it with the real session
 projection protocol — do not build on it.
 
 ## Desktop proof run

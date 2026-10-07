@@ -44,7 +44,7 @@ import { createFreshnessAnchor } from 'freshness-store.js';
 import { ed25519SelfTest } from 'ed25519.js';
 
 const SCENARIO = 'marketplace.install';
-const log = createLogger('m3.spike');
+const log = createLogger('m3.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   log.debug('scenario failed', { reason });

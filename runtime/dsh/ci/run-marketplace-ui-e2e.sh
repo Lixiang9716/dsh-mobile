@@ -94,7 +94,7 @@ echo "host-side pin: $PUB_B64" >&2
     --env "DSH_MARKET_PUBKEY_B64=$PUB_B64" > logs-marketplace-ui.txt
 mkdir -p "$ART_DIR"
 cp logs-marketplace-ui.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-marketplace-ui.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-marketplace-ui.txt > "$ART_DIR/scenario.jsonl"
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/marketplace-ui-flow.json" \
     --log logs-marketplace-ui.txt \

@@ -1,6 +1,6 @@
 {
   "scenario": "lynx.mount",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "face.mounted", "match": { "face": "lynx" } },
     { "event": "serve.listening", "match": { "loopback": true } },

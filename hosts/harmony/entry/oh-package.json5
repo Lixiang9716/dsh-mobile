@@ -2,7 +2,7 @@
   "modelVersion": "5.0.0",
   "name": "entry",
   "version": "1.0.0",
-  "description": "M1 spike entry module (quickjs-ng host via NAPI)",
+  "description": "M1 dsh entry module (quickjs-ng host via NAPI)",
   "main": "",
   "author": "",
   "license": "",

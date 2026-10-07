@@ -3,7 +3,7 @@
 # with the runtime LIVE (W-INTEG leg; officialweb.mount,
 # docs/webserver-contract.md §4).
 #
-# Builds DSHSpike, stages the vendored official upstream dist into the app
+# Builds DSHHost, stages the vendored official upstream dist into the app
 # container (Documents/official-web/dist) plus the web-boot plugin files
 # (Documents/web-plugins — the pinned vendored client-modules package),
 # launches in OFFICIAL-WEB mode (-dsh-mode official-web), and waits for the
@@ -23,8 +23,8 @@ cd "$ROOT"
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART=""
 SKIP_BUILD=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -67,7 +67,7 @@ runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "3/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -115,13 +115,13 @@ wait_line "index.served" 300 || fail_deadline "index.served never appeared"
 shot 01-official-boot-screen
 
 log "waiting for the carrier drive to complete (terminal marker)"
-wait_line "spike: sequence official-web=" 120 || fail_deadline "terminal marker never appeared"
+wait_line "dsh: sequence official-web=" 120 || fail_deadline "terminal marker never appeared"
 sleep 1
 shot 02-final-state
 
 # ---- checkers -----------------------------------------------------------------
 log "6/6 running checkers"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 if node test/e2e/check.mjs --manifest test/e2e/scenarios/officialweb-mount.json \
     --log "$LOG" --out "$ART/verdict-officialweb-mount.json"; then
   echo "==================== E2E summary ($ART) ===================="

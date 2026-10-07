@@ -657,7 +657,7 @@
     "esbuild transform failed: NOENT: no such file or directory, open '/Users/lixiang/workspace/dsh-mobile-regr/third-party/deepseek-harness/packages/boot/app-boot/src/index.ts'": 4,
     "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 2,
     "wall-clock time mocking (the v1.4.0 seam is monotonic scheduling only)": 7,
-    "node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6,
+    "node:vm (no dsh shim — the vm builtin is a Node embedding surface)": 6,
     "esbuild transform failed: ould not resolve \"../../../../scripts/verify-export-jsdoc.ts\"": 1,
     "fast-check (not in the loader bare map — a vendoring decision, not a silent drop)": 5,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-persistence-catalog.ts\"": 1,
@@ -671,7 +671,7 @@
     "bundled helper: monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 8,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-cordis-catalog.ts\"": 1,
     "decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 1,
-    "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6
+    "bundled helper: node:vm (no dsh shim — the vm builtin is a Node embedding surface)": 6
   },
   "workerEntries": [
     "worker.js"
@@ -708,7 +708,7 @@
         "count": 7
       },
       {
-        "reason": "node:vm (no spike shim — the vm builtin is a Node embedding surface)",
+        "reason": "node:vm (no dsh shim — the vm builtin is a Node embedding surface)",
         "count": 6
       },
       {
@@ -764,7 +764,7 @@
         "count": 1
       },
       {
-        "reason": "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface)",
+        "reason": "bundled helper: node:vm (no dsh shim — the vm builtin is a Node embedding surface)",
         "count": 6
       }
     ]

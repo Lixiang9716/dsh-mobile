@@ -1,6 +1,6 @@
 {
   "scenario": "llm.live-stream",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
     { "event": "host.ready", "match": { "signalled": true } },

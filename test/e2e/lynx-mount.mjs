@@ -4,7 +4,7 @@
  * lynx-mount.mjs — the lynx.mount E2E scenario entry, CLI host (plain Node;
  * the leg mirrors runtime/dsh/ci/run-settings-surfaces-e2e.sh's evidence
  * discipline: unified-logger lines through __DSH_LOG_SINK__, the
- * dsh.spike.log: prefix, a one-to-one manifest under test/e2e/scenarios/,
+ * dsh.runtime.log: prefix, a one-to-one manifest under test/e2e/scenarios/,
  * and __dshComplete as the only exit).
  *
  * ONE leg, TWO faces over the same RenderSurfaceClient seam (the
@@ -30,13 +30,13 @@ import { createDriver } from '../../presentation/lynx-client/driver/driver.js';
 import { createStubSkin } from '../../presentation/lynx-client/driver/skin-stub.js';
 import { createLynxSkin } from '../../presentation/lynx-client/driver/skin-lynx.js';
 
-// The unified sink, CLI-host face: the same one-JSON-line contract the spike
+// The unified sink, CLI-host face: the same one-JSON-line contract the dsh
 // hosts embed, prefixed so test/e2e/check.mjs can extract it.
 if (globalThis.__DSH_LOG_SINK__ === undefined) {
-  globalThis.__DSH_LOG_SINK__ = (line) => process.stdout.write(`dsh.spike.log: ${line}\n`);
+  globalThis.__DSH_LOG_SINK__ = (line) => process.stdout.write(`dsh.runtime.log: ${line}\n`);
 }
 // The completion contract, CLI-host face: honor a host-provided hook, else
-// bridge it to the process exit — the spike host exits on __dshComplete, and
+// bridge it to the process exit — the dsh host exits on __dshComplete, and
 // a Node process with open loopback handles would otherwise linger after the
 // scenario is over.
 if (globalThis.__dshComplete === undefined) {

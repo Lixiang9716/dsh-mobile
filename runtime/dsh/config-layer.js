@@ -7,8 +7,8 @@
  *   base (the stack's defaults) → hostFace (launch arguments) → profile
  *   (profiles/<name>/cordis.patch.*) → overlay
  *
- * FORMAT CHOICE, documented: the patch is JSON in the spike, not YAML. The
- * frozen gateway has no parser primitive and the spike vendors no YAML
+ * FORMAT CHOICE, documented: the patch is JSON in the dsh, not YAML. The
+ * frozen gateway has no parser primitive and the dsh vendors no YAML
  * library (D6: no random third-party copies in the audited runtime); the
  * layered-override SEMANTICS under test are format-independent, and the
  * file keeps the cordis.patch name so the swap to YAML at the real profile

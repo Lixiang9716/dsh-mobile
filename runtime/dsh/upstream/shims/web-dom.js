@@ -391,7 +391,7 @@ const installDocumentFaces = () => {
 const installNavigatorFace = () => {
   if (typeof globalThis.navigator !== 'undefined') return;
   globalThis.navigator = {
-    userAgent: 'dsh-spike/1.0 (headless; quickjs)',
+    userAgent: 'dsh-dsh/1.0 (headless; quickjs)',
     platform: 'linux',
     language: 'en-US',
     languages: ['en-US'],

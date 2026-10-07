@@ -71,7 +71,7 @@ export const availableParallelism = () => 1;
 /** release() — kernel version string. There is no kernel here; the constant
  * is a non-Windows, non-WSL answer (the vendored native-command reads it only
  * to test `.includes("microsoft")` for its WSL branch). */
-export const release = () => globalThis.__dshProfileOsRelease ?? 'dsh-spike 1.0';
+export const release = () => globalThis.__dshProfileOsRelease ?? 'dsh-dsh 1.0';
 export const type = () => 'dsh';
 export const hostname = () => globalThis.__dshProfileHostname ?? 'localhost';
 /** devNull — the POSIX spelling; the vendored spawn argument builders pass

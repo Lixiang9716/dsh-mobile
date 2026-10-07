@@ -55,7 +55,7 @@ jobs:
         run: |
           runtime/dsh/vendor/ensure.sh
           runtime/dsh/vendor/ensure-dsh.sh
-      - name: Materialize the harmony spike closure
+      - name: Materialize the harmony dsh closure
         # The bundle-files gate (#57) walks hosts/harmony's rawfile/dsh ON
         # DISK — its documented contract is "the vendor script materializes it
         # before any check runs" — and the pinned zod closure there is

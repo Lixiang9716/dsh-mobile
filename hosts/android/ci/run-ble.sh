@@ -20,7 +20,7 @@
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 cd "$ROOT" || exit 1
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 MODE="${1:-skip}"
 SKIP_BUILD=0
 [ "${2:-}" = "--skip-build" ] && SKIP_BUILD=1
@@ -109,20 +109,20 @@ until adbsh shell am start -n "$PKG"/.MainActivity $EXTRAS >/dev/null 2>&1; do
     sleep 2
 done
 rec_deadline=$(( $(date +%s) + 60 ))
-until adbsh logcat -d -s dsh.spike 2>/dev/null | grep -q "dsh.spike.log"; do
-    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.spike records within 60s of am start"
+until adbsh logcat -d -s dsh.runtime 2>/dev/null | grep -q "dsh.runtime.log"; do
+    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.dsh records within 60s of am start"
     sleep 1
 done
 
 say "4/5 waiting for the completion tag (deadline 300s)"
 deadline=$(( $(date +%s) + 300 ))
-until adbsh logcat -d -s dsh.spike.result 2>/dev/null | grep -q "dsh.spike.result: ALL"; do
+until adbsh logcat -d -s dsh.runtime.result 2>/dev/null | grep -q "dsh.runtime.result: ALL"; do
     [ "$(date +%s)" -ge "$deadline" ] && die "ble.plane did not complete within 300s"
     sleep 2
 done
 sleep 1
-adbsh logcat -d -s dsh.spike dsh.spike.result dsh.spike.ui dsh.spike.audit > "$OUT/logs.txt" 2>/dev/null
-grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
+adbsh logcat -d -s dsh.runtime dsh.runtime.result dsh.runtime.ui dsh.runtime.audit > "$OUT/logs.txt" 2>/dev/null
+grep 'dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 
 say "5/5 checkers"

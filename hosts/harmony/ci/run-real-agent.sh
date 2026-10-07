@@ -18,7 +18,7 @@ CLT=${DSH_CLT:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools
 HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 OUT=${1:-hosts/harmony/artifacts/windows-t4t5-real-agent}
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry
 CAPTURE_REMOTE=$BASE/cache/dsh-real-agent-capture.log
 CONFIG_REMOTE=$BASE/files/dsh-fs/llm-live-stream/config.json
@@ -167,7 +167,7 @@ run_attempt() {
     deadline=$(( $(date +%s) + 480 ))
     next_wake=0
     while :; do
-        grep -q "dsh.spike.verdict: $LEG " "$STREAM" && break
+        grep -q "dsh.dsh.verdict: $LEG " "$STREAM" && break
         if [ "$(date +%s)" -ge "$deadline" ]; then
             return 1
         fi
@@ -233,14 +233,14 @@ wait "$streamer" 2>/dev/null || true
 streamer=""
 trap cleanup EXIT INT TERM
 
-grep 'dsh.spike' "$STREAM" > "$OUT/logs.txt" || true
-grep "dsh.spike.verdict: $LEG " "$STREAM" > "$OUT/results.txt" || true
+grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
+grep "dsh.dsh.verdict: $LEG " "$STREAM" > "$OUT/results.txt" || true
 cat "$OUT/results.txt"
 
 # The truncation-proof second capture: the app's own sink file, pulled from
 # the sandbox (same convention as run-host-e2e.sh).
 "$HDC" file recv "$CAPTURE_REMOTE" "$OUT/capture.txt" >/dev/null
-grep '^dsh.spike.log:' "$OUT/capture.txt" > "$OUT/scenario.jsonl"
+grep '^dsh.runtime.log:' "$OUT/capture.txt" > "$OUT/scenario.jsonl"
 
 # ---- the key-leak re-check over the RAW streams -----------------------------
 # First, before any verdict check: a leak is the one failure that must be
@@ -273,7 +273,7 @@ node test/e2e/check.mjs --manifest test/e2e/scenarios/real-agent-loop.json \
     --log "$OUT/capture.txt" --out "$OUT/verdict-real-agent-loop.json" || true
 cat "$OUT/verdict-real-agent-loop.json"
 
-grep "dsh.spike.verdict: $LEG " "$OUT/results.txt" | grep -q " PASS" \
+grep "dsh.dsh.verdict: $LEG " "$OUT/results.txt" | grep -q " PASS" \
     || die "the scenario verdict is not PASS — see $OUT/results.txt"
 for v in "$OUT/verdict-real-agent-loop.json" "$OUT/verdict-real-agent-loop.json"; do
     grep -q '"pass": true' "$v" || die "$(basename "$v") is not a PASS verdict"

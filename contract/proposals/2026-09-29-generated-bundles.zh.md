@@ -8,11 +8,11 @@
 
 iOS 宿主的生成字节目前是入库的：`hosts/ios/App/Generated/SpikeBundle.c` +
 `SpikeBundle.h`（以 C 字节数组嵌入的 runtime/dsh closure），以及
-`hosts/ios/DSHSpike.xcodeproj/`（`project.pbxproj` + workspace 数据，由
+`hosts/ios/DSHHost.xcodeproj/`（`project.pbxproj` + workspace 数据，由
 `xcodegen generate` 从 `project.yml` 再生成）。把它们放进去的决策记录在 M1
-spike-embed note
-（`.agents/notes/implemented/feature/2026-09-19-ios-m1-spike-embed.md:37-39`）：
-*"生成的 `DSHSpike.xcodeproj` ALSO 入库，让 CI 和 fresh clone 不装 xcodegen
+dsh-embed note
+（`.agents/notes/implemented/feature/2026-09-19-ios-m1-dsh-embed.md:37-39`）：
+*"生成的 `DSHHost.xcodeproj` ALSO 入库，让 CI 和 fresh clone 不装 xcodegen
 也能构建"*——并且把"只提交 `project.yml`、在 CI 里生成"作为替代方案明确
 拒绝。`closures` gate 的 iOS leg（`build/check-closures.sh:41-61`）就架在这个
 选择之上：确定性地再生成 bundle 并要求 `git diff --quiet`，让入库副本成为
@@ -72,13 +72,13 @@ CI 路径都靠入库的 `project.pbxproj`（`dev-ios.yml:179`；
 
 1. **停止提交生成字节。** 把
    `hosts/ios/App/Generated/SpikeBundle.c` + `SpikeBundle.h` 与
-   `hosts/ios/DSHSpike.xcodeproj/`（`project.pbxproj`、
+   `hosts/ios/DSHHost.xcodeproj/`（`project.pbxproj`、
    `project.xcworkspace/contents.xcworkspacedata`——`App/Generated` 下两个
    文件加 xcodeproj 下两个：今天共 4 个被跟踪的生成文件）
    移出索引，并把两个路径加进 `.gitignore`。`ish-rootfs.tar.gz` 本就被
    ignore——`App/Generated` 整体变成它今天大部分已经是的东西：构建输出。
 2. **生成成为每个消费者站点的构建职责。** 已提交字节的每一个消费者都已经
-   收敛到同一种命令形态——`xcodebuild -project DSHSpike.xcodeproj`（在前提
+   收敛到同一种命令形态——`xcodebuild -project DSHHost.xcodeproj`（在前提
    P2 里枚举）——所以在每个站点前面加一步 `gen.sh`（vendor 源 →
    `gen_bundle_header.py` → `xcodegen generate`）即可均匀覆盖。pre-build
    phase 保持按构建再生成 bundle，与它今天的做法完全一致；app 的运行时
@@ -100,7 +100,7 @@ CI 路径都靠入库的 `project.pbxproj`（`dev-ios.yml:179`；
   device-plane、install-ui、live-llm、live-session、live-write、
   next-web-mount、official-web-mount、session-mock-llm、upstream-parity、
   upstream-suite、run-ios.sh）全部调用
-  `xcodebuild build -project hosts/ios/DSHSpike.xcodeproj`；
+  `xcodebuild build -project hosts/ios/DSHHost.xcodeproj`；
   `build/build.sh:136`（compile 阶段）与 `build/build.sh:112`（sync 阶段，
   已经跑 `gen.sh`）；`dev-ios.yml:179`；`release-ios.yml:198,206,269,277`。
   字节的其他读者只有被翻转的 gate 本身（`check-closures.sh:42-59`）和
@@ -153,7 +153,7 @@ regen-and-diff 机制存在要检验的性质，而且自那以后每次 gate �
 ## 若被接受
 
 本提案推翻的是有记录的决策，因此必须作为一个整体落地：M1 note 的入库项目
-选择（`2026-09-19-ios-m1-spike-embed.md`，alternatives 一节）、09-22 note
+选择（`2026-09-19-ios-m1-dsh-embed.md`，alternatives 一节）、09-22 note
 被拒绝的"让 CI 跑 `gen.sh`"替代方案
 （`2026-09-22-the-ios-release-staging-phase-moves-into.md:62-65`）、以及
 D17 的入库副本替代方案的 iOS leg。接受后，通过 `gov decision add` 落一条

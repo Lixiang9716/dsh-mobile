@@ -1,5 +1,5 @@
 // dsh:logging-exempt (the serving seat writes no canonical line of its own:
-// every `dsh.spike.log:` record is written by the drive that installs the
+// every `dsh.runtime.log:` record is written by the drive that installs the
 // hooks below — single-logger discipline; hilog lines here are operator
 // progress, not log events)
 /**

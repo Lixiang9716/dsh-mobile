@@ -22,7 +22,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Configure-time pin materialization MUST precede add_subdirectory(runtime/
-# spike/host): the core's source list references files only the ensure
+# dsh/host): the core's source list references files only the ensure
 # scripts guarantee. Fail loud when a pin cannot be materialized (rule 5).
 include(Vendor)
 

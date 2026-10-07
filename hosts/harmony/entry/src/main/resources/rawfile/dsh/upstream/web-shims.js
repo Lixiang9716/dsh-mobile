@@ -44,7 +44,7 @@
  *
  * Intentionally NOT supported (absent on purpose — an accidental call is a
  * loud ReferenceError, never a silent no-op):
- *   - setTimeout/clearTimeout/setInterval — wall-clock timers; the spike
+ *   - setTimeout/clearTimeout/setInterval — wall-clock timers; the dsh
  *     runtime has no timer seam (a turn-based scenario never needs one).
  *     (v1.4.0: the ambient timer faces now ride upstream/shims/timers.js
  *     over the gateway timer seam — the row below is historical.)
@@ -366,7 +366,7 @@ if (typeof globalThis.TextEncoder === 'undefined') {
  * registering through `window.__ModuleLoader__.load`, so the runtime provides
  * the same queue-mode facade the carrier injects into the page (upstream
  * bootInjections row 1): `load` queues registrations, `create` is the browser
- * bootstrap and stays loud — the spike runtime never boots the module system,
+ * bootstrap and stays loud — the dsh runtime never boots the module system,
  * it composes the wire that boots it. */
 if (typeof globalThis.window === 'undefined') {
   globalThis.window = globalThis;
@@ -379,7 +379,7 @@ if (typeof globalThis.window.__ModuleLoader__ === 'undefined') {
     load(registration) { pendingQueue.push(registration); },
     create() {
       throw new Error('web-shims: __ModuleLoader__.create is the browser bootstrap; '
-        + 'the spike runtime composes the boot wire but never boots the client module system');
+        + 'the dsh runtime composes the boot wire but never boots the client module system');
     },
   };
 }

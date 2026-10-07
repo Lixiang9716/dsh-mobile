@@ -159,7 +159,7 @@ if [ "$CLI_EXIT" -ne 0 ]; then
 fi
 cp logs-parity.txt "$ART_DIR/logs.txt"
 cp "$MOCK_LOG" "$ART_DIR/mock-server-stdout.txt"
-grep '^dsh.spike.log:' logs-parity.txt > "$ART_DIR/scenario.jsonl" || true
+grep '^dsh.runtime.log:' logs-parity.txt > "$ART_DIR/scenario.jsonl" || true
 
 # 6. extract the port leg's projected records from the scenario stream.
 node - "$ART_DIR" logs-parity.txt <<'EXTRACT'

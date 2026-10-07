@@ -106,7 +106,7 @@ rm -f "$LOG"
 RC=0
 (cd . && ./build/dsh-cli . scenario/security-manifest-forgery.js --http \
     --env "DSH_MARKET_URL=$MARKET_URL" > "$LOG" 2>&1) || RC=$?
-grep '^dsh.spike.log:' "$LOG" > "$ART_DIR/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" > "$ART_DIR/scenario.jsonl" || true
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/security-manifest-forgery.json" \
     --log "$LOG" --out "$ART_DIR/verdict.json"

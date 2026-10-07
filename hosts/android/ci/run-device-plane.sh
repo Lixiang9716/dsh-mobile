@@ -14,7 +14,7 @@
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 cd "$ROOT" || exit 1
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 OUT="${DSH_ANDROID_ART:-hosts/android/artifacts/device-plane}"
 SCEN=test/e2e/scenarios
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
@@ -93,8 +93,8 @@ done
 # delivery to an already-running instance re-runs nothing (verified via the
 # force-stop above, plus a records-arrive poll below).
 rec_deadline=$(( $(date +%s) + 60 ))
-until adbsh logcat -d -s dsh.spike 2>/dev/null | grep -q "dsh.spike.log"; do
-    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.spike records within 60s of am start"
+until adbsh logcat -d -s dsh.runtime 2>/dev/null | grep -q "dsh.runtime.log"; do
+    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.dsh records within 60s of am start"
     sleep 1
 done
 
@@ -115,13 +115,13 @@ tap_text() { # EXACT_LABEL (a node whose text attribute equals it; & arrives XML
     done < /tmp/.dsh-dp-matches
     return 1
 }
-snapshot() { adbsh logcat -d -s dsh.spike dsh.spike.result dsh.spike.ui dsh.spike.audit > "$DUMP" 2>/dev/null; }
+snapshot() { adbsh logcat -d -s dsh.runtime dsh.runtime.result dsh.runtime.ui dsh.runtime.audit > "$DUMP" 2>/dev/null; }
 
 saw_clipboard=0
 saw_share=0
 saw_picker=0
 deadline=$(( $(date +%s) + 420 ))
-until snapshot && grep -q "dsh.spike.result: ALL" "$DUMP"; do
+until snapshot && grep -q "dsh.runtime.result: ALL" "$DUMP"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         tail -80 "$DUMP"
         die "device-plane scenario did not complete within 420s"
@@ -167,14 +167,14 @@ cleanup
 # ---- 6. checkers -------------------------------------------------------------
 say "6/6 checkers"
 cp "$DUMP" "$OUT/logs.txt"
-grep 'dsh.spike.result' "$OUT/logs.txt" > "$OUT/results.txt" || true
-grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
+grep 'dsh.runtime.result' "$OUT/logs.txt" > "$OUT/results.txt" || true
+grep 'dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 shot 04-final
 
 say "6/6 checkers"
-grep 'dsh.spike.result' "$OUT/logs.txt" > "$OUT/results.txt" || true
-grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
+grep 'dsh.runtime.result' "$OUT/logs.txt" > "$OUT/results.txt" || true
+grep 'dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 shot 04-final
 

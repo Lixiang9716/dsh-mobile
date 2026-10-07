@@ -80,14 +80,14 @@ echo "mock open-design daemon: $OD_URL" >&2
     --env "DSH_OPEN_DESIGN_BYOK_MODEL=mock-designer-1" > logs-open-design.txt
 mkdir -p "$ART_DIR"
 cp logs-open-design.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-open-design.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-open-design.txt > "$ART_DIR/scenario.jsonl"
 cp "$OD_LOG" "$ART_DIR/mock-daemon-stdout.txt"
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/open-design.json" \
     --log logs-open-design.txt \
     --out "$ART_DIR/verdict.json"
 
-EVENTS="$(grep -c '^dsh.spike.log:' logs-open-design.txt)"
+EVENTS="$(grep -c '^dsh.runtime.log:' logs-open-design.txt)"
 cat > "$ART_DIR/receipt.json" <<EOF
 {
   "host": "darwin-cli (Darwin $(uname -srm))",

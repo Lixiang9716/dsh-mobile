@@ -51,7 +51,7 @@ LOG="$ART/logs.txt"
 rm -f "$LOG"
 RC=0
 (cd . && ./build/dsh-cli . scenario/security-jail.js > "$LOG" 2>&1) || RC=$?
-grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" > "$ART/scenario.jsonl" || true
 grep '^{"audit":"socket\.' "$LOG" > "$ART/socket-audit.jsonl" || true
 node "$ROOT/test/e2e/check.mjs" --manifest "$ROOT/test/e2e/scenarios/security-jail.json" \
     --log "$LOG" --out "$ART/verdict.json"

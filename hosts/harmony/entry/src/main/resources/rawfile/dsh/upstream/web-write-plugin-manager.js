@@ -74,18 +74,18 @@ const registryPathOf = (deps) => (typeof deps?.registryPath === 'string'
  * marketplace catalog use (install-pipeline.js PKG_ID). */
 const PKG_ID = /^[a-z0-9][a-z0-9.-]*$/;
 
-/** The UTF-8 face, resolved once: the spike host's node:buffer shim carries
+/** The UTF-8 face, resolved once: the dsh host's node:buffer shim carries
  * decodeUtf8/encodeUtf8 (quickjs has no TextDecoder); real node runtimes
  * (the panel suite) answer the same face over the platform globals. */
 let utf8FaceCache = null;
 const utf8Face = async () => {
   if (utf8FaceCache !== null) return utf8FaceCache;
-  const spike = await import('node:buffer').catch(() => undefined);
-  const spikeFace = typeof spike?.decodeUtf8 === 'function'
-    && typeof spike?.encodeUtf8 === 'function';
-  log.debug('utf8 face resolved', { spike: spikeFace });
+  const dsh = await import('node:buffer').catch(() => undefined);
+  const spikeFace = typeof dsh?.decodeUtf8 === 'function'
+    && typeof dsh?.encodeUtf8 === 'function';
+  log.debug('utf8 face resolved', { dsh: spikeFace });
   utf8FaceCache = spikeFace
-    ? { decode: spike.decodeUtf8, encode: spike.encodeUtf8 }
+    ? { decode: dsh.decodeUtf8, encode: dsh.encodeUtf8 }
     : {
       decode: (bytes) => new TextDecoder().decode(bytes),
       encode: (text) => new TextEncoder().encode(text),

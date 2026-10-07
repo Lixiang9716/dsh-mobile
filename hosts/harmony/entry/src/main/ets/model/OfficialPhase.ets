@@ -10,7 +10,7 @@
  * drive attached at all.
  *
  * This drive attaches to that seat through its hook properties and adds:
- * the per-event canonical `dsh.spike.log:` records (carrier-side
+ * the per-event canonical `dsh.runtime.log:` records (carrier-side
  * observation, single-emission in manifest order), the same-origin probes
  * through the WebView, the SCRIPTED model boundary, the httpFetch /
  * session-live / write proof legs, and the terminal verdicts. Rule 5 holds
@@ -956,7 +956,7 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
   }
 
   /** One canonical carrier-side evidence line through the phase sink: the
-   * SAME `dsh.spike.log:` envelope the JS logger emits (the checker's
+   * SAME `dsh.runtime.log:` envelope the JS logger emits (the checker's
    * extract prefix), routed host→sink for hilog + capture. */
   private carrierLine(scenario: string, event: string,
     fields: Record<string, Object>): void {
@@ -979,6 +979,6 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     if (BuildFlavor.isRelease()) {
       return;
     }
-    hostCarrierLine(2, 'dsh.spike.log: ' + JSON.stringify(envelope));
+    hostCarrierLine(2, 'dsh.runtime.log: ' + JSON.stringify(envelope));
   }
 }

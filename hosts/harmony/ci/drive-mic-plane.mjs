@@ -10,7 +10,7 @@
  *   ui-wait microphone-permission → tap the system permission dialog's
  *                                    allow button (SOFT: a pre-granted
  *                                    install has no dialog)
- *   dsh.spike.verdict: harmony.mic-plane → done (exit 0 on PASS)
+ *   dsh.dsh.verdict: harmony.mic-plane → done (exit 0 on PASS)
  *
  * usage: drive-mic-plane.mjs --hdc <path> --stream <file>
  *                            [--overall-deadline S] [--shot-final PNG]
@@ -108,7 +108,7 @@ const onLine = (line) => {
         if (!t) console.log('drive-mp: no permission dialog (pre-granted or auto-granted)');
       });
   }
-  if (line.includes('dsh.spike.verdict: harmony.mic-plane')) {
+  if (line.includes('dsh.dsh.verdict: harmony.mic-plane')) {
     state.verdict = line.includes(' PASS ') ? 'pass' : 'fail';
   }
 };

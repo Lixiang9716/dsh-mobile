@@ -5,7 +5,7 @@
  * gateway.bridge-smoke + session.mock-llm over the gateway bridge) synchronously on the
  * caller thread — new + eval + pump + settle per scenario — and returns the
  * combined verdict summary (PASS/FAIL + per-scenario verdicts). The
- * canonical `dsh.spike.log:` lines stream to hilog (domain 0xD5E0, tag
+ * canonical `dsh.runtime.log:` lines stream to hilog (domain 0xD5E0, tag
  * "dsh.rt") and to the capture file at capturePath. fsRoot is the
  * scope-"app" directory the smoke backend's fs primitives operate on.
  */

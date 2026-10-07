@@ -68,7 +68,7 @@ const TUPLE_NOTIFY = ['180f', '2a19'];
 
 /** Collects `ble.event` bridge records; waits are PROMISES resolved by the
  * listener — the arm-then-event discipline with no polling loop and no
- * timers (the spike scenario context has none; the session watchdog bounds
+ * timers (the dsh scenario context has none; the session watchdog bounds
  * every wait, failing the drive loud if the radio misbehaves — rule 8). */
 const makeEvents = () => {
   log.debug('event tap armed');

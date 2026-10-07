@@ -238,7 +238,7 @@ describe('gen-staging-manifests structural drift fails loud (exit 2)', () => {
   it('a missing ZOD_SRC assignment fails loud (exit 2)', () => {
     const fx = freshFixture();
     const sh = join('hosts/android/ci/stage-spine-closure.sh');
-    fx.write(sh, fx.read(sh).replace(`ZOD_SRC=$SPIKE/${ZOD_PIN}\n`, ''));
+    fx.write(sh, fx.read(sh).replace(`ZOD_SRC=$DSH/${ZOD_PIN}\n`, ''));
     const r = fx.run('gen-staging-manifests.mjs');
     expect(r.status).toBe(2);
     expect(r.stderr).toContain('ZOD_SRC assignment not found');

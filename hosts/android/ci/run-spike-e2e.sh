@@ -1,5 +1,5 @@
 #!/bin/sh
-# run-spike-e2e.sh — one invocation drives the whole on-emulator E2E:
+# run-dsh-e2e.sh — one invocation drives the whole on-emulator E2E:
 # boot wait -> install -> launch -> deadline poll -> capture -> checker verdict.
 #
 # Why a single script driving the emulator directly: android-emulator-runner
@@ -67,25 +67,25 @@ done
 # exactly one run's stream, by construction. The capture is the shared
 # canary-pinned discipline (logcat-capture.sh): `logcat -c` races the
 # reader's initial snapshot, so a PREVIOUS run's buffered
-# `dsh.spike.result: ALL` can pierce the clear and satisfy this run's wait —
+# `dsh.runtime.result: ALL` can pierce the clear and satisfy this run's wait —
 # both the wait and the truncation judge the canary view only.
-adb shell am force-stop com.dshmobile.spike >/dev/null 2>&1 || true
-STREAM=/tmp/dsh-spike-stream.txt
-# the completion tag rides its own tag (dsh.spike.result) — stream both
-# (logcat tag specs are EXACT, -s dsh.spike alone never sees it)
-CANARY=$("$CAPTURE" start -f "$STREAM" dsh.spike dsh.spike.result)
+adb shell am force-stop com.dshmobile.host >/dev/null 2>&1 || true
+STREAM=/tmp/dsh-dsh-stream.txt
+# the completion tag rides its own tag (dsh.runtime.result) — stream both
+# (logcat tag specs are EXACT, -s dsh.runtime alone never sees it)
+CANARY=$("$CAPTURE" start -f "$STREAM" dsh.dsh dsh.runtime.result)
 cleanup() { "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true; }
 trap cleanup EXIT INT TERM
 deadline=$(( $(date +%s) + 120 ))
-until adb shell am start -n com.dshmobile.spike/.MainActivity >/dev/null 2>&1; do
+until adb shell am start -n com.dshmobile.host/.MainActivity >/dev/null 2>&1; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         echo "::error::am start kept failing within 120s"
         exit 1
     fi
     sleep 2
 done
-"$CAPTURE" wait -f "$STREAM" "$CANARY" 120 "dsh.spike.result: ALL" || {
-    echo "::error::spike scenarios did not complete within 120s"
+"$CAPTURE" wait -f "$STREAM" "$CANARY" 120 "dsh.runtime.result: ALL" || {
+    echo "::error::dsh scenarios did not complete within 120s"
     tail -200 "$STREAM"
     exit 1
 }
@@ -93,24 +93,24 @@ sleep 0.3          # let the completion-tag line itself flush
 trap - EXIT
 cleanup
 
-"$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.spike.result: ALL/q' > /tmp/dsh-spike-logs.txt
-grep 'dsh.spike.result' /tmp/dsh-spike-logs.txt > /tmp/dsh-spike-results.txt
-cat /tmp/dsh-spike-results.txt
+"$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.runtime.result: ALL/q' > /tmp/dsh-dsh-logs.txt
+grep 'dsh.runtime.result' /tmp/dsh-dsh-logs.txt > /tmp/dsh-dsh-results.txt
+cat /tmp/dsh-dsh-results.txt
 
 # E2E by logs: one checker verdict per scenario manifest against the shared
 # canonical stream (checkers filter on the records' scenario field).
 node test/e2e/check.mjs \
     --manifest test/e2e/scenarios/boot-verification.json \
-    --log /tmp/dsh-spike-logs.txt \
-    --out /tmp/dsh-spike-verdict-m1.json
-cat /tmp/dsh-spike-verdict-m1.json
+    --log /tmp/dsh-dsh-logs.txt \
+    --out /tmp/dsh-dsh-verdict-m1.json
+cat /tmp/dsh-dsh-verdict-m1.json
 node test/e2e/check.mjs \
     --manifest test/e2e/scenarios/gateway-bridge-smoke.json \
-    --log /tmp/dsh-spike-logs.txt \
-    --out /tmp/dsh-spike-verdict-m2.json
-cat /tmp/dsh-spike-verdict-m2.json
+    --log /tmp/dsh-dsh-logs.txt \
+    --out /tmp/dsh-dsh-verdict-m2.json
+cat /tmp/dsh-dsh-verdict-m2.json
 node test/e2e/check.mjs \
     --manifest test/e2e/scenarios/session-mock-llm.json \
-    --log /tmp/dsh-spike-logs.txt \
-    --out /tmp/dsh-spike-verdict-session.json
-cat /tmp/dsh-spike-verdict-session.json
+    --log /tmp/dsh-dsh-logs.txt \
+    --out /tmp/dsh-dsh-verdict-session.json
+cat /tmp/dsh-dsh-verdict-session.json

@@ -2,7 +2,7 @@
 # test/e2e/run-ios-upstream-parity.sh — the UPSTREAM PARITY differential's
 # iOS-simulator port leg (scenario `upstream.parity`).
 #
-# The vendored upstream DSH spine runs inside DSHSpike over the same scripted
+# The vendored upstream DSH spine runs inside DSHHost over the same scripted
 # turns the Node reference leg ran (success → todo_write tool round → closing
 # success → 401), and the projected session log must match the committed
 # golden record-for-record (ci/parity-compare.mjs) — the same bar the macOS
@@ -24,8 +24,8 @@ cd "$ROOT"
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/upstream-parity"
 SKIP_BUILD=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 GOLDEN="$ROOT/test/e2e/fixtures/upstream-parity-reference.jsonl"
 MOCK_KEY="mock-key-0001"
 MOCK_WAIT_DEADLINE_SECONDS=15
@@ -70,7 +70,7 @@ python3 hosts/ios/Tools/gen_bundle_header.py
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -159,7 +159,7 @@ node test/e2e/check.mjs \
   --log "$LOG" \
   --out "$ART/verdict.json"
 
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 
 # The receipt (what this run proves).
 EVENTS="$(grep -c '"scenario":"upstream.parity"' "$LOG" || true)"
@@ -167,7 +167,7 @@ REF_COUNT="$(wc -l < "$GOLDEN" | tr -d ' ')"
 cat > "$ART/receipt.json" <<EOF
 {
   "host": "ios-simulator ($(xcrun simctl list -j devices | python3 -c "import json,sys; d=json.load(sys.stdin); print(next(x['name']+' '+x['udid'] for xs in d['devices'].values() for x in xs if x['udid']=='$UDID'))") )",
-  "engine": "quickjs-ng (DSHSpike, gateway httpFetch → host loopback mock)",
+  "engine": "quickjs-ng (DSHHost, gateway httpFetch → host loopback mock)",
   "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned; the SAME closure the Node reference ran)",
   "scenario": "upstream.parity",
   "proves": [

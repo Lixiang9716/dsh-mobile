@@ -1,6 +1,6 @@
 {
   "scenario": "carrier.loopback",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "runtime.created", "match": { "engine": "quickjs-ng", "engineVersion": "0.17.0" } },
     { "event": "carrier.listening", "match": { "transport": "tcp", "loopback": true } },

@@ -42,7 +42,7 @@
  */
 import { existsSync, mkdirSync, writeFileSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { REPO, SPIKE, walkGraph, inScope } from './check-staging-graph.mjs';
+import { REPO, DSH, walkGraph, inScope } from './check-staging-graph.mjs';
 import { buildHosts } from './check-staging-hosts.mjs';
 import {
   dirPinRows, zodClosureRows, webclientRows, dshRosterRows,
@@ -89,7 +89,7 @@ function androidScriptFacts() {
   }
   const ver = src.match(/^VER=(\S+)$/m);
   if (!ver) fail('VER assignment not found in stage-spine-closure.sh');
-  const zod = src.match(/^ZOD_SRC=\$SPIKE\/(\S+)$/m);
+  const zod = src.match(/^ZOD_SRC=\$DSH\/(\S+)$/m);
   if (!zod) fail('ZOD_SRC assignment not found in stage-spine-closure.sh');
   return {
     file,
@@ -168,10 +168,10 @@ const WEBCLIENT_TREES = [
  * the evidence (a bumped pin leaves the old rows "extra" and the report
  * green); rules.md rule 5: fail loud, naming the dir (exit 2). */
 function pinRowsOrFail(pin, opts) {
-  if (!existsSync(join(SPIKE, pin))) {
+  if (!existsSync(join(DSH, pin))) {
     fail(`pin tree absent: ${pin} — a stager names it; runtime/dsh/vendor/ensure*.sh materializes the pins`);
   }
-  return dirPinRows(SPIKE, pin, opts) ?? [];
+  return dirPinRows(DSH, pin, opts) ?? [];
 }
 
 /** Every leg for harmony's BUNDLE_FILES, kept per-leg so the delta can
@@ -180,14 +180,14 @@ function pinRowsOrFail(pin, opts) {
 function deriveBundleFiles(host, closureRows, roster, facts, closure) {
   const legs = new Map();
   legs.set('graph', [...walkGraph(host.roots(host.surfaces)).reached.keys()].sort());
-  const dsh = dshRosterRows(SPIKE, roster, facts.ver);
+  const dsh = dshRosterRows(DSH, roster, facts.ver);
   if (dsh.absent.length) fail(`dsh roster pins absent from the materialized tree: ${dsh.absent.join(', ')}`);
   legs.set('dshpins', dsh.rows);
   legs.set('pinfiles', [
     ...pinRowsOrFail(closure.noble, { exts: ['.js'] }),
     ...pinRowsOrFail(closure.piai, { exts: ['.js', '.json'] }),
     ...closure.goalTrio.flatMap((p) => pinRowsOrFail(p, { exts: ['.js', '.json'] })),
-    ...zodClosureRows(SPIKE, facts.zodPin),
+    ...zodClosureRows(DSH, facts.zodPin),
   ]);
   legs.set('closure-faces', closureRows.filter((r) => r.startsWith('vendor/')).sort());
   const wc = webclientRows(REPO, WEBCLIENT_TREES);
@@ -216,7 +216,7 @@ function classifyExtra(row) {
   if (row.startsWith('system-plugins/')) return 'runtime-data: plugin file referenced from a manifest, not an import';
   if (/^vendor\/npm\/.*(lib\/(index|client)\.js)$/.test(row)) return 'host-loader-namespace: the loader bridge resolves the npm face, no JS import edge';
   if (row.startsWith('vendor/')) return 'vendor-shape: staged under a pin shape no stager rule emits (util-crypto docs/LICENSE)';
-  if (!row.includes('/')) return 'e2e-harness: spike-root file staged for the runner, not reached from the boot graph';
+  if (!row.includes('/')) return 'e2e-harness: dsh-root file staged for the runner, not reached from the boot graph';
   return 'unclassified';
 }
 
@@ -251,7 +251,7 @@ function roundTripHarmony(hosts, facts, closure) {
   bf.dupes = raw.rows.length - new Set(raw.rows).size; // count the AS-WRITTEN hand list
   const zod = facts.zodPin;
   const zodHand = committed.filter((r) => r.startsWith(`${zod}/`));
-  const zodDerived = zodClosureRows(SPIKE, zod);
+  const zodDerived = zodClosureRows(DSH, zod);
   const zodClosureHand = closureRows.filter((r) => r.startsWith(`${zod}/`));
   const zodIos = iosZodFiles().map((r) => `${zod}/${r}`);
   return {
@@ -279,7 +279,7 @@ function roundTripHarmony(hosts, facts, closure) {
 
 function roundTripAndroid(hosts, facts) {
   const a = hosts.android;
-  const onDisk = readdirSync(join(SPIKE, 'scenario'))
+  const onDisk = readdirSync(join(DSH, 'scenario'))
     .filter((f) => f.endsWith('.js')).map((f) => `scenario/${f}`).sort();
   const reached = [...walkGraph(a.roots(a.surfaces)).reached.keys()];
   const mirrors = a.surfaces.primary.mirrors;
@@ -295,7 +295,7 @@ function roundTripAndroid(hosts, facts) {
   const pinAbs = (p) => (/^dsh-/.test(p)
     ? `vendor/npm/@deepseek-ai/${p}@${facts.ver}` : `vendor/dsh/${p}@${facts.ver}`);
   const pinsAbsent = [...new Set([...facts.pkgStage, ...facts.pkgVerify, ...facts.npmStage, ...facts.npmVerify])]
-    .map(pinAbs).filter((p) => !existsSync(join(SPIKE, p)));
+    .map(pinAbs).filter((p) => !existsSync(join(DSH, p)));
   return {
     host: 'android',
     file: facts.file,
@@ -323,7 +323,7 @@ function roundTripIos(hosts) {
     missingFromGraph: [...reached].filter((r) => inScope(r) && !covered(r)).sort(),
   };
   const treesAbsent = s.mirrorRoots
-    .filter((m) => !existsSync(join(m.root === 'SPIKE' ? SPIKE : REPO, m.rel)))
+    .filter((m) => !existsSync(join(m.root === 'DSH' ? DSH : REPO, m.rel)))
     .map((m) => `${m.root}:${m.rel}`);
   return {
     host: 'ios',

@@ -23,7 +23,7 @@ import { stageRemoteMockTypeWorld } from 'scenario/upstream-suite-type-world.js'
 
 const SCENARIO = 'upstream.suite';
 
-const log = createLogger('m2.spike');
+const log = createLogger('dsh.scenario');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   log.debug('scenario failed', { reason: String(reason).slice(0, 200) });
@@ -143,7 +143,7 @@ const pinProfileContainer = async () => {
 
 /** Stage the specs' SPAWNED sibling files as REAL files next to the
  * transpiled specs (upstream-tests/ is a real directory on the desktop
- * spike): upstream CI runs `process.execPath <sibling .ts>` against the
+ * dsh): upstream CI runs `process.execPath <sibling .ts>` against the
  * vendored test tree, and a real child reads the real disk — the staged-fs
  * (in-runtime) fixture seeding cannot serve it. Sources stay vendored and
  * read-only (D6): the leg COPIES, never edits. Inert where the bundle is
@@ -322,7 +322,7 @@ const stageRealFixturesTree = async (spec) => {
  * 'darwin'` (tool-terminal loader-composition's suite selector) — a gate
  * this runtime's 'mobile' default silently fails, registering the suite as
  * skipped (0/0 green = skipped in the dark, the exact shape the transpiler's
- * named-exclusion contract refuses). The desktop spike IS a shell host (the
+ * named-exclusion contract refuses). The desktop dsh IS a shell host (the
  * subprocess seam spawns real children throughout), so the REAL platform is
  * the honest value here: uname(1) through the seam's real-child channel,
  * desktop-only like every other real-disk staging arm; device hosts keep

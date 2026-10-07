@@ -87,7 +87,7 @@ echo "mock llm server: $MOCK_URL" >&2
     --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-onboarding.txt
 mkdir -p "$ART_DIR"
 cp logs-onboarding.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-onboarding.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-onboarding.txt > "$ART_DIR/scenario.jsonl"
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/onboarding-flow.json" \
     --log logs-onboarding.txt \

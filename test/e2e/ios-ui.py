@@ -44,7 +44,7 @@ import urllib.error
 import urllib.request
 
 UDID_DEFAULT = os.environ.get("DSH_E2E_UDID", "A4AE41BF-026A-441E-85DF-F53522996073")
-BUNDLE = "org.dsh.DSHSpike"
+BUNDLE = "org.dsh.DSHHost"
 WDA = "http://localhost:8100"
 EDITABLE = ("TextField", "TextArea", "SecureTextField", "SearchField", "TextView")
 ACTIONABLE = {
@@ -305,7 +305,7 @@ def cmd_wait(needle, secs):
 def cmd_logs(minutes):
     out = subprocess.run(
         ["xcrun", "simctl", "spawn", UDID_DEFAULT, "log", "show",
-         "--last", f"{minutes or '3'}m", "--predicate", 'process == "DSHSpike"',
+         "--last", f"{minutes or '3'}m", "--predicate", 'process == "DSHHost"',
          "--style", "compact"],
         capture_output=True, text=True, encoding="utf-8", errors="replace",
         timeout=180).stdout

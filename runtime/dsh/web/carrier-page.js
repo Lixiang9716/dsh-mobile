@@ -1,7 +1,7 @@
 // dsh:logging-exempt (Presentation-side page: deliberately logs nothing —
 // all E2E evidence flows through the runtime logger; there is no logger here)
 /**
- * Spike Presentation page for the local-carrier topology. Served as a static
+ * Dsh Presentation page for the local-carrier topology. Served as a static
  * file by the host carrier; knows nothing about the host except the WS
  * protocol (the architecture's "it only knows the HTTP/WS protocol" rule).
  * Protocol: hello → (ping → pong)* → push → ack.

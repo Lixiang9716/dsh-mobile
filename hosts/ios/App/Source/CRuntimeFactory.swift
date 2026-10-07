@@ -37,7 +37,7 @@ func dsh_runtime_new_declaring(
     return host
 }
 
-/// The declaration as ONE canonical record on the `dsh.spike.log:` stream —
+/// The declaration as ONE canonical record on the `dsh.runtime.log:` stream —
 /// every prefixed line a checker reads must be the unified-logger envelope or
 /// it counts as a parse error against EVERY scenario riding the capture (free
 /// text after the prefix broke both m1 verdicts). The fact belongs to no

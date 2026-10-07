@@ -30,7 +30,7 @@ import {
 } from '../gateway.js';
 
 const SCENARIO = 'android.capability-binding';
-const log = createLogger('m4.spike');
+const log = createLogger('m4.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   log.debug('scenario failed', { reason });
@@ -240,12 +240,12 @@ async function bindingUiLeg() {
   emit('approval.approved', { approved: approval.approved, remember: approval.remember ?? false });
 
   const secret = globalThis.crypto.getRandomValues(new Uint8Array(32));
-  await keychainSet('dsh.spike/cred', secret);
-  const stored = await keychainGet('dsh.spike/cred');
+  await keychainSet('dsh.host/cred', secret);
+  const stored = await keychainGet('dsh.host/cred');
   emit('keychain.roundtrip', { set: true, match: !!stored && bytesEqual(stored.secret, secret) });
 
-  await keychainSet('dsh.spike/cred', null);
-  const gone = await keychainGet('dsh.spike/cred');
+  await keychainSet('dsh.host/cred', null);
+  const gone = await keychainGet('dsh.host/cred');
   emit('keychain.deleted', { gone: gone === null });
 
   const notification = await notify({ title: 'DSH E2E', body: 'm4 host binding' });

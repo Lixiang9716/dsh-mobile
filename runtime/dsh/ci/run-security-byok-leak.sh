@@ -69,7 +69,7 @@ RC=0
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
     --env "DSH_BYOK_CANARY=$CANARY" \
     --env "DSH_BYOK_WRONG=$WRONG_KEY" > "$LOG" 2>&1) || RC=$?
-grep '^dsh.spike.log:' "$LOG" > "$ART_DIR/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" > "$ART_DIR/scenario.jsonl" || true
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/security-byok-leak.json" \
     --log "$LOG" --out "$ART_DIR/verdict.json"

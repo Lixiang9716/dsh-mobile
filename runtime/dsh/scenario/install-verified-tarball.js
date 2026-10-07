@@ -27,7 +27,7 @@ import * as fsPlugin from 'system-plugins/dsh-fs/index.js';
 import { buildNotesTgz, NOTES_MANIFEST_BYTES } from 'fixtures/dsh-notes.js';
 
 const SCENARIO = 'install.verified-tarball';
-const log = createLogger('m3.spike');
+const log = createLogger('m3.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const onStep = (name, fields) => emit(`install.${name}`, fields);
 const fail = (reason) => {

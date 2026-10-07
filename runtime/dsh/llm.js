@@ -12,7 +12,7 @@
  * emits reasoning deltas BEFORE content deltas). `data: [DONE]` or
  * end-of-stream completes the call. The parser is tolerant to partial lines
  * and arbitrary chunk boundaries: bytes are incrementally UTF-8 decoded (the
- * spike host ships no TextDecoder) and folded line by line.
+ * dsh host ships no TextDecoder) and folded line by line.
  *
  * Events ride the `on(name, fields)` callback as an event sequence (D8 —
  * never a blocking whole result), in the session-mock-llm vocabulary so downstream
@@ -43,7 +43,7 @@ export class LlmError extends Error {
   }
 }
 
-// ---- UTF-8 (the spike host ships no TextEncoder/TextDecoder) ---------------
+// ---- UTF-8 (the dsh host ships no TextEncoder/TextDecoder) ---------------
 
 /** Encodes a JS string to UTF-8 bytes (code points beyond the BMP ride the
  * 4-byte form via their surrogate pair — `for…of` iterates code points). */

@@ -210,7 +210,7 @@ const joinRelative = (basePathname, relative) => {
     : resolved;
 };
 
-/** Resolve a scheme-less input (spike path space) against an optional base —
+/** Resolve a scheme-less input (dsh path space) against an optional base —
  * see the constructor: import.meta.url is a bundle-relative staged path, and
  * vendored packages join their own resources against it. */
 const parsePathUrl = (asString, base) => {
@@ -218,7 +218,7 @@ const parsePathUrl = (asString, base) => {
   // 'not a url' throws Invalid URL there, and the vendored tool-web
   // sourceLabel relies on that throw for its raw-string fallback (W4-N,
   // 2026-09-28). Node can throw for EVERY relative no-base input because its
-  // import.meta.url is absolute file:; the spike's module space is
+  // import.meta.url is absolute file:; the dsh's module space is
   // POSIX-relative by design (the loader pins import.meta.url to a
   // bundle-relative path, and new URL(import.meta.url) must parse — the
   // ptc-runtime launch spec leans on it), so the guard fires only on inputs
@@ -312,7 +312,7 @@ export class DshURL {
     let parsed;
     const asString = String(input);
     const hasScheme = /^[A-Za-z][A-Za-z0-9+.\-]*:/.test(asString);
-    // A scheme-less input is a spike PATH-URL (the loader pins import.meta.url
+    // A scheme-less input is a dsh PATH-URL (the loader pins import.meta.url
     // to the staged bundle-relative path — plain POSIX, no scheme); lexical
     // joins keep new URL('../presets/', import.meta.url) in the same space,
     // and fileURLToPath passes path URLs through unchanged.
@@ -338,7 +338,7 @@ export class DshURL {
       } else if (asString === '') {
         parsed = { ...baseParsed };
       } else if (baseParsed.scheme === '' || asString.startsWith('.')) {
-        // Lexical join in PATH space (scheme-less spike URLs): '.'/'..' kept
+        // Lexical join in PATH space (scheme-less dsh URLs): '.'/'..' kept
         // verbatim would corrupt the walk; resolve them the way realpath does.
         parsed = { ...baseParsed, pathname: joinRelative(baseParsed.pathname, asString), search: '', fragment: '' };
       } else {
@@ -452,7 +452,7 @@ export class DshURL {
   static canParse(input, base = undefined) {
     // WHATWG: a scheme-less input WITHOUT a base is a relative URL that
     // cannot parse. (WITH a base it is a valid relative reference — the
-    // spike additionally allows scheme-less PATH-URL joins, its loader's
+    // dsh additionally allows scheme-less PATH-URL joins, its loader's
     // import.meta.url space; both stay parseable when a base is given.)
     const asString = String(input);
     const hasScheme = /^[A-Za-z][A-Za-z0-9+.\-]*:/.test(asString);

@@ -6,7 +6,7 @@
  * (runtime/dsh/upstream/shims/*.js) the upstream suite runs actually load,
  * and which never do.
  *
- * The raw evidence is produced by the spike host's default-off diagnostic:
+ * The raw evidence is produced by the dsh host's default-off diagnostic:
  * with DSH_MODULE_MANIFEST=<path> in the process env, every resolved load
  * under upstream/shims/ appends one path line — ESM loads through
  * dsh_module_loader AND CJS reads through js_bundle_require (the

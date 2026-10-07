@@ -156,7 +156,7 @@ describe('the stat face holds the seam boundary (loop-v2, shim-face controls)', 
 // str_replace_editor refusing the in-root relative spelling
 // 'dsh/../plugins/registry.json' at the VENDORED absolute-path gate
 // (resolveTarget, vendored tool-str-replace-editor lib/index.js:69) with a
-// "maybe you meant /spike/..." suggestion whose leading / is the DEVICE root
+// "maybe you meant /dsh/..." suggestion whose leading / is the DEVICE root
 // — driving the suggestion answered FS_NOT_FOUND (v2c2). The queue line
 // suspected the #380 seam re-order; the r14→r16 delta is actually the TOOL
 // the model picked (r14's w2c drove `read`, whose fs-local resolve accepts
@@ -175,16 +175,16 @@ describe('the stat face holds the seam boundary (loop-v2, shim-face controls)', 
 // suggestion) is unreachable for model input.
 describe('the model-path anchor (loop-z3, unit)', () => {
   it('passes absolute spellings through byte-identical', () => {
-    const root = '/data/user/0/com.dshmobile.spike/files/profiles/default/spike';
+    const root = '/data/user/0/com.dshmobile.host/files/profiles/default/dsh';
     expect(anchorModelPath(`${root}/plugins/registry.json`, root)).toBe(`${root}/plugins/registry.json`);
-    expect(anchorModelPath(`${root}/spike/../plugins/registry.json`, root))
-      .toBe(`${root}/spike/../plugins/registry.json`);
+    expect(anchorModelPath(`${root}/dsh/../plugins/registry.json`, root))
+      .toBe(`${root}/dsh/../plugins/registry.json`);
   });
 
   it('joins relative spellings at the root verbatim (physical .., no normalization)', () => {
-    const root = '/data/user/0/com.dshmobile.spike/files/profiles/default/spike';
+    const root = '/data/user/0/com.dshmobile.host/files/profiles/default/dsh';
     expect(anchorModelPath('dsh/../plugins/registry.json', root))
-      .toBe(`${root}/spike/../plugins/registry.json`);
+      .toBe(`${root}/dsh/../plugins/registry.json`);
     expect(anchorModelPath('../../etc/passwd', root)).toBe(`${root}/../../etc/passwd`);
   });
 

@@ -31,7 +31,7 @@
  *                                          aborts unwind a byteless stall
  *                                          eagerly (ABORTED, non-retryable)
  *   TextEncoder/TextDecoder         →     utf8Encode/utf8Decode (no Text* globals
- *                                          in the spike runtime)
+ *                                          in the dsh runtime)
  *
  * Zero vendored edits: the harness vocabulary (messages, StreamChunks,
  * LlmError taxonomy, attribution headers) all comes from the vendored

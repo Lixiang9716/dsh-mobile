@@ -42,12 +42,12 @@ case "$PLATFORM" in
     # The hard prerequisite this machine lacks TODAY: a signing identity.
     if ! security find-identity -v -p codesigning 2>/dev/null | grep -q '"Apple Development'; then
       echo "run-mic-plane-device: FAIL: no iOS signing identity on this machine —" \
-           "build & install DSHSpike onto $DEVICE with one, then re-run (the mic ladder itself is" \
+           "build & install DSHHost onto $DEVICE with one, then re-run (the mic ladder itself is" \
            "platform-identical: -dsh-mode mic-plane, logs are the verdict)" >&2
       exit 1
     fi
     echo "run-mic-plane-device: iOS device $DEVICE — build for device (signing present) and drive"
-    xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+    xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
       -destination "platform=iOS,id=$DEVICE" -allowProvisioningUpdates
     echo "run-mic-plane-device: build ok — install (devicectl) + launch with -dsh-mode mic-plane," \
          "capture stdout, then: node test/e2e/check.mjs --manifest test/e2e/scenarios/mic-plane.json --log <capture>"

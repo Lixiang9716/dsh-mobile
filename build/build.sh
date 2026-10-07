@@ -78,7 +78,7 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 ios_toolchain() {
     need xcodebuild "iOS compiles only on macOS with Xcode (CI: dev-ios.yml on macos-15)"
-    need xcodegen "brew install xcodegen (regenerates DSHSpike.xcodeproj from project.yml)"
+    need xcodegen "brew install xcodegen (regenerates DSHHost.xcodeproj from project.yml)"
 }
 
 android_toolchain() {
@@ -108,7 +108,7 @@ stage_sync() {
     case "$1" in
         ios)
             ios_toolchain
-            echo "build: sync ios (embed the spike bundle as C arrays + regen the project)"
+            echo "build: sync ios (embed the dsh bundle as C arrays + regen the project)"
             (cd hosts/ios && ./gen.sh) ;;
         android)
             echo "build: sync android (stage the spine closure into assets)"
@@ -136,8 +136,8 @@ stage_compile() {
             (cd hosts/ios
              xb_log=$(mktemp /tmp/dsh-xcodebuild.XXXXXX)
              xcodebuild build \
-                 -project DSHSpike.xcodeproj \
-                 -scheme DSHSpike \
+                 -project DSHHost.xcodeproj \
+                 -scheme DSHHost \
                  -destination 'generic/platform=iOS Simulator' \
                  -derivedDataPath DerivedData \
                  >"$xb_log" 2>&1 || { xb_st=$?; tail -30 "$xb_log"; rm -f "$xb_log"; exit "$xb_st"; }
@@ -178,8 +178,8 @@ stage_test() {
         android)
             android_toolchain
             need adb "the e2e leg installs the APK on an emulator (CI boots a system-images;android-35 emulator)"
-            echo "build: test android (run-spike-e2e.sh: the regression trio, log-verified)"
-            hosts/android/ci/run-spike-e2e.sh ;;
+            echo "build: test android (run-dsh-e2e.sh: the regression trio, log-verified)"
+            hosts/android/ci/run-dsh-e2e.sh ;;
         harmony)
             harmony_toolchain
             echo "build: test harmony (run-host-e2e.sh: the on-device legs, log-verified)"

@@ -45,7 +45,7 @@ const watchTrees = [
 // src/bin.ts + sdk-source.cordis.patch.yml + tsconfig.json — the complete
 // source-launch set the spec requires), so the map re-roots both
 // spellings at it (D6: read-only re-rooting, bytes untouched). The re-root
-// target is relative to the CLI's REAL working directory — the spike root
+// target is relative to the CLI's REAL working directory — the dsh root
 // (runtime/dsh, where vendor/ lives; every real-disk staging arm
 // resolves there) — hence the ../../ prefix into the checkout.
 const reRoots = [

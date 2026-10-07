@@ -6,7 +6,7 @@ directory is OUR side of the port: the shims, the boot, and the scripted
 seams that stand in for the platform services Node.js provides on the
 desktop. It mirrors dsh-desktop's role (a thin host that provides the system
 layer the official Harness boots onto); on mobile the same role is played by
-the spike runtime + this layer.
+the dsh runtime + this layer.
 
 - `web-shims.js` — Web-API globals the vendored closure expects
   (`structuredClone`, `AbortController`/`AbortSignal`, `console` backstop,
@@ -80,7 +80,7 @@ table (rule 5) — a new upstream import can never be silently mis-served.
 | --- | --- | --- |
 | `node:path` (`isAbsolute`; boot: `join`/`resolve`/`dirname`/`basename`) | `shims/path.js` (POSIX) | supported |
 | `node:crypto` (`randomUUID`) | `shims/crypto.js` over the host `crypto.getRandomValues` seam | supported |
-| `node:crypto` (`createHash('sha1')`, `createHash('sha256')`) | `shims/crypto.js` — pure-JS digests; sha1 serves the web-boot revision scheme, sha256 (skill row, tool-skill's catalog digest) goes through the spike's own `sha256.js` — one implementation, no second hand-rolled copy | supported (those two digests; everything else loud) |
+| `node:crypto` (`createHash('sha1')`, `createHash('sha256')`) | `shims/crypto.js` — pure-JS digests; sha1 serves the web-boot revision scheme, sha256 (skill row, tool-skill's catalog digest) goes through the dsh's own `sha256.js` — one implementation, no second hand-rolled copy | supported (those two digests; everything else loud) |
 | `node:async_hooks` (`AsyncLocalStorage`) | `shims/async-hooks.js` — frame stack + `Promise.prototype.then/catch/finally` capture (single-threaded serial runtime; context = what was current when the continuation attached) | supported (no timer contexts — timers unsupported) |
 | `node:util/types` (`isPromise`) | `shims/util-types.js` | supported |
 | `node:util` (`format`/`inspect`/`promisify`) | `shims/util.js` — JSON-form rendering, not node's depth/color machinery | partial |
@@ -102,7 +102,7 @@ table (rule 5) — a new upstream import can never be silently mis-served.
 | `node:module` (`createRequire`) | `shims/node-module.js` over the host `__dshBundleRequire` seam — resolves `base` through the loader's own bare map, serves relative `.json` reads under the bundle root only | supported (subset) |
 | `structuredClone` | `web-shims.js` — JSON-safe superset (Date/RegExp/Map/Set, cycles); else loud | supported |
 | `AbortController`/`AbortSignal` (`addEventListener`, `throwIfAborted`, `AbortSignal.any`) | `web-shims.js` | supported |
-| `AbortSignal.timeout` | `web-shims.js` — throws (no wall-clock timers in the spike runtime) | unsupported (loud) |
+| `AbortSignal.timeout` | `web-shims.js` — throws (no wall-clock timers in the dsh runtime) | unsupported (loud) |
 | `setTimeout`/`setInterval` | `shims/timers.js` — the ambient timer faces ride the gateway timer seam (contract v1.4.0): `setTimeout`/`clearTimeout` arm/cancel through `timerSchedule`/`timerCancel` (a cancel that beats the arm wins the one-way race), `setImmediate` is a 0-delay arm, and `setInterval`/`clearInterval` are the contract's re-arm pattern implemented in one place (each fire re-arms until cleared; a throwing fire stops the loop). A host without the seam fails loud on the first arm naming the primitive | supported (gateway seam; no wall-clock guarantee) |
 | `setTimeout`/`setInterval` as SUITE-HARNESS globals (2026-09-27, the webworker-runtime polyfill round: its `src/node/globals/timers.ts` binds the ambient faces at module init, and the als-shim spec wraps them to exercise async-context propagation) | `shims/globals.js` — defers to the timer faces above (installed by `web-shims.js`'s `timers.js` import); installs nothing when a binding already exists (`??=` discipline throughout) | supported (harness; product boot unchanged) |
 | `fetch` | NOT PROVIDED as a global — closure-verified: only `cordis-host-runner` (not mounted) and unreached zod paths use it. `Buffer` is the DshBuffer global + `node:buffer`; the host binds `atob`/`btoa` natively | partial (globals), supported (imports) |
@@ -136,11 +136,11 @@ the honest gaps declared:
 | desktop (Node.js host) | mobile (this port) | state |
 | --- | --- | --- |
 | `node:fs` at absolute paths (`$DSH_HOME`, workspace) | gateway `fsRead`/`fsWrite`/`fsScope` — scope-relative POSIX under the granted scope; the scope root IS the profile container (`fsScope.resolve` returns its absolute path, which pins session `cwd`). The file-tools row (dsh-fs-local + tool-fs + tool-str-replace-editor) runs over the in-memory workspace VFS (`shims/fs.js mountWorkspace`) — full read/write/list/edit semantics, no disk | live: the vendored `ctx.fs` backend + tool family (scenario/tool-fs-probe.js); product boot wiring is the coordinator's follow-up; a DISK-backed workspace over the gateway fs scopes is the follow-up |
-| `child_process` (dsh-subprocess-local) | `subprocess` Service — in-process coroutine executor (`system-plugins/dsh-subprocess-quickjs`); no OS processes on the runtime thread (D2) | service shipped in the spike; upstream `dsh-shell`/`dsh-tool-bash` rows are the follow-up |
+| `child_process` (dsh-subprocess-local) | `subprocess` Service — in-process coroutine executor (`system-plugins/dsh-subprocess-quickjs`); no OS processes on the runtime thread (D2) | service shipped in the dsh; upstream `dsh-shell`/`dsh-tool-bash` rows are the follow-up |
 | `@vscode/ripgrep` binary (dsh-tool-fs-search's grep/glob engine) | none — a packaged OS binary driven through real subprocesses has no in-runtime equivalent | staged with the follow-up subprocess/fs-service seam (same class as the native rows) |
 | `node:fetch` / undici (llm adapters, web tools) | gateway `httpFetch` — streaming AsyncIterable body, abortable, base64 byte bridge | live: `upstream/llm-transport.js` streams the vendored dsh-llm service over it (E2E against the vendored dsh-llm-mock-server, node-side loopback) |
 | `$DSH_HOME` (`~/.dsh`) | the host-granted profile container (one directory per install), pinned by `boot.js` for `process.cwd()`/`os.tmpdir()`/`os.homedir()` | live |
-| Electron window / WebContents | carrier loopback HTTP+WS + WebView mounting the Web Client (the early carrier spike; the platform hosts since) | carrier proven separately; the upstream port runs headless |
+| Electron window / WebContents | carrier loopback HTTP+WS + WebView mounting the Web Client (the early carrier dsh; the platform hosts since) | carrier proven separately; the upstream port runs headless |
 | cordis-host-runner + disk Loader (`cordis.yml` include tree) | `boot.js` composes the same layer order in memory over the pinned vendor closure (the gateway fs scopes are not the module filesystem; the host loader maps specifiers) | live; the disk Loader + `cordis.patch.yml` parsing is a deliberate staged gap |
 | timers (`setTimeout` etc.) | absent — the runtime has no timer seam; upstream packages that need wall-clock timeouts (dsh-timeout rows) are not mounted | staged: a timer seam is a host primitive decision, not a shim |
 | dsh-settings-file (`$DSH_HOME/settings.yaml` + watcher) | `SettingsMemory` (empty document, same base contract) | staged: persists over the fs scope when the profile container gains durable KV |

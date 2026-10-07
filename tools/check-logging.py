@@ -165,7 +165,7 @@ def check_release_silence(files):
     # release branch in the canonical file alone strips nothing.
     operative = Path(OPERATIVE_LOGGER)
     if not operative.exists():
-        out.append(f"{OPERATIVE_LOGGER}: L4b the operative spike logger is missing")
+        out.append(f"{OPERATIVE_LOGGER}: L4b the operative dsh logger is missing")
     else:
         text = operative.read_text(encoding="utf-8", errors="replace")
         if RELEASE_GLOBAL not in text:

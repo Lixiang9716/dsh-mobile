@@ -1,6 +1,6 @@
 {
   "scenario": "webclient.mount",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "client.selected", "match": { "client": "dsh-web-client" } },
     { "event": "webclient.mounted", "match": { "client": "dsh-web-client", "path": "/index.html" } },

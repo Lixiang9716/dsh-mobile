@@ -113,7 +113,7 @@ struct GatewayManifest {
 /// enforcement against the manifest, and the mandatory structured audit of
 /// primitives.md §6 — one record per call, never payload contents. Audit
 /// lines use their own stdout prefix ("dsh.gateway.audit: ") so the
-/// canonical "dsh.spike.log: " E2E stream stays one-to-one.
+/// canonical "dsh.runtime.log: " E2E stream stays one-to-one.
 final class GatewayCore {
     /// The full serving table (contract/primitives.md §2 through v1.10.0):
     /// the name list IS the RuntimeDescriptor's available array, so it must

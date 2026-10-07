@@ -116,7 +116,7 @@ export function createRequire(base) {
 
 /** isBuiltin(specifier): the presets service classifies composition rows with
  * it (a row naming `node:fs` is a builtin row; one naming a package needs a
- * resolver). The spike's builtin surface is exactly the shim table — a bare
+ * resolver). The dsh's builtin surface is exactly the shim table — a bare
  * specifier is built-in only when it names one of those node: modules. */
 const BUILTIN_PREFIXES = [
   'node:', 'fs', 'path', 'crypto', 'util', 'os', 'url', 'events',

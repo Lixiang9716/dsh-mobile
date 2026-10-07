@@ -10,7 +10,7 @@
  */
 import { createLogger } from 'logger.js';
 
-const log = createLogger('m2.spike');
+const log = createLogger('dsh.scenario');
 
 /** The @types/node ambient stub (same vocabulary the fixture compilers
  * get; authored in OUR layer, see the leg's stageFixtureTypesStub —

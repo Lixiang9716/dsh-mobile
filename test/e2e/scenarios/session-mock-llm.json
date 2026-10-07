@@ -1,6 +1,6 @@
 {
   "scenario": "session.mock-llm",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
     { "event": "plugins.installed", "match": { "count": 3, "services": "fs,subprocess,ui" } },

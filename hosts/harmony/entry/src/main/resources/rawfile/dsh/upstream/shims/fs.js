@@ -1,6 +1,6 @@
 // dsh:logging-exempt (shim layer)
 /**
- * node:fs shim — LOUD by default: the spike runtime has no synchronous
+ * node:fs shim — LOUD by default: the dsh runtime has no synchronous
  * filesystem; the gateway fs primitives are async and scope-confined per
  * contract/.
  *
@@ -97,7 +97,7 @@ export const underVFS = (path) => typeof path === 'string' && VFS_ROOTS.some((ro
 
 export const refuse = (name) => (path) => {
   throw new Error(
-    `node:fs.${name}: no synchronous filesystem in the spike runtime — `
+    `node:fs.${name}: no synchronous filesystem in the dsh runtime — `
     + 'this path is a desktop host capability; on mobile the same boundary is the '
     + `gateway fs scope (see runtime/dsh/upstream/README.md)${path === undefined ? '' : ` [path: ${String(path)}]`}`);
 };

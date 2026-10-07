@@ -678,7 +678,7 @@ export class HostPhase {
   }
 
   /** One canonical carrier-side evidence line through the phase sink: the
-   * SAME `dsh.spike.log: ` envelope the JS logger emits (the checker's
+   * SAME `dsh.runtime.log: ` envelope the JS logger emits (the checker's
    * extract prefix), routed host→sink for hilog + capture. */
   private carrierLine(event: string, fields: Record<string, Object>): void {
     const payload: Record<string, Object> = {
@@ -700,7 +700,7 @@ export class HostPhase {
     if (BuildFlavor.isRelease()) {
       return;
     }
-    hostCarrierLine(PHASE_ID, 'dsh.spike.log: ' + JSON.stringify(envelope));
+    hostCarrierLine(PHASE_ID, 'dsh.runtime.log: ' + JSON.stringify(envelope));
   }
 
   private deliverEvent(eventJson: string): void {
@@ -749,7 +749,7 @@ export class HostPhase {
       return;
     }
     // The staging module's handshake (llm leg only): its bus post is the
-    // `stage-ready` drive marker. NEVER a canonical dsh.spike.log record —
+    // `stage-ready` drive marker. NEVER a canonical dsh.runtime.log record —
     // it belongs to no manifest, and the manifests allow nothing extra.
     if (this.llmLeg && msg.type === 'stage.ready') {
       hilog.info(0x0000, TAG, 'stage-ready path=%{public}s', msg.path ?? '');

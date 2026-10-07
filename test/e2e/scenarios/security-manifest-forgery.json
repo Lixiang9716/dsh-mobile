@@ -1,7 +1,7 @@
 {
  "scenario": "security.manifest-forgery",
  "extract": {
-  "prefix": "dsh.spike.log:"
+  "prefix": "dsh.runtime.log:"
  },
  "expect": [
   { "event": "forge.started", "match": { "pipeline": 5, "freshness": 1 } },

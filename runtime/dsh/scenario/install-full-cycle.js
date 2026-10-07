@@ -4,7 +4,7 @@
  *
  *   1. CONFIG LAYER (ARCHITECTURE.md §6 UI-plugin level 1): a cordis.patch-
  *      style layered override (base → hostFace → profile → overlay; JSON in
- *      the spike — see config-layer.js) resolves the active Web Client and
+ *      the dsh — see config-layer.js) resolves the active Web Client and
  *      the toolbar slot ALLOW-SET; the session stack's slot gate admits the
  *      configured slot and refuses one the profile override trimmed.
  *   2. FETCH-BASED INSTALLER: the package arrives through
@@ -40,7 +40,7 @@ import { NOTES_PLUGIN_SOURCE } from 'fixtures/dsh-notes-source.js';
 import { buildBadgeTgz, BADGE_MANIFEST_BYTES } from 'fixtures/dsh-badge.js';
 
 const SCENARIO = 'install.full-cycle';
-const log = createLogger('m3.spike');
+const log = createLogger('m3.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const onStep = (name, fields) => emit(`install.${name}`, fields);
 const fail = (reason) => {

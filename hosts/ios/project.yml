@@ -1,13 +1,13 @@
-# DSHSpike — minimal iOS host embedding the M1 core spike.
+# DSHHost — minimal iOS host embedding the M1 core dsh.
 #
-# The committed DSHSpike.xcodeproj is generated from this file
+# The committed DSHHost.xcodeproj is generated from this file
 # (hosts/ios/gen.sh) but is ALSO committed, so CI and fresh clones build
 # without xcodegen. The pre-build phase re-runs Tools/gen_bundle_header.py
 # whenever a runtime/dsh JS input changes, keeping the embedded bundle
 # byte-identical to the checkout. quickjs-ng sources come from
 # runtime/dsh/vendor/quickjs-ng/0.17.0 — materialize them first with
 # runtime/dsh/vendor/ensure.sh.
-name: DSHSpike
+name: DSHHost
 options:
   bundleIdPrefix: org.dsh
   createIntermediateGroups: true
@@ -39,7 +39,7 @@ settings:
         GCC_PREPROCESSOR_DEFINITIONS: ["$(inherited)", "ZSTD_DISABLE_ASM=1", "DSH_WITH_SQLITE=1"]
 
 targets:
-  DSHSpike:
+  DSHHost:
     type: application
     platform: iOS
     sources:
@@ -224,7 +224,7 @@ targets:
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: DSH Spike
+        CFBundleDisplayName: DSH Dsh
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         UILaunchScreen: {}
@@ -237,7 +237,7 @@ targets:
         NSCameraUsageDescription: The camera capture burst (cameraCapture) lands the frames you shoot into the session's capture scope.
         # The capability plane's microphone face (v1.10.0): the same rule —
         # the first mic request TCC-kills the app without this key.
-        NSMicrophoneUsageDescription: DSH Spike records audio only while an agent session you started is using the microphone.
+        NSMicrophoneUsageDescription: DSH Dsh records audio only while an agent session you started is using the microphone.
         # The picker E2E grants a scope into the app's Documents directory;
         # both flags keep that directory visible/browsable in Files.app so
         # the granted files can be inspected from the simulator UI.
@@ -245,7 +245,7 @@ targets:
         LSSupportsOpeningDocumentsInPlace: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: org.dsh.DSHSpike
+        PRODUCT_BUNDLE_IDENTIFIER: org.dsh.DSHHost
         SWIFT_OBJC_BRIDGING_HEADER: App/Source/Bridge.h
         TARGETED_DEVICE_FAMILY: "1"
         # The in-process Linux guest is an aarch64 HOST engine — its interpreter

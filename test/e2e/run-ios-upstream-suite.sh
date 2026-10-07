@@ -3,7 +3,7 @@
 # iOS simulator (scenario `upstream.suite`).
 #
 # One transpiled upstream spec (default: core__agent-loop__tests__loop.spec,
-# the spec PR #161 proved) runs inside DSHSpike through the quickjs-shaped
+# the spec PR #161 proved) runs inside DSHHost through the quickjs-shaped
 # vitest harness, every test streaming a structured verdict; the runner
 # first executes the SAME spec under plain Node through the same harness
 # (test/upstream-suite/smoke.mjs) and demands the two summaries AGREE —
@@ -24,8 +24,8 @@ UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/upstream-suite"
 SKIP_BUILD=0
 SPEC="core__agent-loop__tests__loop.spec.mjs"
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -78,7 +78,7 @@ python3 hosts/ios/Tools/gen_bundle_header.py
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -115,7 +115,7 @@ xcrun simctl io "$UDID" screenshot "$ART/screens/01-final-state.png" >/dev/null 
 
 # ---- 5. the differential verdict ---------------------------------------------
 log "5/5 summary + agreement with the Node reference"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 node - "$ART" <<'SUMMARY'
 const fs = require('fs');
 const art = process.argv[2];
@@ -153,7 +153,7 @@ DEV_PASSED="$(grep -o '"passed":[0-9]*' "$ART/suite-summary.json" | head -1 | gr
 cat > "$ART/receipt.json" <<EOF
 {
   "host": "ios-simulator ($(xcrun simctl list -j devices | python3 -c "import json,sys; d=json.load(sys.stdin); print(next(x['name']+' '+x['udid'] for xs in d['devices'].values() for x in xs if x['udid']=='$UDID'))") )",
-  "engine": "quickjs-ng (DSHSpike; the transpiled spec's bare imports served from the embedded vendored closure)",
+  "engine": "quickjs-ng (DSHHost; the transpiled spec's bare imports served from the embedded vendored closure)",
   "upstream": "deepseek-harness dsh-v0.1.6-alpha.2 test suite (tag tarball, sha256-pinned; spec: $SPEC)",
   "scenario": "upstream.suite",
   "proves": [

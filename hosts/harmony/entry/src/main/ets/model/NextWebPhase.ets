@@ -419,7 +419,7 @@ export class NextWebPhase {
       'message': 'e2e',
       'data': [payload] as Object[],
     };
-    hostCarrierLine(2, 'dsh.spike.log: ' + JSON.stringify(envelope));
+    hostCarrierLine(2, 'dsh.runtime.log: ' + JSON.stringify(envelope));
   }
 }
 

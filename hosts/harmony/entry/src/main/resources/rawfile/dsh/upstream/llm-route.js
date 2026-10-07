@@ -237,7 +237,7 @@ const byokOrMock = async (cfg) => {
 
 /** The seam registries, keyed by the boot CONTEXT — never by the llm
  * runtime service object: `ctx.get('llm')` hands out a FRESH wrapper per
- * access (measured 2026-10-01 on the CLI spike host: two gets of the same
+ * access (measured 2026-10-01 on the CLI dsh host: two gets of the same
  * mounted service fail `===` while carrying the same target state), so a
  * runtime-keyed map misses every lookup made through a later get. The ctx
  * is the one object every seam site holds by reference — bootUpstream's

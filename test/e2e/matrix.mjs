@@ -67,7 +67,7 @@ const REGISTER_DOC = 'docs/e2e-matrix.md';
  *  their renamed manifests — old stem in, new stem out. A verdict naming
  *  neither an old nor a new manifest still fails loud (rule 5). */
 const LEGACY_STEMS = new Map(Object.entries({
-  'm1-spike-boot': 'boot-verification', 'm1-carrier-loopback': 'carrier-loopback',
+  'm1-dsh-boot': 'boot-verification', 'm1-carrier-loopback': 'carrier-loopback',
   'm2-bridge-smoke': 'gateway-bridge-smoke', 'm2-gateway-binding': 'gateway-binding',
   'm2-gateway-audit': 'gateway-audit', 'm2-session': 'session-mock-llm',
   'm2-llm': 'llm-live-stream', 'm2-llm-device': 'llm-live-stream-device',
@@ -125,7 +125,7 @@ const statSafe = (p) => {
 const baseName = (p) => p.split('/').pop();
 
 /** Platform label from the path: the segment before `artifacts`; the runtime
- *  spike tree's hosts are named by the dir itself (macos-cli*). */
+ *  dsh tree's hosts are named by the dir itself (macos-cli*). */
 const platformOf = (relDir) => {
   const parts = relDir.split('/');
   const at = parts.indexOf('artifacts');
@@ -228,7 +228,7 @@ export const audit = (root, scenariosDir) => {
   // #158: every audited evidence dir lives under an `artifacts` segment
   // (hosts/<host>/artifacts/<dir>, runtime/dsh/artifacts/<dir>) — scoping
   // the walk there means a stray verdict capture in any other corner of the
-  // tree (a gitignored tmp dir, a screenshot-primary spike) cannot fail the
+  // tree (a gitignored tmp dir, a screenshot-primary dsh) cannot fail the
   // gate demanding deliverables it never claimed. Known-gaps semantics are
   // unchanged: the register's paths all carry the segment too.
   const files = walkFiles(root).filter((f) => f.split('/').includes('artifacts'));

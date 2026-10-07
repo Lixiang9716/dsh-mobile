@@ -2,7 +2,7 @@
 /**
  * node:timers/promises — the promise face of the host timer seam.
  *
- * The original shim REFUSED every name: the spike runtime had no timer pump,
+ * The original shim REFUSED every name: the dsh runtime had no timer pump,
  * so a timed backoff could only be an honest boundary error. The v1.4.0
  * timer seam (contract + host + harness fakes) replaced that premise — the
  * 0-delay arm is a real event-loop yield now (scheduler.yield below already

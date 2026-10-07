@@ -87,7 +87,7 @@ export const FAST_TRANSPORT_EPISODE_MS = 3 * FAST_TRANSPORT_MAX_PACE_MS;
  * the widest slot), or `undefined` — leave the failure unpaced — for a slow
  * one (which also resets the ladder). Time decay between calls restarts the
  * ladder when the outage episode has gone stale. `now` is injectable for
- * tests; the production clock is Date.now (the spike runtime has it). */
+ * tests; the production clock is Date.now (the dsh runtime has it). */
 export const makeFastTransportPacer = ({ now = Date.now } = {}) => {
   let strikes = 0;
   let lastStrikeAt = 0;

@@ -34,7 +34,7 @@ const SESSION_ID = 's-m2-upstream-0001';
 const INPUT_TEXT = 'Say hello';
 const EXPECTED_TEXT = 'Hello from upstream'; // the mock server's successText (ci/mock-llm-server.mjs)
 
-const log = createLogger('m2.spike');
+const log = createLogger('dsh.scenario');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   const error = reason instanceof Error ? reason : null;

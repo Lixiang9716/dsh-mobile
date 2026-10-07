@@ -9,7 +9,7 @@
  * contracts, never above them:
  *
  *   - The profile tree is the PINNED VENDOR CLOSURE (vendor/dsh@0.1.6-alpha.2
- *     + vendor/npm), mapped by the spike host loader; there is no disk Loader
+ *     + vendor/npm), mapped by the dsh host loader; there is no disk Loader
  *     because the gateway fs scopes are not the module filesystem. The layer
  *     composition below mirrors the dsh-base cordis.patch.yml rows the mobile
  *     profile mounts (llm → session → agent → tools → system-prompt →

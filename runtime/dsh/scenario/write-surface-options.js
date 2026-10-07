@@ -18,7 +18,7 @@ const log = createLogger('b4.web');
  * the dsh.plugins/1 registry the agent self-installs into during creation
  * turns — read from the WORKSPACE's own file. #346: the registry lives at
  * `<containerRoot>/plugins/registry.json`, which on a real device seat is
- * BELOW the app scope's root (Android: `spike/plugins/registry.json`
+ * BELOW the app scope's root (Android: `dsh/plugins/registry.json`
  * under `profiles/default/`) — the pre-#346 bare `plugins/registry.json`
  * spelling named the app scope root and degraded the tier to empty on
  * every real seat. The path derives from the boot config (injected: the

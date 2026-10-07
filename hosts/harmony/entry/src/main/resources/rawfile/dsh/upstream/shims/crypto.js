@@ -4,8 +4,8 @@
  *
  * Covers (upstream usage → this module):
  *   - dsh-agent-loop, dsh-sdk-protocol (`randomUUID`) — message/attempt
- *     identity; built on the spike host's `crypto.getRandomValues` (the same
- *     platform RNG seam the M1 spike proved).
+ *     identity; built on the dsh host's `crypto.getRandomValues` (the same
+ *     platform RNG seam the M1 dsh proved).
  *   - dsh-client-modules (`createHash('sha1')`) — the web-boot revision
  *     scheme: shortHash/framedHash over entry graphs, combo records, and
  *     staged bundle bytes (W-INTEG leg). Pure-JS SHA-1: 12-hex truncated
@@ -14,12 +14,12 @@
  *     revision nonce; rendered through DshBuffer.toString('hex').
  *   - dsh-tool-skill (`createHash('sha256')`) — the session skill-catalog
  *     digest (agent-flow leg): content identity over the durable catalog
- *     entries, hex digested. Pure-JS SHA-256 through the spike's own
+ *     entries, hex digested. Pure-JS SHA-256 through the dsh's own
  *     sha256.js (the install pipeline's primitive — one implementation, no
  *     second hand-rolled copy).
  *
  * Intentionally NOT supported: everything else (ciphers, HMAC, other digests —
- * content addressing elsewhere in the spike stays sha256.js). An import or
+ * content addressing elsewhere in the dsh stays sha256.js). An import or
  * algorithm name outside this table is loud (rule 5).
  */
 import { DshBuffer, encodeUtf8 } from 'upstream/shims/buffer.js';
@@ -113,7 +113,7 @@ const createHmac = (algorithm, key) => {
   }[algorithm];
   if (nobleHash === undefined) {
     throw new Error(`node:crypto: createHmac('${algorithm}') is not supported `
-      + `by the spike runtime (supported: sha1, sha256, sha512)`);
+      + `by the dsh runtime (supported: sha1, sha256, sha512)`);
   }
   let keyBytes;
   if (typeof key === 'string') keyBytes = encodeUtf8(key);
@@ -144,7 +144,7 @@ const createHash = (algorithm) => {
   const digestOf = SUPPORTED_ALGOS[algorithm];
   if (digestOf === undefined) {
     throw new Error(`node:crypto: createHash('${algorithm}') is not supported `
-      + `by the spike runtime (supported: ${Object.keys(SUPPORTED_ALGOS).join(', ')})`);
+      + `by the dsh runtime (supported: ${Object.keys(SUPPORTED_ALGOS).join(', ')})`);
   }
   let fed = new Uint8Array(0);
   const hash = {

@@ -52,7 +52,7 @@ rm -f "$LOG"
 # declared-unavailable fallback — the battery attacks the validator.
 RC=0
 (cd . && ./build/dsh-cli . scenario/security-gateway-fuzz.js --http > "$LOG" 2>&1) || RC=$?
-grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" > "$ART/scenario.jsonl" || true
 grep '^{"audit":"socket\.' "$LOG" > "$ART/gateway-audit.jsonl" || true
 # The checker is the authoritative gate; the exit code is reported beside it
 # (a non-zero exit is a crashed process OR a failed scenario — the log and

@@ -12,7 +12,7 @@
  *
  * The fflate require is by absolute staged path — same bundle root every
  * other shim import spells (/vendor/npm/...), so it resolves identically on
- * the spike cjs-loader and plain node.
+ * the dsh cjs-loader and plain node.
  */
 const bytes = require('./bytes.js');
 

@@ -9,7 +9,7 @@
  *    the UI thread — boot.verification, gateway.bridge-smoke, session.mock-llm on the ONE
  *    serial JS thread (ARCHITECTURE.md §6). The returned summary is the human
  *    verdict; the E2E verdict is the checker over the captured
- *    `dsh.spike.log:` lines (never this Text, never a screenshot).
+ *    `dsh.runtime.log:` lines (never this Text, never a screenshot).
  *
  * 2. Binding phase (event-driven): the loopback carrier serves the materialized
  *    Web Client, ArkWeb mounts it, and HostPhase drives scenario

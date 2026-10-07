@@ -31,7 +31,7 @@ import { mountWorkspace } from 'upstream/shims/fs.js';
 import { createLogger } from 'logger.js';
 
 const SCENARIO = 'tool.fs';
-const log = createLogger('tool-fs.spike');
+const log = createLogger('tool-fs.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 
 const WORKSPACE = '/workspace';

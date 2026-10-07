@@ -36,12 +36,12 @@ const StrReplaceEditor = await import('@deepseek-ai/dsh-tool-str-replace-editor'
 const root = mkdtempSync(join(tmpdir(), 'dsh-toolface-z3-'));
 mountWorkspace(root);
 
-// The battery shape (r16 v2c): root/spike is the spike tree, the registry
+// The battery shape (r16 v2c): root/dsh is the dsh tree, the registry
 // lives at root/plugins/registry.json — 'dsh/../plugins/registry.json'
-// climbs out of root/spike back INTO the root.
-mkdirSync(join(root, 'spike'), { recursive: true });
+// climbs out of root/dsh back INTO the root.
+mkdirSync(join(root, 'dsh'), { recursive: true });
 mkdirSync(join(root, 'plugins'), { recursive: true });
-writeFileSync(join(root, 'spike', 'main.js'), 'boot\n');
+writeFileSync(join(root, 'dsh', 'main.js'), 'boot\n');
 writeFileSync(join(root, 'plugins', 'registry.json'), '{\n  "version": 1\n}\n');
 
 // An EXISTING directory outside the root (the /system/app sibling) and an

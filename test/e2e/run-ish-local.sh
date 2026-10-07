@@ -166,7 +166,7 @@ rm -f "$LOG"
 (cd runtime/dsh && \
     DSH_ISH_ROOTFS="$ROOTFS" DSH_SPIKE_TMPDIR="$WORKSPACE" \
     ./build/dsh-cli . scenario/userland-shell.js > "$LOG" 2>&1) || true
-grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" > "$ART/scenario.jsonl" || true
 node test/e2e/check.mjs --manifest test/e2e/scenarios/userland-shell-local.json \
     --log "$LOG" --out "$ART/verdict-userland-shell-local.json"
 

@@ -24,7 +24,7 @@ const CPP_DIR = fileURLToPath(
 );
 const RUNTIME_KT = fileURLToPath(
   new URL(
-    '../../hosts/android/app/src/main/java/com/dshmobile/spike/JsRuntime.kt',
+    '../../hosts/android/app/src/main/java/com/dshmobile/dsh/JsRuntime.kt',
     import.meta.url,
   ),
 );

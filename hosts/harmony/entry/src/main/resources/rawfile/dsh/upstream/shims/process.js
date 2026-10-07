@@ -114,7 +114,7 @@ export const chdir = (dir) => {
 };
 export const platform = () => globalThis.__dshProfilePlatform ?? 'mobile';
 /** execPath: node reports the running node binary; this runtime's host
- * process is the spike engine, whose path is not exported to JS. The name is
+ * process is the dsh engine, whose path is not exported to JS. The name is
  * the honest face — a non-empty string so consumers that RECORD it (lsp
  * config validation treats `command: process.execPath` as provided) see a
  * value, while any attempt to EXECUTE it hits the no-subprocess seam. The
@@ -245,7 +245,7 @@ const proc = {
     return true;
   },
   /* stdout/stderr: the inherit-stdio legs pipe into them ({end: false}); the
-   * spike has no console of its own — writes drain into a no-op sink (the
+   * dsh has no console of its own — writes drain into a no-op sink (the
    * harness's processState carries the real output capture). */
   stdout: { write: () => true, end: () => {}, destroy: () => {} },
   stderr: { write: () => true, end: () => {}, destroy: () => {} },

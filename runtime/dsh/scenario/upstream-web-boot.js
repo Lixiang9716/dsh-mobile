@@ -38,7 +38,7 @@ const EXPECTED_TEXT = 'Hello from upstream'; // the mock server's successText
 const JOURNAL_STREAM_ID = 'probe/session-journal-1';
 const RPC_ID = 'probe/session-list-1';
 
-const log = createLogger('m2.spike');
+const log = createLogger('dsh.scenario');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   const error = reason instanceof Error ? reason : null;

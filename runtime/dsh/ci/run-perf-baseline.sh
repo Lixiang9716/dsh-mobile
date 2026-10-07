@@ -113,7 +113,7 @@ PROC_COLD_START_MS=$((PROC_END - PROC_START))
 #    SAME captured log into the receipt.
 mkdir -p "$ART_DIR"
 cp logs-perf-baseline.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-perf-baseline.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-perf-baseline.txt > "$ART_DIR/scenario.jsonl"
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/perf-baseline.json" \
     --log logs-perf-baseline.txt \
@@ -123,8 +123,8 @@ EVENTS="$(grep -c '"scenario":"perf.baseline"' logs-perf-baseline.txt)"
 MEASURED="$(node -e '
 const fs = require("fs");
 const rows = fs.readFileSync(process.argv[1], "utf8").split("\n")
-  .filter((l) => l.startsWith("dsh.spike.log:"))
-  .map((l) => JSON.parse(l.slice("dsh.spike.log:".length)))
+  .filter((l) => l.startsWith("dsh.runtime.log:"))
+  .map((l) => JSON.parse(l.slice("dsh.runtime.log:".length)))
   .map((r) => (Array.isArray(r.data) ? r.data[0] : null))
   .filter((p) => p && p.scenario === "perf.baseline");
 const pick = (event) => rows.find((p) => p.event === event) ?? null;

@@ -75,7 +75,7 @@ CLI_RC=0
 
 mkdir -p "$ART_DIR"
 cp logs-leak-canary.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-leak-canary.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-leak-canary.txt > "$ART_DIR/scenario.jsonl"
 
 if [ "$CLI_RC" -ne 0 ]; then
     echo "leak-canary: RED — the canary tripped (see the verdict event in $ART_DIR/logs.txt)" >&2
@@ -96,8 +96,8 @@ EVENTS="$(grep -c '"scenario":"leak.canary"' logs-leak-canary.txt)"
 GROWTH="$(node -e '
 const fs = require("fs");
 const rows = fs.readFileSync(process.argv[1], "utf8").split("\n")
-  .filter((l) => l.startsWith("dsh.spike.log:"))
-  .map((l) => JSON.parse(l.slice("dsh.spike.log:".length)))
+  .filter((l) => l.startsWith("dsh.runtime.log:"))
+  .map((l) => JSON.parse(l.slice("dsh.runtime.log:".length)))
   .map((r) => (Array.isArray(r.data) ? r.data[0] : null))
   .filter((p) => p && p.scenario === "leak.canary");
 const verdict = rows.find((p) => p.event === "leak.canary.verdict");

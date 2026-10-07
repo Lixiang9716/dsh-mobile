@@ -1,6 +1,6 @@
 {
   "scenario": "boot.verification",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "runtime.created", "match": { "engine": "quickjs-ng", "engineVersion": "0.17.0" } },
     { "event": "sink.bound", "match": {} },

@@ -1,6 +1,6 @@
 {
   "scenario": "install.carrier-evidence",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "config.resolved", "match": { "webClient": "dsh-web-client-mini", "slotSet": ["notes.toolbar"], "profile": "install-full-cycle", "format": "cordis.patch.json" } },
     { "event": "client.selected", "match": { "client": "dsh-web-client-mini", "source": "config" } },

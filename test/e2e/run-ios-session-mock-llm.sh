@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test/e2e/run-ios-session-mock-llm.sh — local M2 "first on-device session" E2E driver.
 #
-# Builds DSHSpike, launches it on a booted simulator IN SESSION MODE
+# Builds DSHHost, launches it on a booted simulator IN SESSION MODE
 # (-dsh-mode session), and waits for the Web Client to mount + the
 # session.mock-llm scenario to complete — NO UI interaction: the scenario
 # auto-runs once the mounted page connects (host.info readiness signal),
@@ -32,8 +32,8 @@ UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART=""
 SKIP_BUILD=0
 CLIENT=default
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -91,7 +91,7 @@ runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -114,7 +114,7 @@ xcrun simctl launch --terminate-running-process \
   "$UDID" "$APP_BUNDLE_ID" -dsh-mode session ${LAUNCH_ARGS[@]+"${LAUNCH_ARGS[@]}"} >/dev/null
 
 # Markers: webclient.mounted → page-loaded shot; first ws.token-delta →
-# mid-stream shot; "spike: sequence session=" → final shot, then checkers.
+# mid-stream shot; "dsh: sequence session=" → final shot, then checkers.
 log "waiting for Web Client mount (deadline 300s)"
 wait_line "webclient.mounted" 300 || fail_deadline "webclient.mounted never appeared"
 sleep 1   # let the first frames render before the shot
@@ -126,13 +126,13 @@ wait_line "ws.token-delta" 60 \
 shot 02-mid-stream
 
 log "waiting for session completion (terminal marker)"
-wait_line "spike: sequence session=" 120 || fail_deadline "terminal marker never appeared"
+wait_line "dsh: sequence session=" 120 || fail_deadline "terminal marker never appeared"
 sleep 1
 shot 03-final-transcript
 
 # ---- 5. checkers ------------------------------------------------------------
 log "5/5 running checkers"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 PASS=0; FAILED=""
 run_check() { # MANIFEST STEM
   if node test/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then

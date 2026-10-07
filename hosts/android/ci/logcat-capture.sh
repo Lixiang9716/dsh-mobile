@@ -1,11 +1,11 @@
 #!/bin/sh
 # logcat-capture.sh — the shared canary-pinned logcat capture discipline for
-# the Android emulator runners (run-upstream-parity.sh, run-spike-e2e.sh,
+# the Android emulator runners (run-upstream-parity.sh, run-dsh-e2e.sh,
 # run-android-full.sh, run-upstream-suite.sh, run-live-llm.sh).
 #
 # The race it pins (measured 2026-09-24 on run-upstream-parity.sh, seen again
 # 2026-09-29): `adb logcat -c` races a reader's initial snapshot — lines
-# buffered BEFORE the clear (a previous scenario's `dsh.spike.result: ALL`
+# buffered BEFORE the clear (a previous scenario's `dsh.runtime.result: ALL`
 # completion tags) can still reach a freshly attached streamer and instantly
 # satisfy a completion wait or pollute the truncated capture, before this run
 # logged anything. The discipline, proven in run-upstream-parity.sh: a canary
@@ -18,7 +18,7 @@
 #       Clears the device buffer (`adb logcat -c`), truncates FILE, starts a
 #       line-buffered streamer `adb logcat -s <tag-filter...> dsh.canary`
 #       appending to FILE (the canary tag is added to the specs automatically
-#       — logcat tag specs are EXACT, so `-s dsh.spike` alone never sees it),
+#       — logcat tag specs are EXACT, so `-s dsh.dsh` alone never sees it),
 #       emits a unique canary marker onto dsh.canary, and waits (bounded) for
 #       that marker to reach FILE — the proof the streamer is attached and
 #       everything ahead of the marker is pre-capture. Prints the canary id
@@ -64,7 +64,7 @@ canary_view() {
 cmd_start() { # <file> <tag-filter...>
     file=$1
     shift
-    [ "$#" -ge 1 ] || die "start: no tag filters given (the tags to stream, e.g. dsh.spike dsh.spike.result)"
+    [ "$#" -ge 1 ] || die "start: no tag filters given (the tags to stream, e.g. dsh.dsh dsh.runtime.result)"
     [ -d "$(dirname "$file")" ] || die "capture dir missing: $(dirname "$file")"
     : > "$file"
 

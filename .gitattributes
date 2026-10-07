@@ -1,7 +1,7 @@
 # Generated iOS artifacts — never edit by hand.
 #
 # hosts/ios/App/Generated/** is the runtime/dsh JS bundle embedded as C
-# byte arrays, and hosts/ios/DSHSpike.xcodeproj/** is regenerated from
+# byte arrays, and hosts/ios/DSHHost.xcodeproj/** is regenerated from
 # project.yml by xcodegen — both produced by hosts/ios/gen.sh (committed
 # for D9 self-containment; a D9 amendment proposal lands alongside).
 #
@@ -15,8 +15,8 @@
 # a diff driver that does not exist, and git falls back to a textual diff.
 
 hosts/ios/App/Generated/** binary linguist-generated
-hosts/ios/DSHSpike.xcodeproj/project.pbxproj linguist-generated
-hosts/ios/DSHSpike.xcodeproj/** linguist-generated
+hosts/ios/DSHHost.xcodeproj/project.pbxproj linguist-generated
+hosts/ios/DSHHost.xcodeproj/** linguist-generated
 
 # govrail's append-only surprises ledger: concurrent writers union-merge.
 .gov/surprises.jsonl merge=union

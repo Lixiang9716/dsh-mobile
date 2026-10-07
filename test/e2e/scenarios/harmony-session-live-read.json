@@ -1,7 +1,7 @@
 {
   "scenario": "harmony.session.live-read",
   "extract": {
-    "prefix": "dsh.spike.log:"
+    "prefix": "dsh.runtime.log:"
   },
   "expect": [
     {

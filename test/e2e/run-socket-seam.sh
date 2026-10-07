@@ -46,7 +46,7 @@ echo "== 2/2 JS gate: scenario → gateway → host seam =="
 LOG="$ART/logs.txt"
 rm -f "$LOG"
 (cd runtime/dsh && ./build/dsh-cli . scenario/socket-seam.js > "$LOG" 2>&1) || true
-grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" > "$ART/scenario.jsonl" || true
 grep '^{"audit":"socket\.' "$LOG" > "$ART/socket-audit.jsonl" || true
 node test/e2e/check.mjs --manifest test/e2e/scenarios/socket-seam-local.json \
     --log "$LOG" --out "$ART/verdict-socket-seam-local.json"

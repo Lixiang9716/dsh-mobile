@@ -64,7 +64,7 @@ Web Client from plugin configuration and hardcodes no UI:
   on Android ([docs/e2e-matrix.md](../docs/e2e-matrix.md)).
 
 Which Web Client is active is host configuration (`-dsh-web-client <id>`
-launch argument on the iOS spike; default `dsh-web-client`) — the device
+launch argument on the iOS dsh; default `dsh-web-client`) — the device
 evidence behind the swappable-UI claim being the config-selected client
 swap (`ui.client-swap` 7/7) and a component-level slot registration (the
 `dsh-notes` plugin's `notes.toolbar`, logged `slot.register` →

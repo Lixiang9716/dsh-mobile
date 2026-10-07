@@ -25,7 +25,7 @@ import * as subprocessPlugin from 'system-plugins/dsh-subprocess-quickjs/index.j
 import * as uiPlugin from 'system-plugins/dsh-ui/index.js';
 
 const SCENARIO = 'session.mock-llm';
-const log = createLogger('m2.spike');
+const log = createLogger('dsh.scenario');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   log.debug('scenario failed', { reason });

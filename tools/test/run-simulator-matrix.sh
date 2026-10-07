@@ -10,7 +10,7 @@
 # constraint 5 / rules.md rule L4):
 #
 #   release leg   the user-facing build, plain-launched on the simulator:
-#                 zero E2E machinery asserted (0 spike.log / 0 verdict /
+#                 zero E2E machinery asserted (0 dsh.log / 0 verdict /
 #                 0 debug+info / 0 audit), the official surface reached,
 #                 and an E2E drive REFUSED BY NAME (rule 5). The release
 #                 configuration CANNOT run the e2e drives — the drives are
@@ -22,7 +22,7 @@
 #                 existing e2e runners unchanged: iOS the full UI-driven
 #                 gateway drive + the device-plane ladder (run-ios.sh,
 #                 run-ios-device-plane.sh), Android the three-scenario
-#                 regression (run-spike-e2e.sh) + the device-plane leg
+#                 regression (run-dsh-e2e.sh) + the device-plane leg
 #                 (run-device-plane.sh). Scenario-id logs 1:1 against the
 #                 manifests, receipts machine-authored on the green path
 #                 only.
@@ -71,8 +71,8 @@ ANDROID_AVD="${DSH_ANDROID_AVD:-pixel}"
 export ANDROID_HOME="${ANDROID_HOME:-/opt/homebrew/share/android-commandlinetools}"
 export JAVA_HOME="${JAVA_HOME:-/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home}"
 export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$JAVA_HOME/bin:$PATH"
-IOS_BUNDLE=org.dsh.DSHSpike
-ANDROID_PKG=com.dshmobile.spike
+IOS_BUNDLE=org.dsh.DSHHost
+ANDROID_PKG=com.dshmobile.host
 KEEP_GOING="${DSH_MATRIX_KEEP_GOING:-0}"
 STATE="$(mktemp /tmp/dsh-matrix-state.XXXXXX)"
 OVERALL=0
@@ -156,7 +156,7 @@ ios_app_alive() {
     xcrun simctl spawn "$IOS_UDID" launchctl list 2>/dev/null | grep -F "$IOS_BUNDLE" >/dev/null
 }
 
-# ios_generate() — the D9 flip: App/Generated/ and DSHSpike.xcodeproj/ are
+# ios_generate() — the D9 flip: App/Generated/ and DSHHost.xcodeproj/ are
 # build output; a fresh worktree regenerates them (gen.sh needs xcodegen).
 ios_generate() {
     command -v xcodegen >/dev/null || mx_die "xcodegen missing — brew install xcodegen"
@@ -206,12 +206,12 @@ ios_refusal_launch() { # ARGS...
 ios_release_leg() {
     local art="hosts/ios/artifacts/simulator-matrix/release"
     local dd="${DSH_IOS_RELEASE_DD:-/tmp/dsh-sim-matrix-ios-release-dd}"
-    local rel="$dd/Build/Products/Release-iphonesimulator/DSHSpike.app"
+    local rel="$dd/Build/Products/Release-iphonesimulator/DSHHost.app"
     CURRENT_ART="$art"
     mkdir -p "$art"
 
     mx "release leg: xcodebuild -configuration Release"
-    xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+    xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
         -configuration Release -destination "platform=iOS Simulator,id=$IOS_UDID" \
         -derivedDataPath "$dd" 2>&1 | tail -3 \
         || mx_die "xcodebuild Release failed"
@@ -235,7 +235,7 @@ ios_release_leg() {
     # device busy and makes SpringBoard refuse launches (measured in the
     # release-logging runner this leg mirrors).
     xcrun simctl spawn "$IOS_UDID" log show --start "$since" \
-        --predicate 'process == "DSHSpike"' --style compact > "$art/plain-launch-release.oslog.txt" 2>&1 || true
+        --predicate 'process == "DSHHost"' --style compact > "$art/plain-launch-release.oslog.txt" 2>&1 || true
 
     # At least one capture channel must carry bytes — a dead capture makes
     # every zero count vacuous (the absence must be a REAL absence).
@@ -253,13 +253,13 @@ ios_release_leg() {
     # main because the serving boot brings up the full agent spine, whose
     # audit lines ride NSLog regardless of flavor and whose warn records L4
     # keeps; see the surprise ledger): dsh.gateway.audit lines and
-    # warn/error-level dsh.spike.log records. Their counts are recorded in
+    # warn/error-level dsh.runtime.log records. Their counts are recorded in
     # release-proof.json as observed fact.
     local f
     for f in "$art/plain-launch-release.stdout.txt" "$art/plain-launch-release.stderr.txt" \
              "$art/plain-launch-release.oslog.txt"; do
-        for pat in 'spike: sequence' 'spike: ui-wait' 'spike: app launched' \
-                   'dsh.spike.verdict' 'dsh.spike.result' 'ALL PASS' 'ALL FAIL' \
+        for pat in 'dsh: sequence' 'dsh: ui-wait' 'dsh: app launched' \
+                   'dsh.dsh.verdict' 'dsh.runtime.result' 'ALL PASS' 'ALL FAIL' \
                    '"level":"debug"' '"level":"info"'; do
             [ "$(count_of "$f" "$pat")" -eq 0 ] \
                 || mx_die "release emitted drive machinery '$pat' in $f — the flavor split regressed"
@@ -284,7 +284,7 @@ ios_release_leg() {
     local deadline=$((SECONDS + 45)) refused=0
     while [ "$SECONDS" -lt "$deadline" ]; do
         xcrun simctl spawn "$IOS_UDID" log show --start "$since" \
-            --predicate 'process == "DSHSpike"' --style compact > "$art/refusal.oslog.txt" 2>&1 || true
+            --predicate 'process == "DSHHost"' --style compact > "$art/refusal.oslog.txt" 2>&1 || true
         grep -q "release build: refusing '-dsh-mode session'" "$art/refusal.oslog.txt" && { refused=1; break; }
         sleep 2
     done
@@ -309,8 +309,8 @@ proof = {
     "tree": os.environ.get("DSH_MATRIX_TREE", ""),
     "assertions": {
         "driveMachineryMarkers": 0,
-        "assertedZero": ["spike: sequence", "spike: ui-wait", "spike: app launched",
-                          "dsh.spike.verdict", "dsh.spike.result", "ALL PASS", "ALL FAIL",
+        "assertedZero": ["dsh: sequence", "dsh: ui-wait", "dsh: app launched",
+                          "dsh.dsh.verdict", "dsh.runtime.result", "ALL PASS", "ALL FAIL",
                           "level:debug records", "level:info records"],
         "officialUiReached": "plain-launch-release.png",
         "driveRefusal": "refusal.oslog.txt — refusing '-dsh-mode session' by name",
@@ -499,7 +499,7 @@ android_release_leg() {
     grep -q "assets/official-web/dist/index.html" "$art/apk-release-listing.txt" \
         || mx_die "the release APK embeds no official dist"
     grep -q "assets/dsh/logger.js" "$art/apk-release-listing.txt" \
-        || mx_die "the release APK embeds no spike bundle"
+        || mx_die "the release APK embeds no dsh bundle"
 
     # The shipped artifact is unsigned (release.yml uploads it that way); the
     # emulator only takes signed APKs, so a COPY is signed with the debug
@@ -562,13 +562,13 @@ android_release_leg() {
     } > "$art/origin-release.txt"
     adb_of exec-out screencap -p > "$art/plain-launch-release.png"
     png_valid "$art/plain-launch-release.png" || mx_die "release screenshot is not a valid PNG"
-    adb_of logcat -d -s dsh.spike dsh.spike.result > "$art/plain-launch-release.logcat.txt" 2>&1 || true
+    adb_of logcat -d -s dsh.runtime dsh.runtime.result > "$art/plain-launch-release.logcat.txt" 2>&1 || true
     adb_of logcat -d --pid="$(adb_of shell pidof "$ANDROID_PKG" | tr -d '\r')" \
         > "$art/plain-launch-release.app.logcat.txt" 2>&1 || true
 
     local f
     for f in "$art/plain-launch-release.logcat.txt" "$art/plain-launch-release.app.logcat.txt"; do
-        for pat in 'dsh.spike.result' 'ALL PASS' 'ALL FAIL' '"level":"debug"' '"level":"info"'; do
+        for pat in 'dsh.runtime.result' 'ALL PASS' 'ALL FAIL' '"level":"debug"' '"level":"info"'; do
             [ "$(count_of "$f" "$pat")" -eq 0 ] || mx_die "release emitted drive machinery '$pat' in $f — the flavor split regressed"
         done
     done
@@ -608,7 +608,7 @@ proof = {
     "tree": os.environ.get("DSH_MATRIX_TREE", ""),
     "assertions": {
         "driveMachineryMarkers": 0,
-        "assertedZero": ["dsh.spike.result", "ALL PASS", "ALL FAIL",
+        "assertedZero": ["dsh.runtime.result", "ALL PASS", "ALL FAIL",
                           "level:debug records", "level:info records", "debuggable"],
         "officialUiReached": "carrier LISTEN + page fetch + GET / -> 401 (origin-release.txt); plain-launch-release.png",
         "driveRefusal": "refusal.logcat.txt — refusing 'dsh.llm' by name",
@@ -632,22 +632,22 @@ PY
 android_regression_leg() {
     local art="hosts/android/artifacts/simulator-matrix/regression"
     mkdir -p "$art/screens"
-    mx "harness regression: gradlew assembleDebug + run-spike-e2e.sh"
+    mx "harness regression: gradlew assembleDebug + run-dsh-e2e.sh"
     ( cd hosts/android && ./gradlew assembleDebug --no-daemon --console=plain 2>&1 | tail -2 ) \
         || mx_die "gradle assembleDebug failed"
-    hosts/android/ci/run-spike-e2e.sh || { record android regression FAIL "run-spike-e2e.sh exited non-zero"; return 1; }
+    hosts/android/ci/run-dsh-e2e.sh || { record android regression FAIL "run-dsh-e2e.sh exited non-zero"; return 1; }
 
     # The runner captures to /tmp (its own CI contract); the matrix assembles
     # the committed evidence dir around it — the same shape as the committed
     # m1/m4 legs (logs.txt, scenario.jsonl, verdict-*.json, receipt.json).
-    cp /tmp/dsh-spike-logs.txt "$art/logs.txt" \
-        || mx_die "run-spike-e2e.sh left no /tmp/dsh-spike-logs.txt — nothing to evidence"
-    grep 'dsh.spike.log:' "$art/logs.txt" > "$art/scenario.jsonl" || true
-    cp /tmp/dsh-spike-verdict-m1.json      "$art/verdict-boot-verification.json" \
+    cp /tmp/dsh-dsh-logs.txt "$art/logs.txt" \
+        || mx_die "run-dsh-e2e.sh left no /tmp/dsh-dsh-logs.txt — nothing to evidence"
+    grep 'dsh.runtime.log:' "$art/logs.txt" > "$art/scenario.jsonl" || true
+    cp /tmp/dsh-dsh-verdict-m1.json      "$art/verdict-boot-verification.json" \
         || mx_die "the boot verdict capture is missing"
-    cp /tmp/dsh-spike-verdict-m2.json      "$art/verdict-gateway-bridge-smoke.json" \
+    cp /tmp/dsh-dsh-verdict-m2.json      "$art/verdict-gateway-bridge-smoke.json" \
         || mx_die "the bridge-smoke verdict capture is missing"
-    cp /tmp/dsh-spike-verdict-session.json "$art/verdict-session-mock-llm.json" \
+    cp /tmp/dsh-dsh-verdict-session.json "$art/verdict-session-mock-llm.json" \
         || mx_die "the session verdict capture is missing"
     adb_of exec-out screencap -p > "$art/screens/final.png"
     png_valid "$art/screens/final.png" || mx_die "regression screenshot is not a valid PNG"
@@ -665,7 +665,7 @@ for stem, manifest in [("boot-verification", "boot-verification"),
                       "id": v["scenario"], "pass": bool(v["pass"])})
 receipt = {
     "host": f"android {serial}",
-    "runner": "hosts/android/ci/run-spike-e2e.sh (assembled by tools/test/run-simulator-matrix.sh)",
+    "runner": "hosts/android/ci/run-dsh-e2e.sh (assembled by tools/test/run-simulator-matrix.sh)",
     "phase": "three-scenario regression (boot.verification + gateway.bridge-smoke + session.mock-llm)",
     "launch": "emulator, plain am start (Debug harness)",
     "tree": os.environ.get("DSH_MATRIX_TREE", ""),

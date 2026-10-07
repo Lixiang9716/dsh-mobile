@@ -6,7 +6,7 @@
  * Upstream's source-mode launches hand `node --import <tsx> <srcBin.ts>` to
  * a REAL child (runLoaderSmoke, the subprocess-local host scripts, the
  * corpus runners) and the source-closure Workers build a data: bootstrap
- * around `import.meta.resolve('tsx/esm/api')`. Under the spike, three
+ * around `import.meta.resolve('tsx/esm/api')`. Under the dsh, three
  * seams had to meet for those launches to exist at all:
  *
  *   1. RESOLUTION — the C import.meta.resolve throws for the bare name
@@ -49,7 +49,7 @@ export {
   installSpawnArgvStager,
 } from './source-bootstrap-tsx-stage.js';
 
-/** The real tsx install this spike pairs with: the node differential's
+/** The real tsx install this dsh pairs with: the node differential's
  * dependency tree one level above the runtime bundle (<repo>/test/…).
  * Discovered lazily (a /bin/pwd child) and memoized — the overlay's first
  * src-mode launch pays one child spawn, every later call reuses it. */

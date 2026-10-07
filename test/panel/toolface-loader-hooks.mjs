@@ -14,7 +14,7 @@
  *     copies the `closures` gate keeps in sync with canonical); dsh-llm is
  *     the suite's stub (HarnessError base only);
  *   - the shims' bare `upstream/shims/…` specifiers resolve to the canonical
- *     runtime tree, exactly as the spike loader does on device.
+ *     runtime tree, exactly as the dsh loader does on device.
  */
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { join } from 'node:path';
@@ -55,7 +55,7 @@ export function resolve(specifier, context, next) {
   if (specifier.startsWith('upstream/shims/')) {
     return { url: pathToFileURL(join(repoRoot, 'runtime/dsh', specifier)).href, shortCircuit: true };
   }
-  // The spike-root spellings the loader serves on device ('/' IS the spike
+  // The dsh-root spellings the loader serves on device ('/' IS the dsh
   // root) — the same rows vitest.config.js aliases for the in-process suites.
   if (specifier.startsWith('/upstream/shims/')) {
     return { url: pathToFileURL(join(repoRoot, 'runtime/dsh', specifier.slice(1))).href, shortCircuit: true };

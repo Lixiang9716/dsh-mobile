@@ -69,13 +69,13 @@ echo "mock llm server: $LLM_URL" >&2
     --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-office.txt
 mkdir -p "$ART_DIR"
 cp logs-office.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-office.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-office.txt > "$ART_DIR/scenario.jsonl"
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/office.json" \
     --log logs-office.txt \
     --out "$ART_DIR/verdict.json"
 
-EVENTS="$(grep -c '^dsh.spike.log:' logs-office.txt)"
+EVENTS="$(grep -c '^dsh.runtime.log:' logs-office.txt)"
 cat > "$ART_DIR/receipt.json" <<EOF
 {
   "host": "darwin-cli (Darwin $(uname -srm))",

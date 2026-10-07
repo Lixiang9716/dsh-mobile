@@ -1,5 +1,5 @@
 /**
- * Typed JS shim over the C spike host's gateway bridge (contract/ v1.0.0).
+ * Typed JS shim over the C dsh host's gateway bridge (contract/ v1.0.0).
  * Scenarios import this module instead of touching the raw __dshGatewayCall
  * seam: every primitive of contract/primitives.d.ts is exposed with its
  * frozen shape. Bytes travel base64 — encoded via the vendored upstream

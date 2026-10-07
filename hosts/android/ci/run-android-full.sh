@@ -1,9 +1,9 @@
 #!/bin/sh
 # run-android-full.sh — the FULL Android E2E: the three-scenario regression
-# (run-spike-e2e.sh, untouched) plus the M4 completion session
+# (run-dsh-e2e.sh, untouched) plus the M4 completion session
 # (`android.capability-binding`: loopback carrier + WebView mount + the real
 # nine-primitive gateway binding, UI-driven where native). Evidence: the
-# canonical log stream bounded at the first `dsh.spike.result: ALL` line,
+# canonical log stream bounded at the first `dsh.runtime.result: ALL` line,
 # judged from the canary onward (the shared canary-pinned capture discipline,
 # hosts/android/ci/logcat-capture.sh), one checker verdict per manifest, and
 # screenshots at each UI stage (human evidence only — never a checker input).
@@ -14,14 +14,14 @@
 #
 # DSH_PHASES — optional comma list of the phases to run (default "1,2,3,4,5";
 # e.g. DSH_PHASES=2,3,4,5 runs everything but the phase-1 regression that
-# run-spike-e2e.sh already covers elsewhere). Unknown values abort with the
+# run-dsh-e2e.sh already covers elsewhere). Unknown values abort with the
 # offending name (rule 5); skipped phases announce themselves so a partial
 # run can never masquerade as the full sweep.
 set -eu
 
 CAPTURE="$(cd "$(dirname "$0")" && pwd)/logcat-capture.sh"
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 OUT=${DSH_M4_OUT:-/tmp}
 SCEN=test/e2e/scenarios
 M4_STREAM=$OUT/dsh-m4-stream.txt
@@ -53,7 +53,7 @@ say "building the APK (assembleDebug; no-ops when up to date)"
     || die "gradle :app:assembleDebug failed — set ANDROID_HOME if the SDK is missing"
 [ -f "$APK" ] || die "build produced no APK at $APK"
 
-# ---- device + boot, one bounded poll (same discipline as run-spike-e2e.sh)
+# ---- device + boot, one bounded poll (same discipline as run-dsh-e2e.sh)
 deadline=$(( $(date +%s) + 600 ))
 until adb get-state >/dev/null 2>&1 &&
       [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do
@@ -96,7 +96,7 @@ adb shell cat /sdcard/dsh-e2e/notes.txt | grep -q "dsh-mobile m4" \
 # and reindenting ~400 lines would bury the real diff of this change.
 if phase_wanted 1; then
 say "phase 1: three-scenario regression"
-bash hosts/android/ci/run-spike-e2e.sh
+bash hosts/android/ci/run-dsh-e2e.sh
 fi
 
 # The m4 phase's notify leg needs POST_NOTIFICATIONS: the grant above ran
@@ -115,7 +115,7 @@ shot() { adb exec-out screencap -p > "$OUT/dsh-m4-$1.png" 2>/dev/null || true; }
 
 # Taps the first ENABLED UI node whose text/content-desc equals one of the
 # alternatives in $1 (full-value match: the alternation stays inside the
-# quotes, so "ALLOW" cannot hit "Allow DSH Spike Host to access ...").
+# quotes, so "ALLOW" cannot hit "Allow DSH Dsh Host to access ...").
 # Best effort: nonzero when no node matches this round.
 tap_text() {
     adb shell uiautomator dump /sdcard/dsh-ui.xml >/dev/null 2>&1 || return 1
@@ -184,7 +184,7 @@ adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # the completion wait judge the CANARY view: `logcat -c` races the reader's
 # initial snapshot, and a stale pre-clear marker must not fire a screenshot,
 # a tap, or the wait.
-CANARY=$("$CAPTURE" start -f "$M4_STREAM" dsh.spike dsh.spike.result dsh.spike.ui dsh.spike.audit)
+CANARY=$("$CAPTURE" start -f "$M4_STREAM" dsh.dsh dsh.runtime.result dsh.runtime.ui dsh.runtime.audit)
 cview() { "$CAPTURE" view -f "$M4_STREAM" "$CANARY"; }
 cleanup() {
     "$CAPTURE" stop -f "$M4_STREAM" >/dev/null 2>&1 || true
@@ -199,7 +199,7 @@ done
 
 saw_mount=0; saw_picker=0; saw_approval=0; saw_notify=0
 deadline=$(( $(date +%s) + 300 ))
-until cview | grep -q "dsh.spike.result: ALL"; do
+until cview | grep -q "dsh.runtime.result: ALL"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         tail -80 "$M4_STREAM"
         die "m4 session did not complete within 300s"
@@ -238,10 +238,10 @@ sleep 0.3
 trap - EXIT
 cleanup
 
-cview | sed '/dsh.spike.result: ALL/q' > "$OUT/dsh-m4-logs.txt"
-grep 'dsh.spike.result' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-results.txt"
+cview | sed '/dsh.runtime.result: ALL/q' > "$OUT/dsh-m4-logs.txt"
+grep 'dsh.runtime.result' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-results.txt"
 cat "$OUT/dsh-m4-results.txt"
-grep 'dsh.spike.log:' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-scenario.jsonl"
+grep 'dsh.runtime.log:' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-scenario.jsonl"
 grep 'dsh.gateway.audit:' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-audit.jsonl" || true
 
 # E2E by logs: the binding scenario + the mandatory audit sequence (the
@@ -262,7 +262,7 @@ fi
 # boot wire (web.boot over the bus seam) into the WebView; the same-origin
 # probe drives POST /api + the remote.mux upgrade from inside the page.
 # Same capture discipline as phase 2: a line-buffered logcat stream bounded
-# at the first `dsh.spike.result: ALL` line; screenshots are human evidence.
+# at the first `dsh.runtime.result: ALL` line; screenshots are human evidence.
 if phase_wanted 3; then
 say "phase 3: android.officialweb.mount (official dist + web.boot drive + probe)"
 
@@ -274,7 +274,7 @@ wshot() { adb exec-out screencap -p > "$ART/screens/$1.png" 2>/dev/null || true;
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # Same capture discipline as phase 2, via the shared canary-pinned script.
-WCANARY=$("$CAPTURE" start -f "$WEB_STREAM" dsh.spike dsh.spike.result)
+WCANARY=$("$CAPTURE" start -f "$WEB_STREAM" dsh.dsh dsh.runtime.result)
 wview() { "$CAPTURE" view -f "$WEB_STREAM" "$WCANARY"; }
 cleanup_web() {
     "$CAPTURE" stop -f "$WEB_STREAM" >/dev/null 2>&1 || true
@@ -289,7 +289,7 @@ done
 
 saw_index=0; saw_plugins=0
 deadline=$(( $(date +%s) + 300 ))
-until wview | grep -q "dsh.spike.result: ALL"; do
+until wview | grep -q "dsh.runtime.result: ALL"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         tail -80 "$WEB_STREAM"
         die "official-web drive did not complete within 300s"
@@ -319,10 +319,10 @@ wshot 04-final-state
 trap - EXIT
 cleanup_web
 
-wview | sed '/dsh.spike.result: ALL/q' > "$ART/logs.txt"
-grep 'dsh.spike.result' "$ART/logs.txt" > "$ART/results.txt"
+wview | sed '/dsh.runtime.result: ALL/q' > "$ART/logs.txt"
+grep 'dsh.runtime.result' "$ART/logs.txt" > "$ART/results.txt"
 cat "$ART/results.txt"
-grep 'dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl" || true
+grep 'dsh.runtime.log:' "$ART/logs.txt" > "$ART/scenario.jsonl" || true
 
 # ---- layout-truth probe (test/e2e/ui-probe.mjs, scenario ui.occlusion) ----
 # The event stream cannot see the #179 class: a native surface painted over
@@ -350,11 +350,11 @@ node test/e2e/check.mjs --manifest $SCEN/ui-occlusion.json \
     --log "$ART/logs.txt" --out "$ART/verdict-ui-occlusion.json"
 cat "$ART/verdict-ui-occlusion.json"
 
-adb pull "/data/data/$PKG/files/spike-capture-android-officialweb-mount.log" \
+adb pull "/data/data/$PKG/files/dsh-capture-android-officialweb-mount.log" \
     "$ART/capture-android-officialweb-mount.log" >/dev/null 2>&1 \
     || say "capture file pull skipped (run-as fallback)"
 [ -f "$ART/capture-android-officialweb-mount.log" ] ||
-    adb exec-out run-as $PKG cat files/spike-capture-android-officialweb-mount.log \
+    adb exec-out run-as $PKG cat files/dsh-capture-android-officialweb-mount.log \
     > "$ART/capture-android-officialweb-mount.log" 2>/dev/null || true
 
 node test/e2e/check.mjs --manifest $SCEN/android-officialweb-mount.json \
@@ -388,7 +388,7 @@ sshots() { adb exec-out screencap -p > "$SART/screens/$1.png" 2>/dev/null || tru
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # Same capture discipline as phase 3, via the shared canary-pinned script.
-SECANARY=$("$CAPTURE" start -f "$SESSION_STREAM" dsh.spike dsh.spike.result)
+SECANARY=$("$CAPTURE" start -f "$SESSION_STREAM" dsh.dsh dsh.runtime.result)
 sview() { "$CAPTURE" view -f "$SESSION_STREAM" "$SECANARY"; }
 cleanup_session() {
     "$CAPTURE" stop -f "$SESSION_STREAM" >/dev/null 2>&1 || true
@@ -403,7 +403,7 @@ done
 
 saw_index=0; saw_list=0; saw_journal=0
 deadline=$(( $(date +%s) + 300 ))
-until sview | grep -q "dsh.spike.result: ALL"; do
+until sview | grep -q "dsh.runtime.result: ALL"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         tail -80 "$SESSION_STREAM"
         die "session-live drive did not complete within 300s"
@@ -435,11 +435,11 @@ sshots 04-final-state
 trap - EXIT
 cleanup_session
 
-sview | sed '/dsh.spike.result: ALL/q' > "$SART/logs.txt"
-grep 'dsh.spike.result' "$SART/logs.txt" > "$SART/results.txt"
+sview | sed '/dsh.runtime.result: ALL/q' > "$SART/logs.txt"
+grep 'dsh.runtime.result' "$SART/logs.txt" > "$SART/results.txt"
 cat "$SART/results.txt"
-grep 'dsh.spike.log:' "$SART/logs.txt" > "$SART/scenario.jsonl" || true
-adb exec-out run-as $PKG cat files/spike-capture-android-session-live-read.log \
+grep 'dsh.runtime.log:' "$SART/logs.txt" > "$SART/scenario.jsonl" || true
+adb exec-out run-as $PKG cat files/dsh-capture-android-session-live-read.log \
     > "$SART/capture-android-session-live-read.log" 2>/dev/null || true
 
 node test/e2e/check.mjs --manifest $SCEN/android-session-live-read.json \
@@ -471,7 +471,7 @@ wshots() { adb exec-out screencap -p > "$WART/screens/$1.png" 2>/dev/null || tru
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # Same capture discipline as phases 3-4, via the shared canary-pinned script.
-WRCANARY=$("$CAPTURE" start -f "$WRITE_STREAM" dsh.spike dsh.spike.result)
+WRCANARY=$("$CAPTURE" start -f "$WRITE_STREAM" dsh.dsh dsh.runtime.result)
 wrview() { "$CAPTURE" view -f "$WRITE_STREAM" "$WRCANARY"; }
 cleanup_write() {
     "$CAPTURE" stop -f "$WRITE_STREAM" >/dev/null 2>&1 || true
@@ -486,7 +486,7 @@ done
 
 saw_index=0; saw_typed=0; saw_reply=0
 deadline=$(( $(date +%s) + 300 ))
-until wrview | grep -q "dsh.spike.result: ALL"; do
+until wrview | grep -q "dsh.runtime.result: ALL"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         tail -80 "$WRITE_STREAM"
         die "write-live drive did not complete within 300s"
@@ -518,11 +518,11 @@ wshots 04-final-state
 trap - EXIT
 cleanup_write
 
-wrview | sed '/dsh.spike.result: ALL/q' > "$WART/logs.txt"
-grep 'dsh.spike.result' "$WART/logs.txt" > "$WART/results.txt"
+wrview | sed '/dsh.runtime.result: ALL/q' > "$WART/logs.txt"
+grep 'dsh.runtime.result' "$WART/logs.txt" > "$WART/results.txt"
 cat "$WART/results.txt"
-grep 'dsh.spike.log:' "$WART/logs.txt" > "$WART/scenario.jsonl" || true
-adb exec-out run-as $PKG cat files/spike-capture-android-composer-live-write.log \
+grep 'dsh.runtime.log:' "$WART/logs.txt" > "$WART/scenario.jsonl" || true
+adb exec-out run-as $PKG cat files/dsh-capture-android-composer-live-write.log \
     > "$WART/capture-android-composer-live-write.log" 2>/dev/null || true
 
 node test/e2e/check.mjs --manifest $SCEN/android-composer-live-write.json \

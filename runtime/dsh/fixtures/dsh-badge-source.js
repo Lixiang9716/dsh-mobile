@@ -1,6 +1,6 @@
 // dsh:logging-exempt (this file is DATA, not executing code — it carries the
 // dsh-badge plugin source as a template literal so the negotiation fixture
-// can package it into a tarball at scenario time; the spike JS cannot shell
+// can package it into a tarball at scenario time; the dsh JS cannot shell
 // out to tar/npm)
 /**
  * The dsh-badge fixture plugin SOURCE (the bytes inside the negotiation test

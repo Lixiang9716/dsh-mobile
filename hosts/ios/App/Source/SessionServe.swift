@@ -15,7 +15,7 @@ import Foundation
 /// user drives the page. The `composer.live-write` evidence drive
 /// (`SessionWriteRuntime`) holds an instance, assigns the hooks below and
 /// verifies it. The seam is the hook block, and its defaults are no-ops: the
-/// seat reports serving FACTS, and which `dsh.spike.log:` record a fact
+/// seat reports serving FACTS, and which `dsh.runtime.log:` record a fact
 /// becomes — under which scenario id, once or every time — is the drive's
 /// business. This is the shape the harmony precedent
 /// (`OfficialServe.ets` / `OfficialPhase.ets`) settled on after rejecting the

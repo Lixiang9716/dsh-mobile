@@ -15,7 +15,7 @@
  *                                      notification shade → tap the DSH
  *                                      notification (wantAgent → response +
  *                                      foreground edges)
- *   dsh.spike.verdict: harmony.capability-binding → done (exit 0 on PASS)
+ *   dsh.dsh.verdict: harmony.capability-binding → done (exit 0 on PASS)
  *
  * tools/ dev script (out of the logging gate's scope; console IS the
  * product). It never asserts on pixels — screenshots are local evidence.
@@ -242,7 +242,7 @@ const onLine = async (line) => {
       state.pickerGrant = true;
     }
   }
-  if (line.includes('dsh.spike.verdict: harmony.capability-binding')) {
+  if (line.includes('dsh.dsh.verdict: harmony.capability-binding')) {
     state.verdict = line.includes(' PASS ') ? 'pass' : 'fail';
   }
 };

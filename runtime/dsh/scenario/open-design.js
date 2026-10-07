@@ -29,7 +29,7 @@ const AGENT_ID = 'main';
 const SESSION_ID = 's-open-design-0001';
 const MARKER = 'OD-MOCK-77f3';
 
-const log = createLogger('m2.spike');
+const log = createLogger('dsh.scenario');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   const error = reason instanceof Error ? reason : null;

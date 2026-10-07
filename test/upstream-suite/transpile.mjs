@@ -33,7 +33,7 @@ const HARNESS_SPECIFIER = 'scenario/upstream-test-harness.js';
 import { BARE_EXTERNAL_PLUGIN, SUBMODULE_BARE_RESOLVES, hoistCreateRequireJson, hoistSubmoduleSrcSubpaths, rewriteBundleManifestRoot, rewriteSeedTreeRoots, collectSeedTreeFiles, walk, BUNDLE_MANIFEST_PACKAGES, BUNDLE_MANIFEST_FILES, SEED_TREE_SPECS } from './transpile-rewrites.mjs';
 
 const UNIMPLEMENTED = [
-  [/from\s*[\x27\x22]node:vm[\x27\x22]/, 'node:vm (no spike shim — the vm builtin is a Node embedding surface)'],
+  [/from\s*[\x27\x22]node:vm[\x27\x22]/, 'node:vm (no dsh shim — the vm builtin is a Node embedding surface)'],
   // NOTE: the session-persistence-jsonl exclusion was REMOVED when the
   // closure harvest staged the koffi-free submodule-built package
   // (vendor/dsh/session-persistence-jsonl@0.1.6-alpha.2, 2026-09-23): its

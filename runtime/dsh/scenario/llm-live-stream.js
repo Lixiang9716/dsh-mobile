@@ -48,7 +48,7 @@ const GREETING = ['Hello', ' from', ' the', ' real', ' LLM', ' backend.'];
 const EXPECTED_TEXT = GREETING.join('');
 const CHUNK_SIZES = [9, 23, 5, 61, 17]; // odd byte boundaries — partial lines by design
 
-const log = createLogger('llm.live-stream.spike');
+const log = createLogger('llm.live-stream.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const project = (event) => {
   log.debug('projection push', { kind: event.kind });

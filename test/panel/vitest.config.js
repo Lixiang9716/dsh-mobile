@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 // 173 files, 3 failures that are not ours — vendored zod's own specs).
 //
 // The bare-import aliases resolve the RUNTIME modules the ed25519 /
-// marketplace-resolver suites exercise (the spike host resolves these bare
+// marketplace-resolver suites exercise (the dsh host resolves these bare
 // specifiers itself; plain node/vitest needs the map).
 export default defineConfig({
   test: {
@@ -80,7 +80,7 @@ export default defineConfig({
       { find: 'scenario/probe-respond-await.js', replacement: fileURLToPath(new URL('../../runtime/dsh/scenario/probe-respond-await.js', import.meta.url)) },
       { find: 'scenario/scenario-verdict.js', replacement: fileURLToPath(new URL('../../runtime/dsh/scenario/scenario-verdict.js', import.meta.url)) },
       { find: 'scenario/api-handler-respond.js', replacement: fileURLToPath(new URL('../../runtime/dsh/scenario/api-handler-respond.js', import.meta.url)) },
-      // The fs-shim suite (loop-p): the spike's bare 'upstream/…' specifiers
+      // The fs-shim suite (loop-p): the dsh's bare 'upstream/…' specifiers
       // resolve through the quickjs loader on device; the regex prefix maps
       // the whole shim family — the node:fs imports inside stay REAL, a
       // desktop host shape, which is exactly what the readdir fallback
@@ -90,8 +90,8 @@ export default defineConfig({
         replacement: fileURLToPath(new URL('../../runtime/dsh/upstream/shims/', import.meta.url)),
       },
       {
-        // The loader's spike-root-relative spelling ('/vendor/npm/…' in
-        // node-zlib.js and friends) — '/' IS the spike root on device.
+        // The loader's dsh-root-relative spelling ('/vendor/npm/…' in
+        // node-zlib.js and friends) — '/' IS the dsh root on device.
         find: /^\/vendor\//,
         replacement: fileURLToPath(new URL('../../runtime/dsh/vendor/', import.meta.url)),
       },

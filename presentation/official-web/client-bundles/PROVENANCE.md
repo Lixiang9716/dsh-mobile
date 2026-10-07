@@ -158,5 +158,5 @@ At this pin the tree is 58 packages, 116 files, 5.8 MB.
 The `/plugins` route on the carrier serves these files at the upstream
 combo/chunk URLs with revisions framed by the RUNTIME's composed graph
 (`web.boot` over the bus seam); the carrier never invents roster rows. The
-`dsh.client` scan itself runs inside the embedded spike runtime over the
+`dsh.client` scan itself runs inside the embedded dsh runtime over the
 bus-delivered file view — this directory is the staging source for both.

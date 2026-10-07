@@ -15,7 +15,7 @@
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 cd "$ROOT" || exit 1
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 OUT="${DSH_ANDROID_ART:-hosts/android/artifacts/mic-plane}"
 SCEN=test/e2e/scenarios
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
@@ -75,16 +75,16 @@ until adbsh shell am start -n $PKG/.MainActivity --ez dsh.micplane true >/dev/nu
     sleep 2
 done
 rec_deadline=$(( $(date +%s) + 60 ))
-until adbsh logcat -d -s dsh.spike 2>/dev/null | grep -q "dsh.spike.log"; do
-    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.spike records within 60s of am start"
+until adbsh logcat -d -s dsh.runtime 2>/dev/null | grep -q "dsh.runtime.log"; do
+    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.dsh records within 60s of am start"
     sleep 1
 done
 
 # ---- 4. wait for the verdict -------------------------------------------------
-snapshot() { adbsh logcat -d -s dsh.spike dsh.spike.result dsh.spike.ui dsh.spike.audit > "$DUMP" 2>/dev/null; }
+snapshot() { adbsh logcat -d -s dsh.runtime dsh.runtime.result dsh.runtime.ui dsh.runtime.audit > "$DUMP" 2>/dev/null; }
 
 deadline=$(( $(date +%s) + 300 ))
-until snapshot && grep -q "dsh.spike.result: ALL" "$DUMP"; do
+until snapshot && grep -q "dsh.runtime.result: ALL" "$DUMP"; do
     [ "$(date +%s)" -ge "$deadline" ] && { tail -80 "$DUMP"; die "mic-plane scenario did not complete within 300s"; }
     sleep 1
 done
@@ -93,8 +93,8 @@ sleep 1
 # ---- 5. checkers -------------------------------------------------------------
 say "5/5 checkers"
 cp "$DUMP" "$OUT/logs.txt"
-grep 'dsh.spike.result' "$OUT/logs.txt" > "$OUT/results.txt" || true
-grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
+grep 'dsh.runtime.result' "$OUT/logs.txt" > "$OUT/results.txt" || true
+grep 'dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 shot 01-final
 

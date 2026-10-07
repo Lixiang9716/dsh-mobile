@@ -3,7 +3,7 @@
  *
  * Responsibilities (all in ONE thread, driven by the embedder):
  *   - unified-log sink: JS calls globalThis.__DSH_LOG_SINK__(jsonLine) and
- *     the host emits the canonical "dsh.spike.log: {...}" E2E line;
+ *     the host emits the canonical "dsh.runtime.log: {...}" E2E line;
  *   - Web-API seams the vendored upstream package needs: crypto (getRandom-
  *     Values via the platform RNG) and btoa;
  *   - the zstd seam over the vendored C library (vendor/ensure-zstd.sh pin):
@@ -57,7 +57,7 @@
  * name the same vendor pin). */
 #include "zstd.h"
 
-#define DSH_LOG_PREFIX "dsh.spike.log: "
+#define DSH_LOG_PREFIX "dsh.runtime.log: "
 #define DSH_ERR_MAX 512
 #define DSH_PUMP_GUARD 100000
 

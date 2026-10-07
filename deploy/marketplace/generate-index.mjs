@@ -10,10 +10,10 @@
  *   --build …           pack system-plugins → deterministic tgz + signed index
  *   --verify <index>    verify signature + every entry's digests on disk
  *
- * Package tarball (the frozen layout, spike fixtures show the shape):
+ * Package tarball (the frozen layout, dsh fixtures show the shape):
  *   members: manifest.json (verbatim bytes) + bundle/<file> for every source
  *   file; ustar exactly as runtime/dsh/tar-mini.js writes it (mtime 0,
- *   uid/gid 0, empty uname/gname, POSIX magic) so the spike pipeline can read
+ *   uid/gid 0, empty uname/gname, POSIX magic) so the dsh pipeline can read
  *   these packages unchanged; then gzip with mtime 0 — bytes are
  *   reproducible run to run, which is what makes `blobSha256` meaningful.
  *

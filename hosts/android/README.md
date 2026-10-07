@@ -29,11 +29,11 @@ On top of the three-scenario regression (below), the host completion session
   (AndroidKeyStore stores keys, not blobs — the ciphertext persists app-privately). Event
   channels: `app.state` from activity lifecycle edges (deduped), `notify.response` from the
   notification's PendingIntent. Descriptor: nine available, zero unavailable (conformance §7).
-- **Audit**: one structured record per call on the `dsh.spike.audit` tag
+- **Audit**: one structured record per call on the `dsh.runtime.audit` tag
   (`dsh.gateway.audit: ` prefix, never payload contents) — the frozen `gateway.audit`
   manifest re-verified against the m4 session's call sequence.
 
-Threading law unchanged: JS executes only on `HandlerThread("dsh-spike-js")`; the carrier
+Threading law unchanged: JS executes only on `HandlerThread("dsh-dsh-js")`; the carrier
 threads, fetch threads, and the UI thread never touch the runtime — every settle/event/bus
 delivery hops through `JsRuntime.post`.
 
@@ -44,7 +44,7 @@ final — human evidence only), `receipt.json`.
 
 ## Regression status: gateway bridge + first session green on emulator
 
-The app embeds the shared spike host (`runtime/dsh/host/dsh_runtime_host.c`) with its REAL
+The app embeds the shared dsh host (`runtime/dsh/host/dsh_runtime_host.c`) with its REAL
 gateway dispatch bridge (no canned responses — the canned single-call slot is gone) and runs ALL
 THREE scenarios in one launch, judged by the shared checker:
 
@@ -58,8 +58,8 @@ THREE scenarios in one launch, judged by the shared checker:
   call runs through the subprocess plugin and persists via dsh-fs under scope `app`
   (`smoke-fs/session-mock-llm/result.txt`, roundtripped).
 
-Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logcat `-s dsh.spike`),
-`scenario.jsonl` (canonical `dsh.spike.log:` lines), `verdict-boot-verification.json` +
+Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logcat `-s dsh.dsh`),
+`scenario.jsonl` (canonical `dsh.runtime.log:` lines), `verdict-boot-verification.json` +
 `verdict-gateway-bridge-smoke.json` + `verdict-session-mock-llm.json` (checker PASS), `screenshot.png`
 (human evidence only — never a checker input), `receipt.json`.
 
@@ -77,18 +77,18 @@ Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logca
   like the CLI. NO new primitives, NO contract changes.
 - `app/src/main/cpp/dsh_runtime_jni.c` — one fresh `dsh_runtime_t` runtime per scenario, whole
   lifecycle on the CALLING thread; Kotlin (`JsRuntime`) keeps that caller a single
-  `HandlerThread("dsh-spike-js")` (logcat pid/tid columns prove the split from the UI thread).
-- `app/src/main/assets/dsh/` — the spike bundle as byte-identical copies of `runtime/dsh/`
+  `HandlerThread("dsh-dsh-js")` (logcat pid/tid columns prove the split from the UI thread).
+- `app/src/main/assets/dsh/` — the dsh bundle as byte-identical copies of `runtime/dsh/`
   (`gateway.js`, `registry.js`, `scenario/boot-verification.js`, `scenario/gateway-bridge-smoke.js`,
   `scenario/session-mock-llm.js`, `logger.js`, `vendor/dsh/util-crypto@0.1.6-alpha.1`) plus the three
   system plugins (`system-plugins/dsh-fs`, `dsh-subprocess-quickjs`, `dsh-ui` from the repo
-  root), cmp-verified at authoring time; unpacked to `filesDir/spike` at first run because the C
+  root), cmp-verified at authoring time; unpacked to `filesDir/dsh` at first run because the C
   host fopen()s real paths. The repo has no drift-check tool for these copies yet — provenance
   is this paragraph (and the receipt).
-- Capture: every canonical line goes UNMODIFIED to logcat (tag `dsh.spike`) AND to
-  `filesDir/spike-capture-<scenario>.log` (pulled via `adb exec-out run-as com.dshmobile.spike
+- Capture: every canonical line goes UNMODIFIED to logcat (tag `dsh.dsh`) AND to
+  `filesDir/dsh-capture-<scenario>.log` (pulled via `adb exec-out run-as com.dshmobile.host
   cat ...` — the truncation-proof cross-check); per-scenario verdicts land on tag
-  `dsh.spike.result`, terminated by the `ALL PASS` / `ALL FAIL` line.
+  `dsh.runtime.result`, terminated by the `ALL PASS` / `ALL FAIL` line.
 
 ## How to run
 
@@ -99,7 +99,7 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 echo "sdk.dir=$ANDROID_HOME" > hosts/android/local.properties
 $ANDROID_HOME/emulator/emulator -avd pixel -no-window -no-audio -no-boot-anim -no-snapshot -port 5554 &
 (cd hosts/android && ./gradlew assembleDebug --no-daemon)
-bash hosts/android/ci/run-spike-e2e.sh      # the three-scenario regression (what CI runs)
+bash hosts/android/ci/run-dsh-e2e.sh      # the three-scenario regression (what CI runs)
 bash hosts/android/ci/run-android-full.sh   # regression + the android.capability-binding completion session
 ```
 

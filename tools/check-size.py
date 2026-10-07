@@ -390,7 +390,7 @@ def main():
     # single-file builds cannot be refactored to our size limits, so the
     # unified-size contract applies only to code this repo authors. Same
     # precedent as the logging gate's VENDOR_SEGMENT exemption. The staged
-    # platform copies of the spike closure are skipped for the mirror reason:
+    # platform copies of the dsh closure are skipped for the mirror reason:
     # the canonical file carries the violation, the copy is byte-verified by
     # the closures gate.
     files = [f for f in files if VENDOR_SEGMENT not in f

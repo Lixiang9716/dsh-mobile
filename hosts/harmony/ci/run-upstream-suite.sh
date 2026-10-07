@@ -2,7 +2,7 @@
 # run-upstream-suite.sh (HarmonyOS) — the upstream DSH test suite ON THE
 # HARMONY HOST: one transpiled spec per app launch, executed by the
 # quickjs-shaped harness in the on-device runtime; per-test verdicts stream
-# as dsh.spike records and the summary verdict is read from the PULLED
+# as dsh.dsh records and the summary verdict is read from the PULLED
 # capture file (truncation-proof — the same discipline as
 # hosts/harmony/ci/run-host-e2e.sh and run-live-llm.sh: hilog is only the
 # completion signal, never the evidence).
@@ -24,7 +24,7 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$ROOT"
 
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 OUT=${DSH_SUITE_OUT:-hosts/harmony/artifacts/upstream-suite}
 CORPUS="$ROOT/runtime/dsh/upstream-tests"
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
@@ -181,9 +181,9 @@ let summary = null;
 let bootFail = null;
 if (fs.existsSync(capturePath)) {
   for (const line of fs.readFileSync(capturePath, 'utf8').split('\n')) {
-    if (!line.startsWith('dsh.spike.log:')) continue;
+    if (!line.startsWith('dsh.runtime.log:')) continue;
     let record;
-    try { record = JSON.parse(line.slice('dsh.spike.log:'.length)); } catch { continue; }
+    try { record = JSON.parse(line.slice('dsh.runtime.log:'.length)); } catch { continue; }
     const e2e = (record.data ?? [])[0];
     if (e2e?.scenario !== 'upstream.suite') continue;
     if (e2e.event === 'suite/summary') summary = e2e;

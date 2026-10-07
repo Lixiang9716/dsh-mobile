@@ -58,7 +58,7 @@ enum BuildFlavor {
 /// (os_log evidence). Called only from the runtime queue while it drives the
 /// host, so no synchronization is needed.
 final class RuntimeLogSink {
-    static let prefix = "dsh.spike.log: "
+    static let prefix = "dsh.runtime.log: "
     private(set) var lines: [String] = []
 
     var cSink: dsh_runtime_sink {

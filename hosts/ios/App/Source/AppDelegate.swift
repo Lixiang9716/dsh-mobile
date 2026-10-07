@@ -192,7 +192,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     private func bootRelease(window: UIWindow, root: UIViewController) -> Bool {
         if let mode = requestedLaunchMode, mode != "official-web" {
             fatalError("""
-                DSHSpike release build: refusing '-dsh-mode \(mode)'. This is the \
+                DSHHost release build: refusing '-dsh-mode \(mode)'. This is the \
                 user-facing distribution build — the verification drives, the \
                 verdict panel, and the per-event E2E log stream are compiled out \
                 (AGENTS.md constraint 5, rules.md rule L4). Build/run the harness \

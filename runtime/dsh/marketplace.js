@@ -100,7 +100,7 @@ const INDEX_FIELDS = ['schemaVersion', 'marketplace', 'generatedAt', 'keys', 'en
 
 /** One catalog entry's shape (marketplace-index.schema.json, mirrored by
  * hand the way validateManifest mirrors manifest.schema.json — no schema
- * runtime in the spike). Returns a problem string or null. */
+ * runtime in the dsh). Returns a problem string or null. */
 const entryProblem = (e) => {
   log.debug('validate catalog entry', { id: e?.id });
   const unknown = Object.keys(e).find((k) => !ENTRY_FIELDS.includes(k));

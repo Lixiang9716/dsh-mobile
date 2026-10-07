@@ -331,7 +331,7 @@ export class Response {
  * the host has not bound them already (web-shims' absence rule). fetch is a
  * FAIL-LOUD value (rule 5): the global must EXIST (the closure probes it,
  * observers install over it, Node — the differential reference — has it),
- * but the spike runtime owns no network surface; the gateway's httpFetch is
+ * but the dsh runtime owns no network surface; the gateway's httpFetch is
  * the only network seam, so a real call rejects instead of dialing. The ONE
  * served branch is the in-process loopback (node-http-loopback.js): an
  * in-test `http.createServer` registered on 127.0.0.1 is dispatched through
@@ -347,7 +347,7 @@ export const installWebFetchValues = () => {
     const loopback = dispatchLoopback(input, init);
     if (loopback !== undefined) return loopback;
     return Promise.reject(
-      new TypeError('fetch: the spike runtime has no network surface — the gateway owns the network seam (httpFetch)'),
+      new TypeError('fetch: the dsh runtime has no network surface — the gateway owns the network seam (httpFetch)'),
     );
   };
   const installs = [

@@ -2,7 +2,7 @@
 /**
  * shims/web-storage.js — the W3C Storage face (localStorage / sessionStorage)
  * the closure's CLIENT modules persist through (terminal bindings, client
- * settings mirrors). In-memory Map backing: the spike runtime has no origin
+ * settings mirrors). In-memory Map backing: the dsh runtime has no origin
  * partition to persist into; what the corpus needs is the API shape — one
  * shared instance per storage face so writes land for later readers (a
  * "reload" is a fresh client instance reading the same storage), key-order

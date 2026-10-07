@@ -44,7 +44,7 @@ RAW=hosts/harmony/entry/src/main/resources/rawfile/dsh
 
 # Modes (build/build.sh sync + the closures gate are the callers):
 #   (default)        full CI materialization: ensure scripts + officialweb + closure
-#   --closure-only   the spike closure only, from the local canonical trees —
+#   --closure-only   the dsh closure only, from the local canonical trees —
 #                    no network, no officialweb re-sync (the local re-stage)
 #   --check          NO writes: byte-verify the committed closure only (the
 #                    closures gate — a gate that heals what it checks is vacuous)
@@ -726,7 +726,7 @@ if [ "$MODE" = "check" ]; then
     # that silently skipped everything; this is why the probes exist).
     TRACKED=$(git ls-files "$RAW")
 fi
-# The spike-ROOT closure (gateway.js et al) byte-checks here: these are the
+# The dsh-ROOT closure (gateway.js et al) byte-checks here: these are the
 # runtime files the materialized bundle imports by relative path — a stale
 # gateway.js here silently drops every primitive the runtime bundle grew
 # (2026-09-30: cameraCapture was absent from the rawfile copy while the

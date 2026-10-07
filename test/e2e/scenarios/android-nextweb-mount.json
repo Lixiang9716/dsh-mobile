@@ -1,7 +1,7 @@
 {
   "scenario": "android.nextweb.mount",
   "extract": {
-    "prefix": "dsh.spike.log:"
+    "prefix": "dsh.runtime.log:"
   },
   "expect": [
     {

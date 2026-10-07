@@ -24,7 +24,7 @@
  * Numbers are machine-local and jittery BY NATURE: the one-to-one manifest
  * pins the events and their stable fields only, never a measured value.
  * The heap face used by the companion leak.canary leg is the host-side
- * __dshPerfProbe test hook (spike host global, NOT a gateway primitive —
+ * __dshPerfProbe test hook (dsh host global, NOT a gateway primitive —
  * it never enters a descriptor or the contract/ freeze).
  */
 import { createLogger } from 'logger.js';

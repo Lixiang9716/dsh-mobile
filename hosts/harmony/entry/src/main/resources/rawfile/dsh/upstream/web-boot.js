@@ -6,7 +6,7 @@
  * `client-modules` node half composes (docs/webserver-contract.md §2.6): the
  * `__ModuleLoader__` facade queue, application preloads, the blocking
  * bootstrap batch, and the `__DSH_BOOT__` graph. This adapter lets the
- * VENDORED `ClientModuleRegistry` compose that wire inside the spike runtime
+ * VENDORED `ClientModuleRegistry` compose that wire inside the dsh runtime
  * and hands the result to the carrier over the bus seam:
  *
  *   runtime → host: `web.boot` (index rows + plugin revs), `api.claim`,

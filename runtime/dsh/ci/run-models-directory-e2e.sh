@@ -38,7 +38,7 @@ sh vendor/ensure-dsh.sh
 ./build/dsh-cli . scenario/models-directory.js > logs-models-directory.txt
 mkdir -p "$ART_DIR"
 cp logs-models-directory.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-models-directory.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-models-directory.txt > "$ART_DIR/scenario.jsonl"
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/models-directory.json" \
     --log logs-models-directory.txt \

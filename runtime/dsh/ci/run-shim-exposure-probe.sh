@@ -38,7 +38,7 @@ mkdir -p "$ART_DIR"
 DSH_MODULE_MANIFEST="$ART_DIR/manifest.txt" \
     ./build/dsh-cli . scenario/shim-exposure-probe.js > logs-shim-exposure-probe.txt
 cp logs-shim-exposure-probe.txt "$ART_DIR/logs.txt"
-grep '^dsh.spike.log:' logs-shim-exposure-probe.txt > "$ART_DIR/scenario.jsonl"
+grep '^dsh.runtime.log:' logs-shim-exposure-probe.txt > "$ART_DIR/scenario.jsonl"
 # The manifest must be real (rule 5): non-empty, every line a shim load.
 [ -s "$ART_DIR/manifest.txt" ] || {
     echo "e2e: FAIL — DSH_MODULE_MANIFEST produced no manifest (switch broken?)" >&2

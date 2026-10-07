@@ -3,7 +3,7 @@
  * scripted loopback LLM, the engine heap watermark read BEFORE and AFTER a
  * FORCED collection, red when the post-GC watermark does not fall back.
  *
- * The reading face is the spike host's __dshPerfProbe C hook (TEST
+ * The reading face is the dsh host's __dshPerfProbe C hook (TEST
  * INFRASTRUCTURE — a host global like __dshComplete, never a gateway
  * primitive, never in a descriptor or the contract/ freeze): 'gc' runs
  * JS_RunGC over the runtime and then reads JS_ComputeMemoryUsage. Both

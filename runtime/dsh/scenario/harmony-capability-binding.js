@@ -33,7 +33,7 @@ import {
 } from '../gateway.js';
 
 const SCENARIO = 'harmony.capability-binding';
-const log = createLogger('m5.spike');
+const log = createLogger('m5.dsh');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   log.debug('scenario failed', { reason });
@@ -260,11 +260,11 @@ async function credentialLeg() {
   emit('approval.approved', { approved: approval.approved });
 
   const secret = probeBytes();
-  await keychainSet('dsh.spike/cred', secret);
-  const stored = await keychainGet('dsh.spike/cred');
+  await keychainSet('dsh.host/cred', secret);
+  const stored = await keychainGet('dsh.host/cred');
   emit('keychain.roundtrip', { set: true, match: !!stored && bytesEqual(stored.secret, secret) });
 
-  await keychainSet('dsh.spike/cred', null);
-  const gone = await keychainGet('dsh.spike/cred');
+  await keychainSet('dsh.host/cred', null);
+  const gone = await keychainGet('dsh.host/cred');
   emit('keychain.deleted', { gone: gone === null });
 }

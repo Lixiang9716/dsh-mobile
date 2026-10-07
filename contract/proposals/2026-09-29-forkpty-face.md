@@ -145,7 +145,7 @@ every host event (D2).
   node-pty-family specs re-enter and verify green one by one on the
   darwin CLI leg (`upstream-suite-leg.js --env DSH_UPSTREAM_SPEC=...`,
   `suite/summary failed:0` for each).
-- The spike implements the seam on Darwin (`forkpty(3)` from
+- The dsh implements the seam on Darwin (`forkpty(3)` from
   `<util.h>`); the Linux-family hosts compile the same face from
   `<pty.h>` and keep it available, so capability negotiation never has to
   branch by platform — the same code path, honestly absent nowhere it

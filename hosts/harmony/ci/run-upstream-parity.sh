@@ -16,7 +16,7 @@ set -eu
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 cd "$ROOT"
 
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 OUT=${DSH_PARITY_OUT:-hosts/harmony/artifacts/upstream-parity}
 GOLDEN="$ROOT/test/e2e/fixtures/upstream-parity-reference.jsonl"
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
@@ -52,7 +52,7 @@ done
 "$HDC" shell "aa start -b $BUNDLE -a EntryAbility --ps dsh.e2e.leg upstream.parity" >/dev/null 2>&1 || true
 deadline=$(( $(date +%s) + 600 ))
 verdict=""
-until verdict=$("$HDC" shell "grep -h 'dsh.spike.verdict: upstream.parity' $CAPTURE_REMOTE 2>/dev/null" | head -1); do
+until verdict=$("$HDC" shell "grep -h 'dsh.dsh.verdict: upstream.parity' $CAPTURE_REMOTE 2>/dev/null" | head -1); do
     [ "$(date +%s)" -ge "$deadline" ] && {
         "$HDC" file recv "$CAPTURE_REMOTE" "$OUT/capture.txt" >/dev/null 2>&1 || true
         tail -40 "$OUT/capture.txt" 2>/dev/null >&2 || true

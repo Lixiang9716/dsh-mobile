@@ -1,6 +1,6 @@
 // dsh:logging-exempt (this IS the logger — nothing to log through)
 /**
- * Spike port of runtime/logger/index.ts: the same createLogger contract,
+ * Dsh port of runtime/logger/index.ts: the same createLogger contract,
  * plain ESM so the quickjs-ng shim loads it without a bundler. The sink
  * receives ONE JSON line so every platform emits byte-identical E2E lines.
  *
