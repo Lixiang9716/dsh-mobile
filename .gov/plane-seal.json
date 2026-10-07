@@ -52,13 +52,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "c3ee5a7345393d3fa0a7be9845e733e977b9b04ec2105ba46eb969ec6dd5d733"
+      "sha256": "c66b940c2bceffd23f6041f3917805b4fd18afb4cb998e7fede29b3a347e8e70"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-07T10:57:04+00:00",
+    "ts": "2026-10-07T11:05:07+00:00",
     "caller": "13957@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "task C (harmony contract drift): add the descriptor-parity gate \u2014 the checker and its rejection case ship in the same change (pre-fix tree proven red: timers undeclared, known-absent check missing)"
+    "reason": "task C follow-up: park descriptor-parity in the all mode (the gate is otherwise in no mode \u2014 gov run refuses, rule 1/6)"
   }
 }

@@ -16,6 +16,7 @@
       "panel-tests",
       "e2e-matrix",
       "closures",
+      "descriptor-parity",
       "vendoring-repro",
       "bundle-files",
       "webclient-staged-tree",
