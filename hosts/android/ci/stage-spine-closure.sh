@@ -287,14 +287,14 @@ find "$DSH/upstream/shims" -name '*.js' -type f | while IFS= read -r src; do
 done
 mkdir -p "$ASSETS/upstream/shims/sharp"
 cp "$DSH/upstream/shims/sharp/package.json" "$ASSETS/upstream/shims/sharp/package.json"
-for f in gateway.js logger.js registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
+for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
     cmp -s "$DSH/$f" "$ASSETS/$f" || cp "$DSH/$f" "$ASSETS/$f"
 done
 
 # The dsh-root runtime files the boot graph imports (gateway.js grows
 # with the contract: the shell plugins import wasmRun/ishRun from it;
 # ed25519.js + marketplace-resolver.js ride the marketplace seam).
-for f in gateway.js logger.js registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
+for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
     cmp -s "$DSH/$f" "$ASSETS/$f" || cp "$DSH/$f" "$ASSETS/$f"
 done
 
@@ -499,7 +499,7 @@ done
     done
 cmp -s "$DSH/upstream/shims/sharp/package.json" "$ASSETS/upstream/shims/sharp/package.json" ||
     note_drift "shims/sharp/package.json"
-for f in gateway.js logger.js registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
+for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
     cmp -s "$DSH/$f" "$ASSETS/$f" || note_drift "$f"
 done
 # The staged web-client trees (tracked asset copies, judged both ways the

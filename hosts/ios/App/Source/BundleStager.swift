@@ -17,6 +17,11 @@ enum BundleStager {
         }
         try write("logger.js", data: resData(dsh_runtime_res_logger_js),
                   under: root)
+        // The transport token table the scenarios import beside the logger
+        // (createLogger(scenarioModule) resolves bundle-root-relative).
+        try write("transport-tokens.mjs",
+                  data: resData(dsh_runtime_res_transport_tokens_mjs),
+                  under: root)
         try write("gateway.js", data: resData(dsh_runtime_res_gateway_js),
                   under: root)
         try write("manifest.json", data: resData(dsh_runtime_res_manifest_json),

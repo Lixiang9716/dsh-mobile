@@ -166,6 +166,7 @@ const BUNDLE_FILES: string[] = [
   'system-plugins/dsh-ui/index.js',
   'system-plugins/dsh-ui/manifest.json',
   'tar-mini.js',
+  'transport-tokens.mjs',
   'workspace-registry.js',
   'upstream/boot-coverage-rows.js',
   'upstream/boot.js',

@@ -735,6 +735,7 @@ fi
 # the same sweep, so the pair cannot drift apart again).
 DSH_ROOT="gateway.js
 logger.js
+transport-tokens.mjs
 registry.js
 workspace-registry.js
 sha256.js

@@ -1,0 +1,27 @@
+{
+  "title": "Task A: single-source transport tokens + fail-able checker",
+  "created": "2026-10-07T10:44:11+00:00",
+  "rules": {
+    "hash": "0ed822f51a8838e5b84a27d4653a84bba73d7960ecda0dee754cb70525579a3c",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "91169505ae0baf6924cac33ee75ece74afb6afc1f7d94b3ea208cba7a4b9fe12"
+    }
+  },
+  "checklist": [
+    "[x] create runtime/dsh/transport-tokens.mjs frozen token table (canonical closure, JS-importable + JSON shape)",
+    "[x] create tools/check-transport-tokens.mjs: (a) no pre-rename spellings, (b) token x consuming-layer presence",
+    "[x] ship .gov/rejections/case-transport-tokens.sh rejection case (inject old spelling -> red -> restore -> green)",
+    "[x] convert >=3 canonical JS literal sites to imports (boot-verification, gateway-bridge-smoke, session-mock-llm) + all three platform embed lists + re-stage mirrors",
+    "[x] wire the transport-tokens gate into gates.json (all+quick) and re-seal the plane",
+    "[x] verify: checker green, case exit 0, both stagers --check, check-bundle-files both directions, android assembleDebug, harmony HAP, emulator single-spec smoke if device present"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0203",
+  "void": {
+    "ts": "2026-10-07T11:33:12+00:00",
+    "by": "13957@DESKTOP-AOFQD6F",
+    "reason": "all six checks are done (checker green; rejection case exit 0; stagers --check green; check-bundle-files 1084=1084; android assembleDebug + harmony HAP green; emulator single-spec 10/10) \u2014 but gov task close cannot mint a green receipt on this Windows host: the local DAG's self-test/panel-tests/vendoring-repro legs are the documented Windows false reds (.sh exec, node_modules provisioning, self-clone), so the card retires open-work-complete; CI ubuntu owns the authoritative green run"
+  }
+}

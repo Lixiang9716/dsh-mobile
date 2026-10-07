@@ -16,10 +16,11 @@
  * the device plane).
  */
 import { createLogger } from '../logger.js';
+import { scenarioModule } from '../transport-tokens.mjs';
 import { fsRead, fsWrite, keychainGet, keychainSet } from '../gateway.js';
 
 const SCENARIO = 'gateway.bridge-smoke';
-const log = createLogger('dsh.scenario');
+const log = createLogger(scenarioModule);
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   log.debug('scenario failed', { reason });

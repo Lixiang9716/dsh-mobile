@@ -14,6 +14,7 @@
  * CLI, gateway.binding on the full embedder).
  */
 import { createLogger } from '../logger.js';
+import { scenarioModule } from '../transport-tokens.mjs';
 import { randomUUID, bytesToBase64 } from 'dsh:util-crypto';
 // The shim faces the upstream-suite sweep distilled into regression pins
 // (2026-09-25): the same classes the product globals serve, asserted here so
@@ -24,7 +25,7 @@ import { fileURLToPath } from 'upstream/shims/url.js';
 import * as fsPromises from 'node:fs/promises';
 
 const SCENARIO = 'boot.verification';
-const log = createLogger('dsh.scenario');
+const log = createLogger(scenarioModule);
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   log.debug('scenario failed', { reason });

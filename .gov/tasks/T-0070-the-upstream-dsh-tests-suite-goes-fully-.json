@@ -2,7 +2,7 @@
   "title": "the upstream dsh-tests suite goes fully green \u2014 every transpiled spec fixed or excluded with reason (3-attempt rule per spec, quickjs fork edits in scope)",
   "created": "2026-09-27T17:48:18+00:00",
   "rules": {
-    "hash": "bcbf14c0f3455e686c6ecd9a45cab281b0c0894d4930136b973d8927e3b64692",
+    "hash": "0ed822f51a8838e5b84a27d4653a84bba73d7960ecda0dee754cb70525579a3c",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "aeb6a65fd4f504fd674c15a56645118a70016450c646166b9dff6bcc9bf42eb0"
@@ -87,6 +87,13 @@
       "from": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
       "to": "bcbf14c0f3455e686c6ecd9a45cab281b0c0894d4930136b973d8927e3b64692",
       "reason": "plane advanced by the semantic-names rename \u2014 brief unchanged, re-pinned per the gate's remedy"
+    },
+    {
+      "ts": "2026-10-07T12:31:01+00:00",
+      "by": "13957@DESKTOP-AOFQD6F",
+      "from": "bcbf14c0f3455e686c6ecd9a45cab281b0c0894d4930136b973d8927e3b64692",
+      "to": "0ed822f51a8838e5b84a27d4653a84bba73d7960ecda0dee754cb70525579a3c",
+      "reason": "plane advanced by the transport-tokens gate (gates.json) \u2014 brief unchanged"
     }
   ]
 }
