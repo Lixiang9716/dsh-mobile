@@ -52,13 +52,12 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+      "sha256": "d64f53024981faa19a3f13966c9811a1c05af0d8a77fee37ed60b2c5ab46e909"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T10:31:48+00:00",
-    "caller": "lixiang@MacBookAir.mshome.net",
-    "unattended": true,
-    "reason": "Review-fix round 2 for #297: rebased onto #294 (shellcheck-warn + actionlint join); gates.json is the 26-gate union (object-level merge \u2014 perf-budget appended with its needs/allowFailure intact); the eight swept cards restored from main's ledger and re-pinned onto ee4951678e7c; the review's three fixes (201a56fe) unchanged"
+    "ts": "2026-10-07T02:16:20+00:00",
+    "caller": "13957@DESKTOP-AOFQD6F",
+    "unattended": false
   }
 }

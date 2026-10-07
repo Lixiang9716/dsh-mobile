@@ -17,7 +17,7 @@
  */
 export const WRITE_MESSAGE: string = 'Say hello from the composer';
 export const WRITE_REPLY: string = 'Hello from upstream';
-const WORKSPACE_TITLE: string = 'spike';
+const WORKSPACE_TITLE: string = 'dsh';
 
 /** One (event, fields) pair the verdict unfolds into canonical lines. */
 export interface WriteLegEvent {

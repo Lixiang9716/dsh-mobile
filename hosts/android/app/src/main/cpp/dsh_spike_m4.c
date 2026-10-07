@@ -146,7 +146,7 @@ jlong Java_com_dshmobile_spike_SpikeRuntime_nativeM4Begin(
     /* Published BEFORE eval: the gateway dispatch and bus sink callbacks
      * fire while eval/pump run, and they resolve their JNIEnv through it. */
     g_m4_ctx = ctx;
-    char *bundle_root = m4_join(context, "spike");
+    char *bundle_root = m4_join(context, "dsh");
     /* "<context>/spike-capture-<label>.log" — the scenario names its capture. */
     size_t cap_len = strlen(context) + strlen(capture_label) + 32;
     char *capture_file = malloc(cap_len);

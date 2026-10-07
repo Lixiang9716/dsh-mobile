@@ -1,0 +1,43 @@
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"launch spec facts","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"profile container pinned","data":[{"cwd":"/data/storage/el2/base/haps/entry/files/spike-fs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"real sibling staging begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/lsp/lsp-stdio/tests/fixture-server.ts","to":"fixture-server.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/lsp/lsp-stdio/tests/fixtur"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/host/directory-picker-native/src/win32-dialog-worker.ts","to":"win32-dialog-worker.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/host/directory-picker-nati"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/sdk/client/tests/fake-runtime.ts","to":"fake-runtime.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/sdk/client/tests/fake-runt"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/skill/skill-office/tests/check_office_test.py","to":"check_office_test.py","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/skill/skill-office/tests/c"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/ptc-runtime__ptc-runtime-node__tests__process-main.spec.mjs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"source-introspection staging begin","data":[{"spec":"upstream-tests/ptc-runtime__ptc-runtime-node__tests__process-main.spec.mjs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"source-introspection list failed","data":[{"code":null,"err":"ENOENT"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"fixtures seed begin","data":[{"spec":"upstream-tests/ptc-runtime__ptc-runtime-node__tests__process-main.spec.mjs"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"clears process environment, dispatches a binding reply and flushes the terminal frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"clears process environment, dispatches a binding reply and flushes the terminal frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"keeps the control pipe open for a late binding reply until the host closes it"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"keeps the control pipe open for a late binding reply until the host closes it"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"rejects an invalid bootstrap frame limit 0 (0)"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"rejects an invalid bootstrap frame limit 0 (0)"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"rejects an invalid bootstrap frame limit -1 (-1)"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"rejects an invalid bootstrap frame limit -1 (-1)"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"rejects an invalid bootstrap frame limit 1.5 (1.5)"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"rejects an invalid bootstrap frame limit 1.5 (1.5)"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"rejects an invalid bootstrap frame limit 4294967296 (4294967296)"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"rejects an invalid bootstrap frame limit 4294967296 (4294967296)"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"rejects an unexpected first control frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"rejects an unexpected first control frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"records an I/O failure before the boot frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"records an I/O failure before the boot frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"contains program writes that exceed queued control output"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"contains program writes that exceed queued control output"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"records a terminal frame that cannot fit the control write budget as failure"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"records a terminal frame that cannot fit the control write budget as failure"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"retains a malformed host frame failure after the terminal frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"retains a malformed host frame failure after the terminal frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/ptc-runtime__ptc-runtime-node__tests__process-main.spec.mjs","passed":11,"failed":0,"skipped":0}]}

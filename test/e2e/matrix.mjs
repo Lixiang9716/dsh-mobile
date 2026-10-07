@@ -130,7 +130,7 @@ const platformOf = (relDir) => {
   const parts = relDir.split('/');
   const at = parts.indexOf('artifacts');
   const host = at > 0 ? parts[at - 1] : parts[0];
-  return host === 'spike' ? 'macos-cli' : host;
+  return host === 'dsh' ? 'macos-cli' : host;
 };
 
 /** Every path this checker prints or matches is relative to the audited root,
@@ -226,7 +226,7 @@ const checkPngs = (root, files) => {
  *  can point both at synthetic fixtures. */
 export const audit = (root, scenariosDir) => {
   // #158: every audited evidence dir lives under an `artifacts` segment
-  // (hosts/<host>/artifacts/<dir>, runtime/spike/artifacts/<dir>) — scoping
+  // (hosts/<host>/artifacts/<dir>, runtime/dsh/artifacts/<dir>) — scoping
   // the walk there means a stray verdict capture in any other corner of the
   // tree (a gitignored tmp dir, a screenshot-primary spike) cannot fail the
   // gate demanding deliverables it never claimed. Known-gaps semantics are

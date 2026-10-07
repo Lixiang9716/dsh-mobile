@@ -1,0 +1,1044 @@
+{
+ "manifest": "bare-map",
+ "version": 1,
+ "constitution": "runtime/dsh/upstream/INTERFACES.md",
+ "extracted": "wave-7 opener, 2026-09-27, from host/dsh_spike_host.c (dsh_node_shim + dsh_map_bare), upstream/shims/npm-bridges{,-b,-c,-pi-ai}.js and upstream/shims/runtime-modules.js",
+ "resolutionOrder": [
+  "1. runtime-defined modules (__dshModuleDefine registry: runtime-modules.js + npm-bridges rows) — checked FIRST; a registration SHADOWS the bare map (documented replay semantics: a second define replaces)",
+  "2. dsh:util-crypto (legacy spike specifier)",
+  "3. node:<builtin> -> the C SHIMS table (dsh_node_shim); an unmapped node: specifier fails loud (rule 5)",
+  "4. @deepseek-ai/dsh-llm[/sub] aliases, then the generic @deepseek-ai/dsh-* vendored probe (DSH_MAP_VENDORED_PROBE 'pkg|sub' marker; the probe serves both staging families + exports-map subpath shapes)",
+  "5. the named npm pins of dsh_map_bare (cordis/cosmokit/schemastery/zod/js-yaml/fast-check/pure-rand/cordis-plugin-loader/include, dsh-client-modules)",
+  "6. unmapped bare specifiers FAIL LOUD ('unmapped module specifier' — no silent network plan change)"
+ ],
+ "counts": {
+  "rows": 154,
+  "cjsChainModules": 10,
+  "piAiModelShadowRegistrations": 78
+ },
+ "notes": [
+  "provider spellings: `npm-pin <pkg>@<ver>` = a sha256-pinned vendored tarball tree under vendor/; `shim:<module>` = an upstream/shims module; `inline:<reason>` = runtime-registered source composed in the row itself; `node:<face>` = a re-export of another mapped face.",
+  "`since` uses the wave-ledger tags (tmp/r3-ledger-*.json): W5-R = subprocess seam, W5-T = vendor/transpiler faces, W5-Q = ws/sqlite follow-ups, W4-P = compression, W7-X1 = xterm. 'round N' = the upstream-suite growth rounds named in the npm-bridges headers.",
+  "ROWS ARE DUPLICATED BETWEEN FRAGMENTS: npm-bridges-b.js and npm-bridges-pi-ai.js both carry the diff..execa row set (pi-ai spreads B's rows before its own). Registration order is irrelevant to resolution — every row lands in the same registry before any spec loads — and a second define REPLACES. Flagged for tools/check-interfaces.py: the checker should dedupe by specifier.",
+  "SURPRISE (flagged for the conformance gate): the bare `child_process` alias (npm-bridges-c) is still a LOUD-REFUSAL stub while the node:child_process face (runtime-modules) is the REAL subprocess face since W5-R — the W5-R fold only moved the node: spelling."
+ ],
+ "rows": [
+  {
+   "specifier": "node:path",
+   "provider": "shim:path.js",
+   "since": "pre-wave",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:crypto",
+   "provider": "shim:crypto.js",
+   "since": "pre-wave",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:async_hooks",
+   "provider": "shim:async-hooks.js",
+   "since": "pre-wave",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:util",
+   "provider": "shim:util.js",
+   "since": "pre-wave",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:util/types",
+   "provider": "shim:util-types.js",
+   "since": "pre-wave",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:fs",
+   "provider": "shim:fs.js",
+   "since": "pre-wave",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:fs/promises",
+   "provider": "shim:fs-promises.js",
+   "since": "wave-ish (2026-09-22)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:timers/promises",
+   "provider": "shim:timers-promises.js",
+   "since": "wave-ish (2026-09-22)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:buffer",
+   "provider": "shim:buffer.js",
+   "since": "pre-wave (W-INTEG)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:os",
+   "provider": "shim:os.js",
+   "since": "pre-wave",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:process",
+   "provider": "shim:process.js",
+   "since": "pre-wave",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:module",
+   "provider": "shim:node-module.js",
+   "since": "pre-wave (W-LLM)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:url",
+   "provider": "shim:url.js",
+   "since": "pre-wave (W-INTEG)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:perf_hooks",
+   "provider": "shim:node-perf-hooks.js",
+   "since": "wave-vendor (2026-09-24)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:zlib",
+   "provider": "shim:node-zlib.js",
+   "since": "wave-vendor (2026-09-24)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:worker_threads",
+   "provider": "shim:node-worker-threads.js",
+   "since": "wave-vendor (2026-09-24)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:stream",
+   "provider": "shim:node-stream.js",
+   "since": "wave-vendor (2026-09-24)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:events",
+   "provider": "shim:events.js",
+   "since": "wave5 (round 2)",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:sqlite",
+   "provider": "shim:node-sqlite.js",
+   "since": "wave5-R",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+  },
+  {
+   "specifier": "node:<other>",
+   "provider": "FAIL LOUD",
+   "since": "standing rule",
+   "registeredBy": "host/dsh_spike_host.c dsh_node_shim",
+   "note": "Only builtins the vendored closure actually imports are mapped; anything else fails loud at import time naming the specifier (rule 5): 'no spike shim for node builtin ...'"
+  },
+  {
+   "specifier": "dsh:util-crypto",
+   "provider": "npm-pin dsh util-crypto@0.1.6-alpha.2 (vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js)",
+   "since": "pre-wave (M1 legacy)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "legacy spike specifier, kept working on the alpha.2 pin"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-llm",
+   "provider": "npm-pin dsh llm@0.1.6-alpha.2 (vendor/dsh/llm@0.1.6-alpha.2/lib/index.js)",
+   "since": "pre-wave (W-LLM)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-llm/invariant",
+   "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/invariant.js)",
+   "since": "pre-wave (W-LLM)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-llm/message",
+   "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/types/message.js)",
+   "since": "pre-wave (W-LLM)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-llm/assistant-stream",
+   "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/types/assistant-stream.js)",
+   "since": "pre-wave (W-LLM)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-llm/brand",
+   "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/types/brand.js)",
+   "since": "pre-wave (W-LLM)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-llm/types",
+   "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/types/types.js)",
+   "since": "pre-wave (W-LLM)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-llm/typert",
+   "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/typert.host.js)",
+   "since": "pre-wave (W-LLM)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-llm/remote",
+   "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/typert.remote-client.js)",
+   "since": "pre-wave (W-LLM)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
+  },
+  {
+   "specifier": "@deepseek-ai/node-addon-system/flock",
+   "provider": "shim:node-addon-system-flock.js",
+   "since": "wave-vendor (2026-09-24)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-client-modules",
+   "provider": "npm-pin @deepseek-ai/dsh-client-modules@0.1.6-alpha.2 (vendor/npm/.../lib/index.js)",
+   "since": "pre-wave (W-INTEG)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "NPM-published web-boot composer (not a dsh-desktop runtime tarball); subpaths: /client -> client.js, /invariant -> invariant.js; other subpaths fail loud"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-client-modules/client",
+   "provider": "npm-pin @deepseek-ai/dsh-client-modules@0.1.6-alpha.2 (lib/client.js)",
+   "since": "pre-wave (W-INTEG)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-client-modules/invariant",
+   "provider": "npm-pin @deepseek-ai/dsh-client-modules@0.1.6-alpha.2 (lib/invariant.js)",
+   "since": "pre-wave (W-INTEG)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-<pkg>[/sub]",
+   "provider": "vendored-dsh probe (DSH_MAP_VENDORED_PROBE marker 'pkg|sub')",
+   "since": "pre-wave",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "VERBATIM tarballs; the loader probes two staging families and the exports-map subpath shapes, failing loud naming the specifier. Note: @deepseek-ai/dsh-session-persistence rides this probe since the 2026-09-23 closure harvest (the submodule-built real package is staged koffi-free; the old errors-only shim would shadow it)"
+  },
+  {
+   "specifier": "@deepseek-ai/cordis-plugin-loader",
+   "provider": "npm-pin @deepseek-ai/cordis-plugin-loader@1.0.3",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "C host row; SHADOWED at runtime: runtime-modules registers a Loader-subclass row over the same vendored lib (resolution order rule 1) — see the runtime-modules row below"
+  },
+  {
+   "specifier": "@deepseek-ai/cordis-plugin-include",
+   "provider": "npm-pin @deepseek-ai/cordis-plugin-include@1.0.7",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "js-yaml",
+   "provider": "npm-pin js-yaml@4.1.0 (dist/js-yaml.mjs)",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "fast-check",
+   "provider": "npm-pin fast-check@4.8.0 (lib/fast-check.bundle.mjs; pre-bundled with pure-rand via esbuild nodePaths)",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "the property-testing lib the upstream suite's *__properties specs import; the monorepo's own lockfile pin"
+  },
+  {
+   "specifier": "fast-check/<sub>",
+   "provider": "npm-pin fast-check@4.8.0 (lib/<sub>)",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "pure-rand/<sub>",
+   "provider": "npm-pin pure-rand@8.4.0 (lib/<sub>.js)",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "fast-check's rng, same lockfile pin, CJS-free ESM face"
+  },
+  {
+   "specifier": "@deepseek-ai/cordis",
+   "provider": "npm-pin cordis@4.0.2",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "SHADOWED at runtime: runtime-modules re-registers this specifier with a row that adds FiberState/LoggerLevel and the loader failure face (resolution order rule 1) — see the runtime-modules row below"
+  },
+  {
+   "specifier": "@deepseek-ai/cosmokit",
+   "provider": "npm-pin cosmokit@1.8.3",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "@deepseek-ai/schemastery",
+   "provider": "npm-pin schemastery@3.18.2 (lib/index.mjs)",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "zod",
+   "provider": "npm-pin zod@4.4.3 (index.js)",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+  },
+  {
+   "specifier": "zod/<sub>",
+   "provider": "npm-pin zod@4.4.3 (<sub> as raw path; NO extension/index resolution)",
+   "since": "wave3 (round 3)",
+   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "note": "the raw-path rule is why zod/v4 has its own npm-bridges row"
+  },
+  {
+   "specifier": "node:string_decoder",
+   "provider": "shim:string-decoder.js",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "chunk-boundary-safe utf-8; the C SHIMS table has no row, and a node: miss fails loud in dsh_map_bare before any shim could"
+  },
+  {
+   "specifier": "node:stream/promises",
+   "provider": "inline:pipeline (the node:stream shim's own) + finished(stream) over 'end'/'finish'/'close' with 'error' rejection",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)"
+  },
+  {
+   "specifier": "node:tls",
+   "provider": "inline:linkage-stub (TLSSocket/Server/connect/createServer fail loud when CALLED — no socket seam; TLS transport is a desktop capability)",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)"
+  },
+  {
+   "specifier": "node:inspector",
+   "provider": "inline:linkage-stub (Session fails loud at CONSTRUCTION — one serial JS realm (D2) has no native V8 inspection session to attach; the realm only builds sessions lazily per connection, so the no-CDP limbs run)",
+   "since": "wave5-Q",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)"
+  },
+  {
+   "specifier": "node:dns/promises",
+   "provider": "inline:linkage-stub (lookup/Resolver reject loud — name resolution rides the gateway network plane, not a resolver seam)",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)"
+  },
+  {
+   "specifier": "node:readline",
+   "provider": "inline:honest implementation (createInterface over an async-iterable/EventEmitter input: utf-8 line-splitting, 'line' events + async iteration; close ends it)",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "only the utf-8 line face the ssh inspector spec drives"
+  },
+  {
+   "specifier": "node:vm",
+   "provider": "inline:linkage-stub (Script/createContext/runInContext/runInNewContext fail loud — the confined guest realm IS the PTC execution model, deliberately unprovided)",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)"
+  },
+  {
+   "specifier": "node:http",
+   "provider": "shim:node-http-loopback.js (createHttpFace; SERVER face is REAL in-process — createServer/Server register a loopback handler, no socket ever bound; CLIENT faces request/get/Agent fail loud; validateHeaderName/Value are real)",
+   "since": "wave5-K (server face: round 6)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "folded from npm-bridges (C's linkage stub) with the real faces kept; the 2026-09-27 fold moved node-face rows out of npm-bridges to kill the shadow risk: a runtime-defined node: row could shadow a future real C-map shim entry silently"
+  },
+  {
+   "specifier": "node:net",
+   "provider": "inline:isIP/isIPv4/isIPv6 real (pure string classification); Socket/StreamDuplex/connect/createConnection/createServer fail loud (no socket seam)",
+   "since": "wave5 (round 6 fold)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)"
+  },
+  {
+   "specifier": "node:child_process",
+   "provider": "shim:node-child-process.js (the REAL subprocess face over the __dshProc* host intrinsics; children never run JS in this runtime — D2 untouched)",
+   "since": "wave5-R",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "the old loud-refusal stub was honest while the seam was absent; it made lsp-stdio/bash/hooks fail every test downstream of a spawn"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-session/types.js",
+   "provider": "npm-pin dsh session@0.1.6-alpha.2 (lib/types/types.js re-export)",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "the vendored probe resolves `lib/types` (the DIRECTORY, an export-less module) first, so the link fails 'Could not find export SessionLogOffset' — the row pins the real file"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-session/types",
+   "provider": "npm-pin dsh session@0.1.6-alpha.2 (lib/types/types.js re-export)",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "the extensionless spelling surfaces the same probe gap; pinned too"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-workflow/types",
+   "provider": "npm-pin dsh workflow@0.1.6-alpha.2 (lib/types/types.js re-export)",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "same probe gap as dsh-session/types"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-client-web/injections",
+   "provider": "npm-pin @deepseek-ai/dsh-client-web@0.1.6-alpha.2 (lib/apply-injections.js re-export)",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "the exports map spells './injections' -> ./lib/apply-injections.js — an aliased name the probe's lib/ + lib/types/ shapes can never hit"
+  },
+  {
+   "specifier": "@deepseek-ai/cordis",
+   "provider": "npm-pin cordis@4.0.2 + inline:FiberState/LoggerLevel (values read off the same package's src/fiber.ts + src/logger.ts) + the cordis-loader-failure-face trigger",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "the pinned 4.0.2 predates the enums' exports (a const enum erases in lib); the row is ALSO the failure-face trigger: whatever imports cordis first evaluates the prototype patch, deferred one microtask because a first import THROUGH the loader lib arrives mid-evaluation"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-client-ui-renderer/client",
+   "provider": "shim:dsh-client-ui-renderer-client.js (SlotRegistry over the vendored ui-slots SlotCore)",
+   "since": "wave5 (worker round 1)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)",
+   "note": "the vendored ./client face is a browser bundle with no ESM exports"
+  },
+  {
+   "specifier": "@deepseek-ai/node-addon-system/landlock-run",
+   "provider": "shim:node-addon-system-landlock-run.js (the source's own absence semantics: every probe answers unusable)",
+   "since": "wave5 (G1/G2/H)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-api-gateway/client",
+   "provider": "inline:__ModuleLoader__ client-bundle face (drains the queued bundle registration, invokes factory(require) with user-land require over statically imported namespaces; vendored classes)",
+   "since": "wave5 (worker rounds)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-client-connection/client",
+   "provider": "inline:__ModuleLoader__ client-bundle face (see dsh-api-gateway/client)",
+   "since": "wave5 (worker rounds)",
+   "registeredBy": "shims/runtime-modules.js (__dshModuleDefine)"
+  },
+  {
+   "specifier": "diff",
+   "provider": "npm-pin diff@9.0.0 (libesm/index.js)",
+   "since": "wave3-K",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "structuredPatch — the hunk diffs in dsh-tool-fs write/edit results"
+  },
+  {
+   "specifier": "yaml",
+   "provider": "npm-pin yaml@2.9.0 (browser/index.js — the package's own ESM face; the 'node' face is CJS which this loader cannot serve)",
+   "since": "wave3-K",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "parse — dsh-skill-filesystem SKILL.md frontmatter"
+  },
+  {
+   "specifier": "zustand/vanilla",
+   "provider": "npm-pin zustand@4.4.7 (esm/vanilla.js)",
+   "since": "wave5-C' (round 3, 2026-09-25)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "test faces the suite's source packages import, pinned at the lockfile's exact resolutions, NEVER mounted by the product boot"
+  },
+  {
+   "specifier": "zustand/shallow",
+   "provider": "npm-pin zustand@4.4.7 (esm/shallow.js)",
+   "since": "wave5-C' (round 3)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "zustand/middleware",
+   "provider": "npm-pin zustand@4.4.7 (esm/middleware.js)",
+   "since": "wave5-C' (round 3)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "eventsource-parser",
+   "provider": "npm-pin eventsource-parser@3.1.0 (dist/index.js)",
+   "since": "wave5-C' (round 3)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "eventsource-parser/stream",
+   "provider": "npm-pin eventsource-parser@3.1.0 (dist/stream.js)",
+   "since": "wave5-C' (round 3)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "fflate",
+   "provider": "npm-pin fflate@0.8.2 (esm/browser.js — 89KB ESM, zero imports)",
+   "since": "wave-office (2026-09-27)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "the office plane's zip engine: dsh-office mounts the OOXML container on it (docx/xlsx/pptx are zip+xml; the frozen gateway has no inflate primitive). Mounted by the PRODUCT boot through the dsh-office plugin"
+  },
+  {
+   "specifier": "chokidar",
+   "provider": "inline:linkage shim over the workspace VFS watch registry (no vendored tree — real chokidar needs OS fs events + wall-clock timers, and the runtime has neither seam)",
+   "since": "wave3-K",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "watch() returns the FSWatcher SYNCHRONOUSLY (the vendored settings-file init binds watcher.on with no await — measured 2026-09-27); 'ready' fires on the next timer tick (after an initial scan that has nothing to scan); 'all' fires on mutations of the watched path (a write IS the event, no polling — D8); close() unhooks; a path outside the workspace fails loud through watchPath so an accidental watch:true over an unwatchable surface never silently no-ops. The mobile profile mounts skill-filesystem with watch:false and never reaches it"
+  },
+  {
+   "specifier": "@deepseek-ai/runner-launch-DGV26RBf.js",
+   "provider": "npm-pin dsh subprocess-local@0.1.6-alpha.2 (lib/runner-launch-DGV26RBf.js re-export)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "purely the name the normalized join produces: the rollup chunk is imported RELATIVELY by bundled lib/ files, but the entry was served under the bare @deepseek-ai/dsh-subprocess-local specifier, so the relative re-entry must re-enter beside its importer"
+  },
+  {
+   "specifier": "buffer",
+   "provider": "shim:buffer.js (the SAME module instance as the node:buffer face — DshBuffer identity holds across both spellings) + inline:kMaxLength/kStringMaxLength (node's 64-bit values)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "the bare npm `buffer` name (webworker-runtime family)"
+  },
+  {
+   "specifier": "@vitest/spy",
+   "provider": "inline:vi face re-export (fn/spyOn/isMockFunction from scenario/upstream-test-harness.js imported by the EXACT specifier the suite driver loads the harness under — same module instance, same suite state; a second spelling would fork the test collection)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@testing-library/react",
+   "provider": "inline:linkage-stub (act passes through; render/within/fireEvent/screen fail loud when CALLED — no DOM renderer surface; cleanup no-op)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "linkage-only: dsh-client-test-runtime imports {act, render, within} at module scope; the full package needs react-dom + @babel/runtime — a vendoring round only a staged UI-rendering spec can justify"
+  },
+  {
+   "specifier": "dsh-bridge-setup/globals",
+   "provider": "inline:setup module (process ??= node:process shim; global ??= globalThis; require ??= makeRequire('/') — ESM evaluates DEPENDENCIES BEFORE the importer's body, so a global a vendored file reads at module scope must be installed in a separate FIRST-import module)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "immer",
+   "provider": "npm-pin immer@10.2.0 (dist/immer.mjs, after dsh-bridge-setup/globals — the file reads process.env.NODE_ENV at module scope)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "session/terminal/workspace-controller client specs"
+  },
+  {
+   "specifier": "commander",
+   "provider": "npm-pin commander@15.0.0 (index.js; type-module entry, ./lib/* resolve beside)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "acorn",
+   "provider": "npm-pin acorn@8.17.0 (dist/acorn.mjs; named exports only — no default)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "turndown",
+   "provider": "npm-pin turndown@7.2.4 (lib/turndown.es.js, after dsh-bridge-setup/globals — the top level calls createHTMLParser() which require()s the CJS domino package when no DOMParser global exists; the armed linkage require makes the load succeed and the face fail loud only when HTML is parsed without a caller-supplied parser)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@noble/hashes/sha2.js",
+   "provider": "npm-pin @noble/hashes@2.3.0 (sha2.js)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "ESM-native root files; only the subpaths the specs import are named (their own relative ./_md.js resolve beside). ALSO mapped STATICALLY in the host bare map (dsh_map_bare, 2026-09-29): shims/crypto.js imports these names during the static link phase, before the runtime bridge registry exists — the registry row can never serve that import (the parity port-leg failure)"
+  },
+  {
+   "specifier": "@noble/hashes/hmac.js",
+   "provider": "npm-pin @noble/hashes@2.3.0 (hmac.js)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai) + the host static bare map (2026-09-29, link-phase imports)"
+  },
+  {
+   "specifier": "@noble/hashes/legacy.js",
+   "provider": "npm-pin @noble/hashes@2.3.0 (legacy.js)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai) + the host static bare map (2026-09-29, link-phase imports)"
+  },
+  {
+   "specifier": "@jridgewell/gen-mapping",
+   "provider": "npm-pin @jridgewell/gen-mapping@0.3.13 (dist/gen-mapping.mjs)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "typert generator specs"
+  },
+  {
+   "specifier": "@jridgewell/trace-mapping",
+   "provider": "npm-pin @jridgewell/trace-mapping@0.3.31 (dist/trace-mapping.mjs)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@jridgewell/sourcemap-codec",
+   "provider": "npm-pin @jridgewell/sourcemap-codec@1.5.5 (dist/sourcemap-codec.mjs)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@jridgewell/resolve-uri",
+   "provider": "npm-pin @jridgewell/resolve-uri@3.1.2 (dist/resolve-uri.mjs; default + named)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@octokit/webhooks",
+   "provider": "npm-pin @octokit/webhooks@14.2.0 (dist-bundle/index.js — self-contained, named exports only)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@octokit/webhooks-methods",
+   "provider": "npm-pin @octokit/webhooks-methods@6.0.0 (dist-node/index.js)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@agentclientprotocol/sdk",
+   "provider": "npm-pin @agentclientprotocol/sdk@1.4.0 (dist/acp.js)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "peer zod rides the bare map's vendored zod@4.4.3"
+  },
+  {
+   "specifier": "resolve.exports",
+   "provider": "npm-pin resolve.exports@2.0.3 (dist/index.mjs)",
+   "since": "wave5-T (restored; r3-P boot row)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "dsh-plugin-manager imports it bare at runtime — the transpiler's BARE_RESOLVES inline row only covers spec-graph imports, so the runtime face needs its own row"
+  },
+  {
+   "specifier": "@deepseek-ai/cordis-plugin-group",
+   "provider": "npm-pin @deepseek-ai/cordis-plugin-group@1.0.4 (lib/index.js; default = Group class)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "same 1.x stream as the vendored loader/include pins"
+  },
+  {
+   "specifier": "@modelcontextprotocol/client",
+   "provider": "npm-pin @modelcontextprotocol/client@2.0.0 (dist/index.mjs)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "mcp-client + browser-use-runtime specs"
+  },
+  {
+   "specifier": "@modelcontextprotocol/client/_shims",
+   "provider": "npm-pin @modelcontextprotocol/client@2.0.0 (dist/shimsNode.mjs)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@modelcontextprotocol/client/stdio",
+   "provider": "npm-pin @modelcontextprotocol/client@2.0.0 (dist/stdio.mjs)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@modelcontextprotocol/core/internal",
+   "provider": "npm-pin @modelcontextprotocol/core@2.0.0 (dist/internal.mjs)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "zod/v4",
+   "provider": "npm-pin zod@4.4.3 (v4/index.js)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "the barrel specifier gets its own row because the bare map's zod/ rule maps subpaths as raw paths (no extension/index resolution)"
+  },
+  {
+   "specifier": "pkce-challenge",
+   "provider": "npm-pin pkce-challenge@5.0.1 (dist/index.node.js; default)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "eventsource",
+   "provider": "npm-pin eventsource@3.0.7 (dist/index.js)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "jose",
+   "provider": "npm-pin jose@6.2.3 (dist/webapi/index.js)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "@deepseek-ai/dsh-sandbox-windows-acl",
+   "provider": "npm-pin dsh sandbox-windows-acl@0.1.6-alpha.2 (lib/index.js re-export via the ABSOLUTE path)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "the vendored tarball carries relative chunk imports; loaded under the BARE specifier the host normalizes those relatives against '@deepseek-ai' and the chunk can never resolve — the absolute-path re-export lets the chunk re-enter beside its importer. The bare name is linkage every sandbox spec loads, even on darwin"
+  },
+  {
+   "specifier": "cross-spawn",
+   "provider": "inline:linkage-stub (default export fails loud — the mcp stdio transport's CJS spawn wrapper; D2 forbids the subprocess seam it wraps)",
+   "since": "wave5-Q",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+  },
+  {
+   "specifier": "execa",
+   "provider": "inline:promise-child face over node:child_process (execa(command, args, options) -> promise + {exitCode, signal, stdout, stderr, timedOut, failed}, .kill(signal), input, stdin:'ignore', timeout + killSignal, reject:false, stripFinalNewline; env MERGES over process.env like real execa; $/execaSync/execaCommand fail loud)",
+   "since": "wave5-R",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "serves dsh-plugin-manager / dsh-loader-smoke libs and the upstream process-exit spec; the old 'no subprocess seam' refusal is obsolete since __dshProcSpawn"
+  },
+  {
+   "specifier": "openai",
+   "provider": "shim:openai-client.js (composed fetch/SSE client over the runtime fetch; no vendored tarball — the heavy SDK deliberately left unfetched)",
+   "since": "wave5 (M/N/P)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "pi-ai's lazy api modules dynamic-import it only at live-transport build time; surface measured against the pinned pi-ai 0.85.1 dist"
+  },
+  {
+   "specifier": "typescript",
+   "provider": "npm-pin typescript@6.0.3 (lib/typescript.js via the typescript-cjs CJS chain; getNodeSystem require()s node builtins at module init, served from the shims through the faces map; ambient __filename/__dirname for exactly this file's evaluation, handed back after)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "the typert generator + remote-mock proxy-types specs' default import; one self-contained CJS file; LOAD EXPERIMENT noted in tmp/r3-ledger-T.json (9.1 MB of JS in quickjs; 90s class budget)"
+  },
+  {
+   "specifier": "mime-types",
+   "provider": "npm-pin mime-types@3.0.2 + mime-db@1.54.0 (the mime-cjs CJS chain; mimeScore REBINDS module.exports — exactly the shape __dshCjsKeep exists for; db.json pre-parsed through the __dshBundleRequire JSON seam)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "dsh-api-session-controller imports mime-types bare for every media arm"
+  },
+  {
+   "specifier": "negotiator",
+   "provider": "npm-pin negotiator@1.1.0 (the negotiator-cjs CJS chain; 'content-type' served as a LOUD stub — only the encoding-negotiation face runs without it)",
+   "since": "wave5 (round 6)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "dsh-host-webserver's gzip middleware: new Negotiator(req).encoding(['gzip','identity'])"
+  },
+  {
+   "specifier": "react",
+   "provider": "npm-pin react@18.3.1 (the react-cjs chain over cjs/react.production.min.js + cjs/react.development.js — index.js picks per process.env.NODE_ENV and the runtime runs development, so BOTH builds are served; named exports enumerated from the production build's export keys)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "the cordis-client-runner + api-workspace-files client specs do `import * as React`"
+  },
+  {
+   "specifier": "@yarnpkg/parsers",
+   "provider": "npm-pin @yarnpkg/parsers@3.1.0 (the parsers-cjs chain over shell/resolution/syml grammars + wrapper files; syml requires js-yaml at top level, served from the vendored UMD dist)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "parseShell is the operative face (webworker-runtime shell limbs)"
+  },
+  {
+   "specifier": "picomatch",
+   "provider": "npm-pin picomatch@2.3.1 (the picomatch-cjs chain; constants and utils are mutually CIRCULAR — the pre-registered exports objects give real CJS partial-exports semantics; utils requires node:path served by the shim through the faces map)",
+   "since": "wave5-C' (round 4)",
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
+   "note": "webworker-runtime shell expand/programs limbs"
+  },
+  {
+   "specifier": "partial-json",
+   "provider": "shim:partial-json.js (composed completion-walk face; no vendored tarball — never fetched)",
+   "since": "wave5 (M/N/P)",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "pi-ai's streaming tool-call parser imports { parse }; reached by EVERY lazy api load"
+  },
+  {
+   "specifier": "undici",
+   "provider": "shim:undici.js (composed over the loopback: ProxyAgent re-dials the in-test proxy server with the absolute-form request line; no vendored tarball)",
+   "since": "wave5 (M/N/P)",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "dsh-http-proxy and dsh-web-fetch-http dynamic-import it"
+  },
+  {
+   "specifier": "@deepseek-ai/cordis-plugin-loader",
+   "provider": "npm-pin @deepseek-ai/cordis-plugin-loader@1.0.3 + inline:Loader subclass (installs internal.import over OUR loader: parent-key-relative resolution, node_modules subpaths, absolute file URLs, bare map last)",
+   "since": "wave5 (worker rounds)",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "upstream ModuleLoader.fromInternal() reaches node's internal ESM loader (host C territory) leaving loader.internal undefined; the plugin-package-inventory specs wrap that face"
+  },
+  {
+   "specifier": "@modelcontextprotocol/server",
+   "provider": "npm-pin @modelcontextprotocol/server@2.0.0 (dist/index.mjs)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@modelcontextprotocol/server/_shims",
+   "provider": "npm-pin @modelcontextprotocol/server@2.0.0 (dist/shimsNode.mjs)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@modelcontextprotocol/node",
+   "provider": "npm-pin @modelcontextprotocol/node@2.0.0 (dist/index.mjs, after dsh-bridge-setup/globals — reads the node-ism `global` at module scope, aliased to globalThis ??=)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@hono/node-server",
+   "provider": "npm-pin @hono/node-server@1.19.14 (dist/index.mjs)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "os",
+   "provider": "shim:os.js via a Proxy (networkInterfaces() returns {} — no LAN surface in the sandbox, pickers fall back to loopback; functions bound)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "the UNPREFIXED bare spelling the otel ESM faces import"
+  },
+  {
+   "specifier": "ipaddr.js",
+   "provider": "npm-pin ipaddr.js@2.5.0 (lib/ipaddr.js via the per-face CJS adapter — the published face is UMD/CJS ONLY: with no global `module` the free variable falls to the root branch and `this` is undefined at ESM top level; the prelude row installs global module/exports, the vendored file binds against them, the face row captures and hands the globals back)",
+   "since": "wave5 (round 6)",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "web-fetch-http's loopback/unicast range checks + tool-web proxies; the lockfile pins ^2.5.0 exact. ONE PRELUDE MODULE PER CJS FACE: a shared scope row died on the second face ('exports is not defined' — measured 2026-09-28, the spill spec importing ipaddr before gfm)"
+  },
+  {
+   "specifier": "@opentelemetry/api",
+   "provider": "npm-pin @opentelemetry/api@1.9.1 (build/esm/index.js)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "the session-telemetry-otel stack at the lockfile's exact resolutions; every package ships a build/esm ESM face so each row is the real-path re-export pattern"
+  },
+  {
+   "specifier": "@opentelemetry/api-logs",
+   "provider": "npm-pin @opentelemetry/api-logs@0.220.0",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@opentelemetry/sdk-logs",
+   "provider": "npm-pin @opentelemetry/sdk-logs@0.220.0",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@opentelemetry/core",
+   "provider": "npm-pin @opentelemetry/core@2.10.0",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@opentelemetry/resources",
+   "provider": "npm-pin @opentelemetry/resources@2.10.0",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@opentelemetry/exporter-logs-otlp-http",
+   "provider": "npm-pin @opentelemetry/exporter-logs-otlp-http@0.220.0",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "the egress spec drives OTLPLogExporter against an in-test node:http server — the loopback faces serve it, no socket"
+  },
+  {
+   "specifier": "@opentelemetry/otlp-exporter-base",
+   "provider": "npm-pin @opentelemetry/otlp-exporter-base@0.220.0",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@opentelemetry/otlp-transformer",
+   "provider": "npm-pin @opentelemetry/otlp-transformer@0.220.0",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@opentelemetry/semantic-conventions",
+   "provider": "npm-pin @opentelemetry/semantic-conventions@1.43.0",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@opentelemetry/sdk-metrics",
+   "provider": "npm-pin @opentelemetry/sdk-metrics@2.9.0",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "util",
+   "provider": "shim:util.js (same module the node:util face serves — one implementation instance)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "UNPREFIXED node-builtin alias: the C shim map keys on the node: spelling only"
+  },
+  {
+   "specifier": "fs",
+   "provider": "shim:fs.js (default + named)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "unprefixed alias"
+  },
+  {
+   "specifier": "path",
+   "provider": "shim:path.js (default + named)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "unprefixed alias"
+  },
+  {
+   "specifier": "process",
+   "provider": "node:process (re-export of the same face)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "unprefixed alias"
+  },
+  {
+   "specifier": "zlib",
+   "provider": "shim:node-zlib.js (default + named)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "unprefixed alias"
+  },
+  {
+   "specifier": "http",
+   "provider": "shim:node-http-loopback.js (createHttpFace — the SAME in-process loopback face runtime-modules serves as node:http; the old refuse-stub predates the loopback round)",
+   "since": "wave5-T (round 6 refresh)",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "the otel exporter's dynamic import('http') dispatches through it like every other suite client"
+  },
+  {
+   "specifier": "https",
+   "provider": "inline:linkage-stub (request/get/createServer/Agent fail loud — no socket seam; the egress spec's in-test server is http://127.0.0.1)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "child_process",
+   "provider": "inline:linkage-stub (exec*/spawn*/fork fail loud — the resources env-detectors link against it but only execute inside container/VM detection paths the specs never drive)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "NOTE: this bare-name stub predates the W5-R seam and was NOT folded to the real face (only the node: spelling was); flagged for the conformance gate"
+  },
+  {
+   "specifier": "http2",
+   "provider": "inline:linkage-stub (connect/createServer fail loud; Http2ServerRequest throws at construction; constants carries HTTP2_HEADER_STATUS/NGHTTP2_NO_ERROR)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "stream",
+   "provider": "shim:node-stream.js (default + named)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "unprefixed alias"
+  },
+  {
+   "specifier": "crypto",
+   "provider": "shim:crypto.js (default + named)",
+   "since": "wave5-T",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "unprefixed alias"
+  },
+  {
+   "specifier": "compression",
+   "provider": "inline:pass-through middleware factory (+.filter/.compress) — honest for the corpus-default 'none' config; a 'gzip' configuration would silently skip compression (documented delta)",
+   "since": "wave4-P",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "dsh-host-webserver's optional gzip middleware; the published face is a CJS require-graph this loader cannot evaluate"
+  },
+  {
+   "specifier": "ws",
+   "provider": "npm-pin ws@8.21.0 via requireCjsPackage (the REAL vendored lib through the userland CJS loader; bare requires registered into the cjs-loader face table BEFORE the entry evaluates — CJS evaluation is synchronous)",
+   "since": "wave5-Q",
+   "registeredBy": "shims/npm-bridges-c.js",
+   "note": "the HTTP transport rides the loopback: an UPGRADE-shaped http.request pairs in-memory LoopbackSockets with the registry server, so real ws framing runs on both ends with no OS socket and no second process/thread (D2). tls/https are linkage faces (wss:// is a desktop transport); net.connect is only ws's DEFAULT createConnection which the loopback dispatch bypasses"
+  },
+  {
+   "specifier": "@xterm/headless",
+   "provider": "npm-pin @xterm/headless@6.0.0 via requireCjsPackage (real vendored webpack CJS, zero require() calls — no builtin faces to register; named exports = the bundle's own assignment list: Terminal)",
+   "since": "wave7-X1",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@xterm/addon-serialize",
+   "provider": "npm-pin @xterm/addon-serialize@0.14.0 via requireCjsPackage (SerializeAddon)",
+   "since": "wave7-X1",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "readable-stream",
+   "provider": "inline:composed over this runtime's stream face (node-stream shim + the node:stream utility statics the limbs destructure at LOAD — getDefaultHighWaterMark/setDefaultHighWaterMark/isDestroyed/isWritable/isErrored/isReadable/destroy/finished/addAbortSignal/compose(loud)/promises{pipeline,finished}; DEFAULT-ONLY face — a top-level export const Transform collides with a host global in quickjs (invalid redefinition, measured); Transform is a through-mode Duplex alias — documented delta)",
+   "since": "wave5 (webworker-runtime limbs)",
+   "registeredBy": "shims/npm-bridges-c.js"
+  },
+  {
+   "specifier": "@earendil-works/pi-ai/providers/all",
+   "provider": "inline:composed providers/all barrel (the real all.js body with its two JSON-import-ATTRIBUTE imports rewritten to the __dshBundleRequire JSON seam; 39 provider constructors; quickjs-ng 0.17 cannot parse the attribute syntax — 'SyntaxError: expecting ;')",
+   "since": "wave5 (round 5)",
+   "registeredBy": "shims/npm-bridges.js + npm-bridges-pi-ai.js"
+  },
+  {
+   "specifier": "@earendil-works/pi-ai/api/transform-messages",
+   "provider": "npm-pin @earendil-works/pi-ai@0.85.1 (dist/api/transform-messages.js)",
+   "since": "wave5 (round 5)",
+   "registeredBy": "shims/npm-bridges-pi-ai.js"
+  },
+  {
+   "specifier": "@earendil-works/pi-ai/api/anthropic-messages.lazy",
+   "provider": "npm-pin @earendil-works/pi-ai@0.85.1 (dist/api/anthropic-messages.lazy.js)",
+   "since": "wave5 (round 5)",
+   "registeredBy": "shims/npm-bridges-pi-ai.js",
+   "note": "the .lazy api modules dynamic-import their heavy SDK impls only when a live transport is built — never reached by the suite — so the tarball's declared heavy deps stay unfetched"
+  },
+  {
+   "specifier": "@earendil-works/pi-ai/api/openai-completions.lazy",
+   "provider": "npm-pin @earendil-works/pi-ai@0.85.1 (dist/api/openai-completions.lazy.js)",
+   "since": "wave5 (round 5)",
+   "registeredBy": "shims/npm-bridges-pi-ai.js"
+  },
+  {
+   "specifier": "@earendil-works/pi-ai/api/openai-responses.lazy",
+   "provider": "npm-pin @earendil-works/pi-ai@0.85.1 (dist/api/openai-responses.lazy.js)",
+   "since": "wave5 (round 5)",
+   "registeredBy": "shims/npm-bridges-pi-ai.js"
+  },
+  {
+   "specifier": "@earendil-works/pi-ai/utils/event-stream",
+   "provider": "npm-pin @earendil-works/pi-ai@0.85.1 (dist/utils/event-stream.js)",
+   "since": "wave5 (round 5)",
+   "registeredBy": "shims/npm-bridges-pi-ai.js"
+  },
+  {
+   "specifier": "@earendil-works/pi-ai/utils/overflow",
+   "provider": "npm-pin @earendil-works/pi-ai@0.85.1 (dist/utils/overflow.js)",
+   "since": "wave5 (round 5)",
+   "registeredBy": "shims/npm-bridges-pi-ai.js"
+  }
+ ],
+ "cjsChainModules": {
+  "description": "Internal chain/setup modules the bridges register under dsh-bridge-setup/* so each vendored CJS file gets its own evaluation scope (ESM import order is depth-first with bodies interleaved only BETWEEN modules — captures inside one module's body run only after ALL its imports, measured: shell.js saw no './grammars/shell' face). Every file of a chain gets its exports object PRE-REGISTERED before evaluation, so CJS cycles see each other's live partially-filled exports exactly like a real CJS loader (__dshCjsSetup binds the ambient module/exports for the file evaluated next; __dshCjsKeep re-points the key when a file REBINDS module.exports).",
+  "modules": [
+   "dsh-bridge-setup/cjs-chain-scope (the faces Map + global require + __dshCjsSetup/__dshCjsKeep)",
+   "dsh-bridge-setup/globals (process/global/require install)",
+   "dsh-bridge-setup/typescript-cjs-0/1",
+   "dsh-bridge-setup/mime-cjs-0/1/2/3",
+   "dsh-bridge-setup/react-cjs-0/1/1b/2",
+   "dsh-bridge-setup/parsers-cjs-0..8",
+   "dsh-bridge-setup/negotiator-cjs-0..6",
+   "dsh-bridge-setup/picomatch-cjs-0..6",
+   "dsh-bridge-setup/ipaddr-cjs-scope",
+   "dsh-bridge-setup/gfm-cjs-scope"
+  ]
+ },
+ "piAiModelShadows": {
+  "description": "PI_AI_MODEL_SHADOWS: 39 generated provider catalog files x TWO names each = 78 runtime-module registrations (checked before disk loads for absolute /vendor names, so a runtime module registered under the ABSOLUTE vendor path of a generated providers/<id>.models.js REPLACES that file for every importer while all other files keep loading VERBATIM). Each shadow source is the generated file's own 3-line shape with the JSON import attribute rewritten to the __dshBundleRequire JSON seam. TWO names per file because dsh_resolve_relative tokenizes a slash-prefixed importer directory into a leading EMPTY segment, so its join produces the NO-slash spelling — relative re-entry never carries the slash.",
+  "specifiers": [
+   "/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/<id>.models.js",
+   "vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/<id>.models.js"
+  ],
+  "ids_count": 39
+ }
+}

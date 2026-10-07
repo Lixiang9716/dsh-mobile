@@ -92,7 +92,7 @@ describe('the injected registry path (#346) — the write legs land where the ti
       version: 1,
       plugins: [{ id: 'countdown10', name: '10s Countdown', enabled: true }],
     })));
-    const legs = makePluginManagerWriteHandlers({ registryPath: 'spike/plugins/registry.json' });
+    const legs = makePluginManagerWriteHandlers({ registryPath: 'dsh/plugins/registry.json' });
     const res = await legs.setPluginEnabled({ id: 'countdown10', enabled: false });
     expect(res).toMatchObject({ changed: true, application: 'applied' });
     expect(__dump('app/spike/plugins/registry.json')).toBeDefined();
@@ -105,7 +105,7 @@ describe('the injected registry path (#346) — the write legs land where the ti
     seedHttp();
     const legs = makePluginManagerWriteHandlers({
       marketplace: { indexUrl: INDEX_URL, publicKey: PUB_B64 },
-      registryPath: 'spike/plugins/registry.json',
+      registryPath: 'dsh/plugins/registry.json',
     });
     const res = await legs.installBundle({ spec: 'dsh-demo' });
     expect(res).toMatchObject({ changed: true, application: 'applied', bundle: 'dsh-demo' });

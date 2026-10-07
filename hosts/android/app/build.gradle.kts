@@ -18,14 +18,14 @@ val execBash: String = when {
         ?: "bash"
 }
 
-// The vendored engine sources are untracked by design (runtime/spike/README.md):
+// The vendored engine sources are untracked by design (runtime/dsh/README.md):
 // this materializes them (sha256-verified tarball, idempotent) before any build
 // that compiles the engine. Absolute path: an Exec task inherits the launcher
 // cwd, which must never decide whether the engine sources are found.
 // POSIX spelling for the bash argument: a Windows absolutePath carries
 // backslashes that bash consumes as escapes (`D:workspacedsh-mobile…`);
 // forward slashes reach the shell intact on every host.
-val ensureSpikeScript = layout.projectDirectory.file("../../../runtime/spike/vendor/ensure.sh")
+val ensureSpikeScript = layout.projectDirectory.file("../../../runtime/dsh/vendor/ensure.sh")
 val ensureSpikeVendor = tasks.register<Exec>("ensureSpikeVendor") {
     commandLine(execBash, ensureSpikeScript.asFile.absolutePath.replace('\\', '/'))
 }
@@ -44,7 +44,7 @@ val ensureSpikeVendor = tasks.register<Exec>("ensureSpikeVendor") {
 val officialDistDir = rootProject.file("../../presentation/official-web/dist")
 val clientBundlesDir = rootProject.file("../../presentation/official-web/client-bundles")
 val vendoredBootstrap = rootProject.file(
-    "../../runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2",
+    "../../runtime/dsh/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2",
 )
 val dshAssets = layout.buildDirectory.dir("generated/dsh-assets")
 

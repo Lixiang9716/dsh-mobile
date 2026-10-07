@@ -21,7 +21,7 @@ import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
-export const SPIKE = join(REPO, 'runtime', 'spike');
+export const SPIKE = join(REPO, 'runtime', 'dsh');
 
 // --- graph walk -------------------------------------------------------------
 

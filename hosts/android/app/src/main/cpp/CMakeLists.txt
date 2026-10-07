@@ -1,11 +1,11 @@
 # DSH M1 spike — Android native layer. Compiles the platform-neutral spike
 # host plus the vendored quickjs-ng engine (untracked tree, materialized by
-# runtime/spike/vendor/ensure.sh — wired into the Gradle build as
+# runtime/dsh/vendor/ensure.sh — wired into the Gradle build as
 # ensureSpikeVendor, which must run before this CMake project).
 cmake_minimum_required(VERSION 3.22)
 project(dsh_spike_android C)
 
-set(DSH_SPIKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../runtime/spike)
+set(DSH_SPIKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../runtime/dsh)
 set(DSH_ENGINE_DIR ${DSH_SPIKE_DIR}/vendor/quickjs-ng/0.17.0)
 set(DSH_ZSTD_DIR ${DSH_SPIKE_DIR}/vendor/zstd/1.5.7)
 set(DSH_WASM3_DIR ${DSH_SPIKE_DIR}/vendor/wasm3/0.9.0/source)
@@ -25,7 +25,7 @@ add_library(dsh_spike SHARED
         # to the gateway by the Kotlin WasmPrimitive: the module is interpreted
         # IN-PROCESS by wasm3 (no JIT, no child process — D2), the same engine
         # and the same 11 TUs the iOS app and the portable spine compile.
-        # Pinned by runtime/spike/vendor/ensure-wasm3.sh, materialized by the
+        # Pinned by runtime/dsh/vendor/ensure-wasm3.sh, materialized by the
         # same ensureSpikeVendor Gradle task as the quickjs tree. Until this
         # landed (#335 B4) the release seat answered every shell run with a
         # gateway denial — the shell tool could not execute even its own
@@ -47,7 +47,7 @@ add_library(dsh_spike SHARED
         ${DSH_ENGINE_DIR}/libunicode.c
         ${DSH_ENGINE_DIR}/quickjs.c
         # zstd 1.5.7 (BSD-3, single-thread) — the host's node:zlib intrinsics
-        # link against it; pinned by runtime/spike/vendor/ensure-zstd.sh
+        # link against it; pinned by runtime/dsh/vendor/ensure-zstd.sh
         # (materialized by the same ensureSpikeVendor Gradle task).
         ${DSH_ZSTD_DIR}/common/debug.c
         ${DSH_ZSTD_DIR}/common/entropy_common.c

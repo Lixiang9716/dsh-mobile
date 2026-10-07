@@ -157,7 +157,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "android.ble-plane ($MODE)",
   "launch": "emulator/device, $EXTRAS (Debug)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "$SCEN", "verdict": "verdict-$SCEN.json", "pass": true }$( [ "$MODE" != "device" ] && printf ',\n    { "manifest": "%s-audit", "verdict": "verdict-%s-audit.json", "pass": true }' "$SCEN" "$SCEN" )
   ],

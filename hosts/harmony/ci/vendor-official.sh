@@ -9,18 +9,18 @@
 # ensure scripts — the tracked provenance record):
 #   test/e2e/ensure-official-dist.sh  → presentation/official-web/dist
 #   test/e2e/ensure-client-bundles.sh → presentation/official-web/client-bundles/npm
-#   runtime/spike/vendor/ensure-dsh.sh → runtime/spike/vendor/npm (the pinned
+#   runtime/dsh/vendor/ensure-dsh.sh → runtime/dsh/vendor/npm (the pinned
 #     @deepseek-ai/dsh-client-modules wins for the bootstrap package, the
 #     same precedence test/e2e/run-ios-official-web-mount.sh applies on iOS)
 #
-# Layout under entry/src/main/resources/rawfile/spike/:
+# Layout under entry/src/main/resources/rawfile/dsh/:
 #   officialweb/www/…                     ← the official dist (www: the repo
 #                                            .gitignore excludes any dist/
 #                                            dir, so the rawfile copy carries
 #                                            a neutral name; bytes verbatim)
 #   officialweb/plugins/npm/@deepseek-ai/… ← the staged client bundles
 #   scenario/officialweb-web-live.js, upstream/…, vendor/npm/… ← the web-boot closure
-#     (byte-identical to the runtime/spike canonicals — the m5 surprise
+#     (byte-identical to the runtime/dsh canonicals — the m5 surprise
 #     ledger: drift in these copies is silent)
 #   + the W-SESS SPINE closure (harmony.session.live-read): the mobile profile
 #     boot, its settings backend, the gateway llm transport, the session-live
@@ -31,7 +31,7 @@
 #     spine files). #56-class drift guard: ci/check-bundle-files.mjs
 #     cross-checks this list against Index.ets's BUNDLE_FILES.
 #   + the llm.live-stream real-LLM leg closure (W-HARMONY5): scenario/llm-live-stream.js and
-#     llm.js, byte-identical to runtime/spike (the leg runs the SAME scenario
+#     llm.js, byte-identical to runtime/dsh (the leg runs the SAME scenario
 #     code as iOS/Android/CLI over this host's real httpFetch).
 #
 # Every copied file is byte-verified (cmp) against its source; the closure
@@ -40,7 +40,7 @@
 set -eu
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 cd "$ROOT"
-RAW=hosts/harmony/entry/src/main/resources/rawfile/spike
+RAW=hosts/harmony/entry/src/main/resources/rawfile/dsh
 
 # Modes (build/build.sh sync + the closures gate are the callers):
 #   (default)        full CI materialization: ensure scripts + officialweb + closure
@@ -67,7 +67,7 @@ if [ "$MODE" = "suite" ]; then
     # the suite leg's materializer serves them beside the pinned bundle.
     # NOT part of the standard flow — the BUNDLE_FILES drift check judges
     # the tracked tree only, and this mode runs only in the suite CI job.
-    CORPUS="runtime/spike/upstream-tests"
+    CORPUS="runtime/dsh/upstream-tests"
     [ -f "$CORPUS/manifest.json" ] || {
         echo "::error::vendor-official: transpiled corpus missing — run test/upstream-suite/transpile.mjs first" >&2
         exit 1
@@ -78,7 +78,7 @@ if [ "$MODE" = "suite" ]; then
         cp "$CORPUS/$f" "$RAW/upstream-tests/$f"
         echo "upstream-tests/$f" >> "$RAW/upstream-tests/__files.txt"
     done
-    for pkg_dir in runtime/spike/vendor/dsh/*@0.1.6-alpha.2; do
+    for pkg_dir in runtime/dsh/vendor/dsh/*@0.1.6-alpha.2; do
         pkg="$(basename "$pkg_dir")"
         [ -d "$pkg_dir/lib" ] || continue
         mkdir -p "$RAW/vendor/dsh/$pkg"
@@ -98,7 +98,7 @@ if [ "$MODE" = "suite" ]; then
         cp "$pkg_dir/package.json" "$RAW/vendor/dsh/$pkg/package.json" 2>/dev/null || true
     done
     # package.json rows for freshly staged packages (the loader may read them)
-    for pkg_dir in runtime/spike/vendor/dsh/*@0.1.6-alpha.2; do
+    for pkg_dir in runtime/dsh/vendor/dsh/*@0.1.6-alpha.2; do
         pkg="$(basename "$pkg_dir")"
         if [ -f "$RAW/vendor/dsh/$pkg/package.json" ] && ! grep -q "^vendor/dsh/$pkg/package.json$" "$RAW/upstream-tests/__files.txt"; then
             echo "vendor/dsh/$pkg/package.json" >> "$RAW/upstream-tests/__files.txt"
@@ -116,26 +116,26 @@ if [ "$MODE" = "suite" ]; then
     # manifest shipped and the hand list missed it — the exact rot the
     # android scenario hand list hit (2026-09-29 surprise). Every file the
     # package carries rides, so a future module cannot be forgotten.
-    (cd "runtime/spike/upstream/shims/sharp" && find . -type f) |
+    (cd "runtime/dsh/upstream/shims/sharp" && find . -type f) |
         while IFS= read -r f; do
             rel="upstream/shims/sharp/${f#./}"
             mkdir -p "$RAW/$(dirname "$rel")"
-            cp "runtime/spike/$rel" "$RAW/$rel"
+            cp "runtime/dsh/$rel" "$RAW/$rel"
             echo "$rel" >> "$RAW/upstream-tests/__files.txt"
         done
     for engine in "vendor/npm/pngjs@5.0.0/lib|.js" "vendor/npm/jpeg-js@0.4.4|.js"; do
         engine_dir="${engine%%|*}"
         engine_suffix="${engine##*|}"
-        (cd "runtime/spike/$engine_dir" && find . -type f -name "*$engine_suffix") |
+        (cd "runtime/dsh/$engine_dir" && find . -type f -name "*$engine_suffix") |
             while IFS= read -r f; do
                 rel="$engine_dir/${f#./}"
                 mkdir -p "$RAW/$(dirname "$rel")"
-                cp "runtime/spike/$rel" "$RAW/$rel"
+                cp "runtime/dsh/$rel" "$RAW/$rel"
                 echo "$rel" >> "$RAW/upstream-tests/__files.txt"
             done
     done
     mkdir -p "$RAW/vendor/npm/fflate@0.8.2/lib"
-    cp runtime/spike/vendor/npm/fflate@0.8.2/lib/index.cjs "$RAW/vendor/npm/fflate@0.8.2/lib/index.cjs"
+    cp runtime/dsh/vendor/npm/fflate@0.8.2/lib/index.cjs "$RAW/vendor/npm/fflate@0.8.2/lib/index.cjs"
     echo "vendor/npm/fflate@0.8.2/lib/index.cjs" >> "$RAW/upstream-tests/__files.txt"
     echo "vendor-official: suite extras staged ($(wc -l < "$RAW/upstream-tests/__files.txt" | tr -d ' ') files listed)"
     exit 0
@@ -144,8 +144,8 @@ fi
 if [ "$MODE" != "full" ]; then
     # The closure's vendor sources are the local materialized pin trees —
     # untracked by design (D6), so name the remedy when they are absent.
-    [ -d runtime/spike/vendor/dsh ] || {
-        echo "::error::vendor-official: runtime/spike/vendor/dsh missing — run runtime/spike/vendor/ensure-dsh.sh first" >&2
+    [ -d runtime/dsh/vendor/dsh ] || {
+        echo "::error::vendor-official: runtime/dsh/vendor/dsh missing — run runtime/dsh/vendor/ensure-dsh.sh first" >&2
         exit 1
     }
 fi
@@ -153,11 +153,11 @@ if [ "$MODE" = "full" ]; then
     echo "vendor-official: ensuring the source trees"
     test/e2e/ensure-official-dist.sh
     test/e2e/ensure-client-bundles.sh
-    runtime/spike/vendor/ensure-dsh.sh > /dev/null
+    runtime/dsh/vendor/ensure-dsh.sh > /dev/null
 fi
 
 PIN=dsh-client-modules@0.1.6-alpha.2
-VENDORED="runtime/spike/vendor/npm/@deepseek-ai/$PIN"
+VENDORED="runtime/dsh/vendor/npm/@deepseek-ai/$PIN"
 [ -f "$VENDORED/lib/client.js" ] || {
     echo "::error::vendored bootstrap package missing ($VENDORED)" >&2
     exit 1
@@ -187,7 +187,7 @@ scenario/composer-web-live.js
 scenario/api-handler-respond.js
 scenario/scenario-verdict.js
 vendor/npm/turndown@7.2.4/lib/turndown.es.js
-$(cd runtime/spike && find vendor/npm/@mixmark-io/domino@2.2.0/lib \
+$(cd runtime/dsh && find vendor/npm/@mixmark-io/domino@2.2.0/lib \
     vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib \
     -type f | LC_ALL=C sort)
 scenario/write-surface-options.js
@@ -304,7 +304,7 @@ vendor/npm/yaml@2.9.0/browser/dist/util.js
 vendor/npm/yaml@2.9.0/browser/dist/visit.js
 vendor/npm/yaml@2.9.0/browser/index.js
 vendor/npm/yaml@2.9.0/browser/package.json
-$(cd runtime/spike && find vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 \
+$(cd runtime/dsh && find vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 \
     vendor/npm/@deepseek-ai/dsh-llm-retry@0.1.6-alpha.2 \
     vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2 \
     vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2 \
@@ -468,7 +468,7 @@ vendor/npm/cordis@4.0.2/package.json
 vendor/npm/cosmokit@1.8.3/package.json
 vendor/npm/schemastery@3.18.2/package.json
 vendor/npm/@deepseek-ai/$PIN/package.json
-$(cd runtime/spike && find vendor/dsh/agent@0.1.6-alpha.2 \
+$(cd runtime/dsh && find vendor/dsh/agent@0.1.6-alpha.2 \
     vendor/dsh/agent-loop@0.1.6-alpha.2 \
     vendor/dsh/brand@0.1.6-alpha.2 \
     vendor/dsh/llm@0.1.6-alpha.2 \
@@ -602,7 +602,7 @@ system-plugins/dsh-ui/index.js"
 if [ "$MODE" != "check" ]; then
     for rel in $CLOSURE; do
         mkdir -p "$RAW/$(dirname "$rel")"
-        cp "runtime/spike/$rel" "$RAW/$rel"
+        cp "runtime/dsh/$rel" "$RAW/$rel"
     done
 fi
 
@@ -619,10 +619,10 @@ fi
 stage_npm_face_at_dsh_path() {
     face=$1
     echo "vendor-official: staging vendor/dsh/$face@0.1.6-alpha.2 (npm-face bytes at the dsh rel path)"
-    src="runtime/spike/vendor/npm/@deepseek-ai/dsh-$face@0.1.6-alpha.2"
+    src="runtime/dsh/vendor/npm/@deepseek-ai/dsh-$face@0.1.6-alpha.2"
     dst="$RAW/vendor/dsh/$face@0.1.6-alpha.2"
     [ -d "$src" ] || {
-        echo "::error::vendor-official: the dsh-$face npm pin is absent — runtime/spike/vendor/ensure-dsh.sh materializes it" >&2
+        echo "::error::vendor-official: the dsh-$face npm pin is absent — runtime/dsh/vendor/ensure-dsh.sh materializes it" >&2
         exit 1
     }
     mkdir -p "$dst/lib"
@@ -638,14 +638,14 @@ if [ "$MODE" != "check" ]; then
     stage_npm_face_at_dsh_path tool-web
     stage_npm_face_at_dsh_path plugin-manager
     mkdir -p "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/lib"
-    cp "runtime/spike/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/package.json" \
+    cp "runtime/dsh/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/package.json" \
        "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/package.json"
-    cp "runtime/spike/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/lib/index.js" \
+    cp "runtime/dsh/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/lib/index.js" \
        "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/lib/index.js"
 fi
 
 # The self-hosted web clients (presentation/web-client-{next,whale}):
-# whole-tree copies into rawfile/spike/webclient/dsh-web-client-*, the same
+# whole-tree copies into rawfile/dsh/webclient/dsh-web-client-*, the same
 # sync+check discipline as the closure — the older v0 webclient/
 # dsh-web-client hand-commit predates this script's coverage and stays as-is.
 WEBCLIENT_DIRS="next whale"
@@ -661,15 +661,15 @@ NOBLE_DIR="vendor/npm/@noble/hashes@2.3.0"
 # (the CI gates failure of 2026-09-29: the pins rode only the test-suite
 # ensure, the spine ensure didn't materialize them, and 217 BUNDLE_FILES
 # rows went red on CI while the local full-mode sync looked green).
-if [ "$MODE" != "check" ] && [ ! -d "runtime/spike/$NOBLE_DIR" ]; then
-    echo "::error::vendor-official: $NOBLE_DIR absent — runtime/spike/vendor/ensure.sh materializes the pin" >&2
+if [ "$MODE" != "check" ] && [ ! -d "runtime/dsh/$NOBLE_DIR" ]; then
+    echo "::error::vendor-official: $NOBLE_DIR absent — runtime/dsh/vendor/ensure.sh materializes the pin" >&2
     exit 1
 fi
 if [ "$MODE" != "check" ]; then
-    (cd "runtime/spike/$NOBLE_DIR" && find . -type f -name '*.js') |
+    (cd "runtime/dsh/$NOBLE_DIR" && find . -type f -name '*.js') |
         while IFS= read -r rel; do
             mkdir -p "$RAW/$NOBLE_DIR/$(dirname "$rel")"
-            cp "runtime/spike/$NOBLE_DIR/$rel" "$RAW/$NOBLE_DIR/$rel"
+            cp "runtime/dsh/$NOBLE_DIR/$rel" "$RAW/$NOBLE_DIR/$rel"
         done
 fi
 
@@ -677,22 +677,22 @@ fi
 # data/.manifest.json require needs the data face — the whole pin rides
 # (js+json). BUNDLE_FILES rows in Index.ets must mirror this tree.
 PIAI_DIR="vendor/npm/@earendil-works/pi-ai@0.85.1"
-if [ "$MODE" != "check" ] && [ ! -d "runtime/spike/$PIAI_DIR" ]; then
-    echo "::error::vendor-official: $PIAI_DIR absent — runtime/spike/vendor/ensure.sh materializes the pin" >&2
+if [ "$MODE" != "check" ] && [ ! -d "runtime/dsh/$PIAI_DIR" ]; then
+    echo "::error::vendor-official: $PIAI_DIR absent — runtime/dsh/vendor/ensure.sh materializes the pin" >&2
     exit 1
 fi
 if [ "$MODE" != "check" ]; then
-    (cd "runtime/spike/$PIAI_DIR" && find . -type f \( -name '*.js' -o -name '*.json' \) ! -name '.*') |
+    (cd "runtime/dsh/$PIAI_DIR" && find . -type f \( -name '*.js' -o -name '*.json' \) ! -name '.*') |
         while IFS= read -r rel; do
             mkdir -p "$RAW/$PIAI_DIR/$(dirname "$rel")"
-            cp "runtime/spike/$PIAI_DIR/$rel" "$RAW/$PIAI_DIR/$rel"
+            cp "runtime/dsh/$PIAI_DIR/$rel" "$RAW/$PIAI_DIR/$rel"
         done
     # The providers barrel's data/.manifest.json cannot ride the HAP: the
     # packer drops hidden files (check-bundle-files rejects them — the
     # 2026-09-30 device-leg deaths at materializeBundle). Its bytes ride
     # under the NON-hidden alias the npm-bridges-pi-ai.js seam falls back to.
     mkdir -p "$RAW/$PIAI_DIR/dist/providers/data"
-    cp "runtime/spike/$PIAI_DIR/dist/providers/data/.manifest.json" \
+    cp "runtime/dsh/$PIAI_DIR/dist/providers/data/.manifest.json" \
         "$RAW/$PIAI_DIR/dist/providers/data/manifest.json"
 fi
 webclient_files() {
@@ -747,32 +747,32 @@ install-pipeline.js
 install-fetch.js
 receipt-journal.js"
 for f in $SPIKE_ROOT; do
-    if [ "$MODE" != "check" ] && [ -f "runtime/spike/$f" ]; then
-        cmp -s "runtime/spike/$f" "$RAW/$f" || cp "runtime/spike/$f" "$RAW/$f"
+    if [ "$MODE" != "check" ] && [ -f "runtime/dsh/$f" ]; then
+        cmp -s "runtime/dsh/$f" "$RAW/$f" || cp "runtime/dsh/$f" "$RAW/$f"
     fi
     if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
        ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$f"; then
         echo skip >> "$SKIPS_FILE"
         continue
     fi
-    cmp -s "runtime/spike/$f" "$RAW/$f" || echo "spike/$f" >> "$DRIFT"
+    cmp -s "runtime/dsh/$f" "$RAW/$f" || echo "dsh/$f" >> "$DRIFT"
 done
 for s in "$RAW"/scenario/*; do
     s="${s##*/}"
-    if [ ! -f "runtime/spike/scenario/$s" ]; then
+    if [ ! -f "runtime/dsh/scenario/$s" ]; then
         continue  # a rawfile-only scenario (harmony-*.js) has no runtime twin
     fi
     if [ "$MODE" != "check" ]; then
-        cmp -s "runtime/spike/scenario/$s" "$RAW/scenario/$s" ||
-            cp "runtime/spike/scenario/$s" "$RAW/scenario/$s"
+        cmp -s "runtime/dsh/scenario/$s" "$RAW/scenario/$s" ||
+            cp "runtime/dsh/scenario/$s" "$RAW/scenario/$s"
     fi
     if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
        ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/scenario/$s"; then
         echo skip >> "$SKIPS_FILE"
         continue
     fi
-    cmp -s "runtime/spike/scenario/$s" "$RAW/scenario/$s" ||
-        echo "spike/scenario/$s" >> "$DRIFT"
+    cmp -s "runtime/dsh/scenario/$s" "$RAW/scenario/$s" ||
+        echo "dsh/scenario/$s" >> "$DRIFT"
 done
 for rel in $CLOSURE; do
     if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
@@ -780,12 +780,12 @@ for rel in $CLOSURE; do
         echo skip >> "$SKIPS_FILE"
         continue
     fi
-    cmp -s "runtime/spike/$rel" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
+    cmp -s "runtime/dsh/$rel" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
 done
 # The WEB faces' block twin (the stage block above): the same tracked-check
 # rule — an untracked staged file SKIPs, a drifted tracked one fails the gate.
 for face in tool-web plugin-manager; do
-    src="runtime/spike/vendor/npm/@deepseek-ai/dsh-$face@0.1.6-alpha.2"
+    src="runtime/dsh/vendor/npm/@deepseek-ai/dsh-$face@0.1.6-alpha.2"
     (cd "$src" && find lib -type f ! -name '*.d.ts'; echo LICENSE; echo package.json) |
     while IFS= read -r f; do
         [ -f "$src/$f" ] || continue
@@ -803,7 +803,7 @@ for f in package.json lib/index.js; do
         echo skip >> "$SKIPS_FILE"
         continue
     fi
-    cmp -s "runtime/spike/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/$f" "$RAW/$rel" ||
+    cmp -s "runtime/dsh/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/$f" "$RAW/$rel" ||
         echo "$rel" >> "$DRIFT"
 done
 # The web-client trees byte-verify against their presentation/ source (the

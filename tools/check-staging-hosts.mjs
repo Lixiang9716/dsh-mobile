@@ -5,7 +5,7 @@
  * parsed manifests into checkable surfaces:
  *
  *   harmony — Index.ets BUNDLE_FILES rows (primary, stale-judged against the
- *             committed rawfile/spike tree) + ci/vendor-official.sh
+ *             committed rawfile/dsh tree) + ci/vendor-official.sh
  *             CLOSURE/SPINE_OURS (advisory);
  *   android — ci/stage-spine-closure.sh scenario hand list + whole-dir
  *             mirrors;
@@ -348,7 +348,7 @@ function expandPyTrees(treesBlock) {
 }
 
 /** gen_bundle_header.py (ios): RESOURCES hand rows (SPIKE-rooted rows are
- * bundle-root staging; REPO-rooted rows stage outside runtime/spike) +
+ * bundle-root staging; REPO-rooted rows stage outside runtime/dsh) +
  * TREES whole-dir mirror roots, including the two comprehension rows. */
 function iosSurface() {
   const file = join(REPO, 'hosts/ios/Tools/gen_bundle_header.py');
@@ -396,16 +396,16 @@ function harmonyHost(bf, closure) {
         rowOrigin: bf.file,
         // BUNDLE_FILES materializes from the COMMITTED rawfile tree (the
         // webclient/, e2e-stage.js and npm-face-staged vendor/dsh rows live
-        // only there), so stale rows are judged against rawfile/spike —
+        // only there), so stale rows are judged against rawfile/dsh —
         // the same root ci/check-bundle-files.mjs pins the list to.
-        staleRoot: join(REPO, 'hosts/harmony/entry/src/main/resources/rawfile/spike'),
+        staleRoot: join(REPO, 'hosts/harmony/entry/src/main/resources/rawfile/dsh'),
         covers: (rel, rows) => rows.includes(rel),
       },
       advisory: {
         label: closure.label,
         rows: closure.rows,
         rowOrigin: closure.file,
-        staleRoot: SPIKE, // vendor-official.sh copies from runtime/spike
+        staleRoot: SPIKE, // vendor-official.sh copies from runtime/dsh
         covers: (rel, rows) => rows.includes(rel),
       },
     },

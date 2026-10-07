@@ -68,7 +68,7 @@ final class SessionRuntime {
 
     /// Layered config resolution (base → hostFace → profile): reads the
     /// staged cordis.patch.json (JSON in the spike — no YAML parser on the
-    /// frozen gateway; documented in runtime/spike/config-layer.js) and
+    /// frozen gateway; documented in runtime/dsh/config-layer.js) and
     /// applies its webClient + slots.allow over the launch configuration.
     private func resolveProfileConfig(root: URL) throws {
         guard let profile = SessionLaunchConfig.profileName else { return }

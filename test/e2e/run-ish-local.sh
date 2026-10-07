@@ -5,7 +5,7 @@
 #
 # Two gates, deliberately layered, because "it failed" is not a diagnosis:
 #
-#   1. the C gate — runtime/spike/build/ish/ish-smoke boots the guest and runs
+#   1. the C gate — runtime/dsh/build/ish/ish-smoke boots the guest and runs
 #      commands straight through the seam (no JS, no simulator);
 #   2. the JS gate — the desktop CLI runs scenario/userland-shell.js, which goes
 #      scenario → plugin executor → gateway `ishRun` → the host backend → the
@@ -25,7 +25,7 @@
 set -e
 cd "$(dirname "$0")/../.."
 
-ART=runtime/spike/artifacts/macos-cli-userland-shell
+ART=runtime/dsh/artifacts/macos-cli-userland-shell
 ROOTFS=""
 ROOTFS_OVERRIDE=0
 SKIP_BUILD=0
@@ -43,7 +43,7 @@ case "$ART" in
 esac
 
 # The paths below are consumed by processes that do NOT share this shell's cwd
-# (the CLI gate runs inside a subshell that cd's to runtime/spike), and the host
+# (the CLI gate runs inside a subshell that cd's to runtime/dsh), and the host
 # layer resolves the workspace with realpath before mounting it. A relative path
 # therefore reaches dsh_ish_boot as something that does not resolve, boot fails,
 # and the primitive rejects with `io` — a whole gate lost to one un-absolutized
@@ -65,11 +65,11 @@ mkdir -p "$WORKSPACE"
 
 echo "== 1/5 vendor + build =="
 if [ "$SKIP_BUILD" -eq 0 ]; then
-    sh runtime/spike/vendor/ensure-ish.sh
-    cmake -S runtime/spike/host/ish -B runtime/spike/build/ish -DISH_VENDOR="$PWD/runtime/spike/vendor" >/dev/null
-    cmake --build runtime/spike/build/ish --target ishcore dsh_ish ish-smoke \
+    sh runtime/dsh/vendor/ensure-ish.sh
+    cmake -S runtime/dsh/host/ish -B runtime/dsh/build/ish -DISH_VENDOR="$PWD/runtime/dsh/vendor" >/dev/null
+    cmake --build runtime/dsh/build/ish --target ishcore dsh_ish ish-smoke \
         -j"$(sysctl -n hw.ncpu 2>/dev/null || echo 4)" >/dev/null
-    sh runtime/spike/host/build.sh >/dev/null
+    sh runtime/dsh/host/build.sh >/dev/null
 fi
 
 echo "== 2/5 guest root =="
@@ -116,7 +116,7 @@ if [ "$ROOTFS_OVERRIDE" -eq 0 ]; then
     echo "$ROOTFS_SHA256  $TARBALL" | shasum -a 256 -c - >/dev/null
     STAGED="$ART/guest-root"
     rm -rf "$STAGED"
-    runtime/spike/build/ish/ish-smoke --stage "$TARBALL" "$STAGED" > "$ART/stage.jsonl"
+    runtime/dsh/build/ish/ish-smoke --stage "$TARBALL" "$STAGED" > "$ART/stage.jsonl"
     grep -q "dsh_ish_stage: .* links" "$ART/stage.jsonl"
     [ -x "$STAGED/bin/busybox" ] || { echo "   FAIL: the staged tree has no executable busybox" >&2; exit 1; }
     [ -L "$STAGED/usr/bin/top" ] || { echo "   FAIL: the staged tree lost its symlinks" >&2; exit 1; }
@@ -135,7 +135,7 @@ if [ "$ROOTFS_OVERRIDE" -eq 0 ]; then
     TAMPER="$ART/verify-tamper.jsonl"
     cp -p "$STAGED/bin/busybox" "$ART/busybox.pristine"
     printf 'x' >> "$STAGED/bin/busybox"
-    if runtime/spike/build/ish/ish-smoke --rootfs "$STAGED" -c 'true' > "$TAMPER" 2>&1; then
+    if runtime/dsh/build/ish/ish-smoke --rootfs "$STAGED" -c 'true' > "$TAMPER" 2>&1; then
         echo "   FAIL: the guest booted a tampered userland" >&2; exit 1
     fi
     grep -q 'dsh_ish_verify: verdict=refused' "$TAMPER" \
@@ -150,7 +150,7 @@ fi
 
 echo "== 3/5 C gate: the seam itself =="
 DSH_ISH_GATE="$ART/c-smoke.jsonl"
-runtime/spike/build/ish/ish-smoke --rootfs "$ROOTFS" --workspace "$WORKSPACE" \
+runtime/dsh/build/ish/ish-smoke --rootfs "$ROOTFS" --workspace "$WORKSPACE" \
     --workdir /mnt/workspace --timeout 30000 \
     -c 'uname -m' -c 'printf "c-gate\n" > c-gate.txt; cat c-gate.txt' > "$DSH_ISH_GATE"
 grep -q '"exitCode":0' "$DSH_ISH_GATE"
@@ -163,7 +163,7 @@ rm -f "$LOG"
 # DSH_ISH_ROOTFS is the host granting the guest root (no root, no tool: the
 # plugin declines to register `ish` and says so); DSH_SPIKE_TMPDIR pins the
 # workspace so the deliverable below is a known path.
-(cd runtime/spike && \
+(cd runtime/dsh && \
     DSH_ISH_ROOTFS="$ROOTFS" DSH_SPIKE_TMPDIR="$WORKSPACE" \
     ./build/dsh-spike-cli . scenario/userland-shell.js > "$LOG" 2>&1) || true
 grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
@@ -193,10 +193,10 @@ cat > "$ART/receipt.json" <<EOF
 {
  "host": "macOS $(uname -m) (the desktop CLI, no simulator)",
  "engine": "iSH-arm64 (userspace AArch64 emulator, threaded-code interpreter)",
- "engineVersion": "OpenMinis/ish-arm64 e1d579480fba88e8f0428e3cf23811bcdd05421f, vendored + sha256-pinned by runtime/spike/vendor/ensure-ish.sh",
+ "engineVersion": "OpenMinis/ish-arm64 e1d579480fba88e8f0428e3cf23811bcdd05421f, vendored + sha256-pinned by runtime/dsh/vendor/ensure-ish.sh",
  "guestRoot": "Alpine 3.21.8 aarch64 minirootfs (sha256 $ROOTFS_SHA256)",
  "phase": "contract v1.3.0 \`ishRun\` — a real Linux userland running INSIDE the host process (no child process, no second OS), driven from the JS layer through system-plugins/dsh-shell-ish",
- "launchConfiguration": "(cd runtime/spike) ./build/dsh-spike-cli . scenario/userland-shell.js, with DSH_ISH_ROOTFS set to the extracted guest root and DSH_SPIKE_TMPDIR pinned to the staged workspace",
+ "launchConfiguration": "(cd runtime/dsh) ./build/dsh-spike-cli . scenario/userland-shell.js, with DSH_ISH_ROOTFS set to the extracted guest root and DSH_SPIKE_TMPDIR pinned to the staged workspace",
  "scenarios": [
   {
    "id": "userland.shell",

@@ -54,7 +54,7 @@ const TAG: string = 'dsh.app';
 export const OFFICIAL_BASE_PORT: number = 17890;
 /** The rawfile prefix the staged web-plugins packages live under (the same
  * tree the build's vendor-official.sh stages, one dir per published package). */
-const PLUGIN_PACKAGES_PREFIX: string = 'spike/officialweb/plugins/npm/@deepseek-ai/';
+const PLUGIN_PACKAGES_PREFIX: string = 'dsh/officialweb/plugins/npm/@deepseek-ai/';
 /** The official dist's rawfile rel root (the WebDist default). */
 const OFFICIAL_DIST_ROOT: string = 'officialweb/www';
 /** The self-hosted next client's staged web dir (rawfile rel root). */
@@ -566,7 +566,7 @@ export class OfficialServe {
   }
 
   /** The INTERACTIVE seat's presets seed (the same rule the iOS/Android
-   * seats deliver and runtime/spike/ci/gen-presets-seed.py generates for
+   * seats deliver and runtime/dsh/ci/gen-presets-seed.py generates for
    * the CLI): the staged agent-presets presets/** tree plus one node_modules
    * resolution marker per staged dsh package, base64 under VFS paths — a
    * preset row naming a staged package resolves through its marker onto the
@@ -673,7 +673,7 @@ export class OfficialServe {
 
   private rawFile(ctx: common.UIAbilityContext, rel: string): Uint8Array | null {
     try {
-      return ctx.resourceManager.getRawFileContentSync('spike/' + rel);
+      return ctx.resourceManager.getRawFileContentSync('dsh/' + rel);
     } catch (e) {
       return null;
     }

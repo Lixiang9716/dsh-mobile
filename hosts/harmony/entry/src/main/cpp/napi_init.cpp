@@ -778,7 +778,7 @@ extern "C" __attribute__((constructor)) void RegisterDshSpikeModule(void) {
     dsh_spike_module.nm_flags = 0;
     dsh_spike_module.nm_filename = nullptr;
     dsh_spike_module.nm_register_func = Init;
-    dsh_spike_module.nm_modname = "spike";
+    dsh_spike_module.nm_modname = "dsh";
     dsh_spike_module.nm_priv = nullptr;
     dsh_spike_module.reserved[0] = 0;
     napi_module_register(&dsh_spike_module);

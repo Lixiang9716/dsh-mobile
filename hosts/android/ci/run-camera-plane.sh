@@ -124,7 +124,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "android.camera-plane",
   "launch": "emulator, --ez dsh.cameraplane true (Debug, virtual camera burst)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "android-camera-plane", "verdict": "verdict-android-camera-plane.json", "pass": true },
     { "manifest": "android-camera-plane-audit", "verdict": "verdict-android-camera-plane-audit.json", "pass": true }

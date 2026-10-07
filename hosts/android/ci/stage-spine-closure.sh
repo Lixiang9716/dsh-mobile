@@ -4,7 +4,7 @@
 # spike bundle into the app assets, so the C host's loader bare map
 # (`vendor/dsh/<pkg>@<ver>/lib/**`, `vendor/npm/...`) resolves the FULL
 # upstream agent spine on-device. Idempotent; byte-identical to the
-# runtime/spike pins (ensure-dsh.sh is the single source of the pin).
+# runtime/dsh pins (ensure-dsh.sh is the single source of the pin).
 #
 # Staged per the iOS embedder's lists (hosts/ios/Tools/gen_bundle_header.py):
 #   - the 14 vendored spine packages: LICENSE + package.json + lib/**
@@ -22,8 +22,8 @@
 set -eu
 
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
-SPIKE=$ROOT/runtime/spike
-ASSETS=$ROOT/hosts/android/app/src/main/assets/spike
+SPIKE=$ROOT/runtime/dsh
+ASSETS=$ROOT/hosts/android/app/src/main/assets/dsh
 VER=0.1.6-alpha.2
 
 say() { echo "stage-spine-closure: $*"; }
@@ -36,7 +36,7 @@ MODE=stage
 [ $# -eq 0 ] || [ "$MODE" = "check" ] || die "unknown argument '$1' (only --check)"
 
 [ -d "$SPIKE/vendor/dsh/session@$VER/lib" ] ||
-    die "runtime vendor closure missing — run runtime/spike/vendor/ensure-dsh.sh"
+    die "runtime vendor closure missing — run runtime/dsh/vendor/ensure-dsh.sh"
 
 # Verify-phase variables, defined before the staging guard so --check mode
 # (staging skipped) still has them.
@@ -99,7 +99,7 @@ stage_npm_face_at_dsh_path() {
     say "staging vendor/dsh/$pkg@$VER (npm-face bytes at the dsh rel path)"
     src="$SPIKE/vendor/npm/@deepseek-ai/dsh-$pkg@$VER"
     dst="$ASSETS/vendor/dsh/$pkg@$VER"
-    [ -d "$src" ] || die "the dsh-$pkg npm pin is absent — runtime/spike/vendor/ensure-dsh.sh materializes it"
+    [ -d "$src" ] || die "the dsh-$pkg npm pin is absent — runtime/dsh/vendor/ensure-dsh.sh materializes it"
     mkdir -p "$dst"
     for f in LICENSE package.json; do
         [ -f "$src/$f" ] && cp "$src/$f" "$dst/$f"
@@ -225,7 +225,7 @@ cp "$SPIKE/vendor/npm/fflate@0.8.2/lib/index.cjs" "$ASSETS/vendor/npm/fflate@0.8
 # (the anti-drift rule; the in-app parity leg died on exactly this gap).
 say "staging vendor/npm/@noble/hashes@2.3.0 (js)"
 if [ ! -d "$SPIKE/vendor/npm/@noble/hashes@2.3.0" ]; then
-    echo "::error::stage-spine-closure: the @noble/hashes pin is absent — runtime/spike/vendor/ensure.sh materializes it" >&2
+    echo "::error::stage-spine-closure: the @noble/hashes pin is absent — runtime/dsh/vendor/ensure.sh materializes it" >&2
     exit 1
 fi
 mkdir -p "$ASSETS/vendor/npm/@noble/hashes@2.3.0"
@@ -241,7 +241,7 @@ mkdir -p "$ASSETS/vendor/npm/@noble/hashes@2.3.0"
 # this gap: bridge rows present, bytes absent in-app).
 say "staging vendor/npm/@earendil-works/pi-ai@0.85.1 (js+json)"
 if [ ! -d "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1" ]; then
-    echo "::error::stage-spine-closure: the pi-ai pin is absent — runtime/spike/vendor/ensure.sh materializes it" >&2
+    echo "::error::stage-spine-closure: the pi-ai pin is absent — runtime/dsh/vendor/ensure.sh materializes it" >&2
     exit 1
 fi
 mkdir -p "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1"
@@ -305,7 +305,7 @@ cmp -s "$SPIKE/manifest.json" "$ASSETS/manifest.json" || cp "$SPIKE/manifest.jso
 
 # The system-plugins the boot's static graph imports (the two shell tools;
 # the three older plugins are committed in assets directly and refreshed
-# here too — byte-identical to runtime/spike, the single source).
+# here too — byte-identical to runtime/dsh, the single source).
 # The TEST closure: every additional vendored package the upstream suites
 # import (same tag; materialized by vendor/ensure-dsh-tests.sh). Untracked
 # in assets by the same accepted pattern as the Gradle-materialized staged
@@ -340,13 +340,13 @@ done
 
 # The self-hosted web clients (presentation/web-client-next on the official
 # /api+mux plane, presentation/web-client-whale on the v0 /ws plane):
-# whole-tree mirrors into assets/spike/webclient-{next,whale}, the same
+# whole-tree mirrors into assets/dsh/webclient-{next,whale}, the same
 # sync+check discipline as the upstream layer — the iOS embedder stages the
 # same two trees through gen_bundle_header.py WEBCLIENT_TREES, and the v0
-# webclient's older hand-committed copy (assets/spike/webclient) predates
+# webclient's older hand-committed copy (assets/dsh/webclient) predates
 # this discipline and stays as-is.
 for client in next whale; do
-    say "staging presentation/web-client-$client → assets/spike/webclient-$client"
+    say "staging presentation/web-client-$client → assets/dsh/webclient-$client"
     (cd "$ROOT/presentation/web-client-$client" && find . -type f) |
         while IFS= read -r rel; do
             mkdir -p "$ASSETS/webclient-$client/$(dirname "$rel")"

@@ -58,12 +58,12 @@ fail_deadline() {
 }
 
 # ---- 0. the spec exists + the Node reference leg (same harness, no device) --
-[ -f "runtime/spike/upstream-tests/$SPEC" ] || {
+[ -f "runtime/dsh/upstream-tests/$SPEC" ] || {
   log "transpiled spec missing — materializing (vendor + transpile)"
-  sh runtime/spike/vendor/ensure-dsh-tests.sh
+  sh runtime/dsh/vendor/ensure-dsh-tests.sh
   (cd test/upstream-suite && npm install --no-audit --no-fund >/dev/null 2>&1 && node transpile.mjs >/dev/null)
 }
-[ -f "runtime/spike/upstream-tests/$SPEC" ] || die "spec not produced by the pipeline: $SPEC"
+[ -f "runtime/dsh/upstream-tests/$SPEC" ] || die "spec not produced by the pipeline: $SPEC"
 
 log "0/5 Node reference leg (same harness under plain Node): $SPEC"
 node test/upstream-suite/smoke.mjs "$SPEC" > "$ART/reference-smoke.txt" 2>&1 \
@@ -73,7 +73,7 @@ log "reference: $REF_SUMMARY"
 
 # ---- 1-3. vendor, regen the bundle header, build, install -------------------
 log "1/5 vendor + regenerate the bundle header (embeds the suite leg + harness)"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 python3 hosts/ios/Tools/gen_bundle_header.py
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
@@ -95,7 +95,7 @@ xcrun simctl install "$UDID" "$APP"
 CONTAINER="$(xcrun simctl get_app_container "$UDID" "$APP_BUNDLE_ID" data)"
 rm -rf "$CONTAINER/Documents/upstream-tests"
 mkdir -p "$CONTAINER/Documents/upstream-tests"
-cp "runtime/spike/upstream-tests/$SPEC" "$CONTAINER/Documents/upstream-tests/"
+cp "runtime/dsh/upstream-tests/$SPEC" "$CONTAINER/Documents/upstream-tests/"
 log "spec staged: Documents/upstream-tests/$SPEC"
 
 # ---- 4. launch + watch the per-test verdicts --------------------------------

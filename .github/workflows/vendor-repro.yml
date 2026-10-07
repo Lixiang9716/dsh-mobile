@@ -23,4 +23,4 @@ jobs:
         # The proof clones the checked-out commit itself (vendor trees are
         # untracked by design, so its scratch clone is genuinely cold) and
         # fails loud on any pin-table / invocation-shape drift.
-        run: sh runtime/spike/vendor/reproducibility-proof.sh
+        run: sh runtime/dsh/vendor/reproducibility-proof.sh

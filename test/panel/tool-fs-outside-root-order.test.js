@@ -6,7 +6,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync
 import { tmpdir } from 'node:os';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
 import { statSync as shimStatSync } from 'upstream/shims/fs-stat.js';
-import { anchorModelPath } from '../../runtime/spike/upstream/tool-path-anchor.js';
+import { anchorModelPath } from '../../runtime/dsh/upstream/tool-path-anchor.js';
 
 // loop-v2 (2026-10-05): the #373 seam symmetry held on the shim faces but
 // INVERTED on the model's tool face. The 2026-10-05 battery (round 14, w2,
@@ -154,7 +154,7 @@ describe('the stat face holds the seam boundary (loop-v2, shim-face controls)', 
 
 // loop-z3 (2026-10-05): the r16 battery (v2c) measured the model's
 // str_replace_editor refusing the in-root relative spelling
-// 'spike/../plugins/registry.json' at the VENDORED absolute-path gate
+// 'dsh/../plugins/registry.json' at the VENDORED absolute-path gate
 // (resolveTarget, vendored tool-str-replace-editor lib/index.js:69) with a
 // "maybe you meant /spike/..." suggestion whose leading / is the DEVICE root
 // — driving the suggestion answered FS_NOT_FOUND (v2c2). The queue line
@@ -183,7 +183,7 @@ describe('the model-path anchor (loop-z3, unit)', () => {
 
   it('joins relative spellings at the root verbatim (physical .., no normalization)', () => {
     const root = '/data/user/0/com.dshmobile.spike/files/profiles/default/spike';
-    expect(anchorModelPath('spike/../plugins/registry.json', root))
+    expect(anchorModelPath('dsh/../plugins/registry.json', root))
       .toBe(`${root}/spike/../plugins/registry.json`);
     expect(anchorModelPath('../../etc/passwd', root)).toBe(`${root}/../../etc/passwd`);
   });

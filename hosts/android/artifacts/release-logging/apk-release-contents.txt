@@ -9,7 +9,7 @@ ERROR: Missing META-INF/MANIFEST.MF
 ## embedded assets inside the release APK (unzip -l)
 assets/official-web entries:   89
 assets/web-plugins entries:    129
-assets/spike entries:          254
+assets/dsh entries:          254
       678  01-01-1981 01:01   assets/official-web/dist/index.html
-     2929  01-01-1981 01:01   assets/spike/logger.js
-     3837  01-01-1981 01:01   assets/spike/scenario/b-android-web-live.js
+     2929  01-01-1981 01:01   assets/dsh/logger.js
+     3837  01-01-1981 01:01   assets/dsh/scenario/b-android-web-live.js

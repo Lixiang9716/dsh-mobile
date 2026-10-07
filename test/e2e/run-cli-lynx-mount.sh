@@ -9,7 +9,7 @@
 #     plus the artifact sha256 verification; pixels stay engine-only.
 #   stub face: driver/skin-stub.js — the plain-text transcription.
 #
-# Evidence discipline mirrors runtime/spike/ci/run-settings-surfaces-e2e.sh:
+# Evidence discipline mirrors runtime/dsh/ci/run-settings-surfaces-e2e.sh:
 # per face, logs.txt + scenario.jsonl (the dsh.spike.log: lines) + verdict.json
 # (test/e2e/check.mjs one-to-one against test/e2e/scenarios/lynx-mount.json
 # and lynx-mount-stub.json) + receipt.json — the receipt is written only at

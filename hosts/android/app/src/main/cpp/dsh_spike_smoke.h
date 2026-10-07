@@ -1,6 +1,6 @@
 /*
  * dsh_spike_smoke.h — the gateway bridge smoke backend for the Android spike
- * (the JNI sibling of runtime/spike/host/main_cli.c's smoke backend).
+ * (the JNI sibling of runtime/dsh/host/main_cli.c's smoke backend).
  *
  * The Android host has NO gateway implementation of its own yet: fs
  * primitives run against an app-private directory exposed as scope "app";

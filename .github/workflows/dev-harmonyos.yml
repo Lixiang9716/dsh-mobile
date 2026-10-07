@@ -108,28 +108,28 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            runtime/spike/vendor/quickjs-ng
-            runtime/spike/vendor/dsh
-            runtime/spike/vendor/npm
-          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+            runtime/dsh/vendor/quickjs-ng
+            runtime/dsh/vendor/dsh
+            runtime/dsh/vendor/npm
+          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/dsh/vendor/ensure.sh', 'runtime/dsh/vendor/ensure-dsh.sh') }}
 
       - name: Materialize the pinned quickjs-ng vendor tree
         # Untracked by design (upstream discipline D6); ensure.sh fetches and
         # sha256-verifies it. The project's CMake also runs it before
         # compiling — this step makes a network failure fail loud and early.
         if: env.PROJECT_PRESENT == 'true'
-        run: sh runtime/spike/vendor/ensure.sh
+        run: sh runtime/dsh/vendor/ensure.sh
 
       - name: Materialize the pinned DSH closure
         # The suite-extras stager (vendor-official.sh --suite-extras) reads
-        # runtime/spike/vendor/dsh/*@<tag> — restored from the cache above on
+        # runtime/dsh/vendor/dsh/*@<tag> — restored from the cache above on
         # a hit, materialized + sha256-verified here on a miss/rotation.
         # Without this, a cold cache stages ZERO vendor packages into the
         # suite HAP's extras and the specs die at import on-device (the same
         # step dev-android.yml runs; idempotent — a restored tree verifies,
         # no re-download).
         if: env.PROJECT_PRESENT == 'true'
-        run: runtime/spike/vendor/ensure-dsh.sh > /dev/null
+        run: runtime/dsh/vendor/ensure-dsh.sh > /dev/null
 
       - name: Install dependencies (ohpm)
         if: env.PROJECT_PRESENT == 'true'
@@ -162,7 +162,7 @@ jobs:
       # the same one the standard harmony legs await — see the M5 note below).
       - name: Materialize the upstream test assets (same-tag tarball + test closure)
         if: env.PROJECT_PRESENT == 'true'
-        run: sh runtime/spike/vendor/ensure-dsh-tests.sh
+        run: sh runtime/dsh/vendor/ensure-dsh-tests.sh
 
       - name: Transpile the upstream suite corpus
         if: env.PROJECT_PRESENT == 'true'

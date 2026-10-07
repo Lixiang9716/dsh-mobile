@@ -19,7 +19,7 @@ HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
 BUNDLE=com.dshmobile.spike
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry
 CAPTURE_REMOTE=$BASE/cache/dsh-real-create-capture.log
-CONFIG_REMOTE=$BASE/files/spike-fs/llm-live-stream/config.json
+CONFIG_REMOTE=$BASE/files/dsh-fs/llm-live-stream/config.json
 LEG=real.create
 STREAM=/tmp/dsh-harmony-real-create-hilog.txt
 MAX_ATTEMPTS=${DSH_M2_LLM_ATTEMPTS:-2}
@@ -286,7 +286,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "real.create (CREATE-mode demo)",
   "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real backend",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "real-create (demo)", "verdict": "capture.txt", "pass": true }
     { "manifest": "real-create (demo)", "verdict": "capture.txt", "pass": true }

@@ -26,7 +26,7 @@ cd "$ROOT"
 
 BUNDLE=com.dshmobile.spike
 OUT=${DSH_SUITE_OUT:-hosts/harmony/artifacts/upstream-suite}
-CORPUS="$ROOT/runtime/spike/upstream-tests"
+CORPUS="$ROOT/runtime/dsh/upstream-tests"
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry
 CAPTURE_REMOTE=$BASE/cache/dsh-suite-capture.log

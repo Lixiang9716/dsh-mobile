@@ -109,7 +109,7 @@ static void dsh_report(const dsh_scenario *sc, int passed, const char *err,
 static int dsh_run_scenario(const char *context, const dsh_scenario *sc,
                             char *err) {
     err[0] = 0;
-    char *bundle_root = dsh_join_path(context, "spike");
+    char *bundle_root = dsh_join_path(context, "dsh");
     char *entry_path = bundle_root ? dsh_join_path(bundle_root, sc->entry) : NULL;
     char *capture_path = dsh_join_path(context, sc->capture);
     char *fs_root = dsh_join_path(context, "smoke-fs");

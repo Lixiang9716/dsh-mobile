@@ -26,7 +26,7 @@
  *
  * It then checks each host's staging surfaces in two directions:
  *   (a) graph → manifest: every reached file under
- *       runtime/spike/{scenario,upstream,system-plugins} must be covered by
+ *       runtime/dsh/{scenario,upstream,system-plugins} must be covered by
  *       the host's staging (an exact hand row or a whole-dir mirror the
  *       host's stager actually performs);
  *   (b) manifest → disk: every hand row must name a file that exists
@@ -149,7 +149,7 @@ function humanReport(results, blocked) {
     lines.push(`== host ${r.host} (${blocking ? 'blocking' : 'warn'}) ==`);
     lines.push(`roots ${r.roots} · graph ${r.reached} files reached (${r.scopedReached} in scenario/upstream/system-plugins scope) · bare bridge/map imports skipped: ${r.skippedBare} distinct specifiers`);
     for (const e of r.brokenEdges) {
-      lines.push(`  BROKEN EDGE ${e.from}:${e.line} imports '${e.spec}' (${e.kind}) — resolves to no file under runtime/spike`);
+      lines.push(`  BROKEN EDGE ${e.from}:${e.line} imports '${e.spec}' (${e.kind}) — resolves to no file under runtime/dsh`);
     }
     for (const s of r.surfaces) {
       const tag = s.advisory ? ' (advisory surface)' : '';

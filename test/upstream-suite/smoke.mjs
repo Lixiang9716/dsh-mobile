@@ -28,13 +28,13 @@ process.on('unhandledRejection', (reason) => {
 });
 const spec = process.argv[2];
 if (typeof spec !== 'string') {
-  console.error('usage: smoke.mjs <spec path under runtime/spike/upstream-tests/>');
+  console.error('usage: smoke.mjs <spec path under runtime/dsh/upstream-tests/>');
   process.exit(2);
 }
 
-const { runCollected } = await import(pathToFileURL(pathResolve(ROOT, 'runtime/spike/scenario/upstream-test-harness.js')));
+const { runCollected } = await import(pathToFileURL(pathResolve(ROOT, 'runtime/dsh/scenario/upstream-test-harness.js')));
 try {
-  await import(pathToFileURL(pathResolve(ROOT, 'runtime/spike/upstream-tests', spec)));
+  await import(pathToFileURL(pathResolve(ROOT, 'runtime/dsh/upstream-tests', spec)));
 } catch (error) {
   console.log('harness smoke: MODULE-LEVEL FAILURE |', String(error?.message ?? error).slice(0, 300));
   console.log('  at', String(error?.stack ?? '').split('\n')[1]?.trim()?.slice(0, 160));

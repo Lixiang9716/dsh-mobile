@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { apply as applyRetryTelemetry, describeLlmRetry } from '../../runtime/spike/upstream/retry-telemetry.js';
+import { apply as applyRetryTelemetry, describeLlmRetry } from '../../runtime/dsh/upstream/retry-telemetry.js';
 
 // The warn line IS the deliverable (loop-x2: retries stay release-visible),
 // so the logger is mocked to capture every sink-bound record.

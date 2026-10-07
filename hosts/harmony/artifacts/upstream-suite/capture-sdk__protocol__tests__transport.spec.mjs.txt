@@ -1,0 +1,65 @@
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"launch spec facts","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"profile container pinned","data":[{"cwd":"/data/storage/el2/base/haps/entry/files/spike-fs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"real sibling staging begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/lsp/lsp-stdio/tests/fixture-server.ts","to":"fixture-server.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/lsp/lsp-stdio/tests/fixtur"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/host/directory-picker-native/src/win32-dialog-worker.ts","to":"win32-dialog-worker.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/host/directory-picker-nati"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/sdk/client/tests/fake-runtime.ts","to":"fake-runtime.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/sdk/client/tests/fake-runt"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/skill/skill-office/tests/check_office_test.py","to":"check_office_test.py","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/skill/skill-office/tests/c"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/sdk__protocol__tests__transport.spec.mjs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"source-introspection staging begin","data":[{"spec":"upstream-tests/sdk__protocol__tests__transport.spec.mjs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"source-introspection list failed","data":[{"code":null,"err":"ENOENT"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"fixtures seed begin","data":[{"spec":"upstream-tests/sdk__protocol__tests__transport.spec.mjs"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > supports bidirectional requests and notifications over newline-delimited JSON-RPC"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > supports bidirectional requests and notifications over newline-delimited JSON-RPC"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > reports JSON-RPC request errors from the remote peer with their wire code"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > reports JSON-RPC request errors from the remote peer with their wire code"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > rejects immediately on a pre-aborted signal without registering pending state"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > rejects immediately on a pre-aborted signal without registering pending state"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > abandons a pending request on abort, stringifying a non-Error reason"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > abandons a pending request on abort, stringifying a non-Error reason"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > preserves structured error data from an error response frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > preserves structured error data from an error response frame"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > stringifies non-Error request handler failures"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > stringifies non-Error request handler failures"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > reports method-not-found when no request handler is installed"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > reports method-not-found when no request handler is installed"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > normalizes non-object request params and ignores notifications without a handler"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > normalizes non-object request params and ignores notifications without a handler"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > ignores malformed frames and accepts notifications without params"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > ignores malformed frames and accepts notifications without params"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > preserves multibyte UTF-8 characters split across Buffer chunks"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > preserves multibyte UTF-8 characters split across Buffer chunks"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > flush waits for all earlier output writes"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > flush waits for all earlier output writes"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > reports an output callback failure from flush"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > reports an output callback failure from flush"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > rejects pending requests when the input closes"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > rejects pending requests when the input closes"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > rejects pending requests when the input errors"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > rejects pending requests when the input errors"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > rejects pending requests when the transport closes"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > rejects pending requests when the transport closes"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > rejects a request when writing the frame throws"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > rejects a request when writing the frame throws"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > stringifies non-Error write failures"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > stringifies non-Error write failures"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > uses a fallback message for malformed JSON-RPC error responses"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > uses a fallback message for malformed JSON-RPC error responses"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"JsonRpcLineTransport > ignores responses that do not match a pending request"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"JsonRpcLineTransport > ignores responses that do not match a pending request"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/sdk__protocol__tests__transport.spec.mjs","passed":19,"failed":0,"skipped":0}]}

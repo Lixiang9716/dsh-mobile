@@ -3,13 +3,13 @@
 # Compiles the platform-neutral spike host plus the pinned quickjs-ng
 # sources through hvigor's externalNativeOptions (clang / OHOS NDK), exactly
 # the compile set the desktop proof run uses
-# (runtime/spike/host/build.sh): dtoa.c libregexp.c libunicode.c quickjs.c.
+# (runtime/dsh/host/build.sh): dtoa.c libregexp.c libunicode.c quickjs.c.
 # quickjs-libc is deliberately excluded — the spike host provides its own
-# minimal glue (runtime/spike/README.md, "Embedding contract").
+# minimal glue (runtime/dsh/README.md, "Embedding contract").
 cmake_minimum_required(VERSION 3.5.0)
 project(dsh_spike)
 
-set(SPIKE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../runtime/spike)
+set(SPIKE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../runtime/dsh)
 set(QJS_DIR ${SPIKE_ROOT}/vendor/quickjs-ng/0.17.0)
 set(ZSTD_DIR ${SPIKE_ROOT}/vendor/zstd/1.5.7)
 
@@ -26,7 +26,7 @@ execute_process(
 )
 if(NOT DSH_ENSURE_RESULT EQUAL 0)
   message(FATAL_ERROR
-    "runtime/spike/vendor/ensure.sh failed (exit ${DSH_ENSURE_RESULT}):\n"
+    "runtime/dsh/vendor/ensure.sh failed (exit ${DSH_ENSURE_RESULT}):\n"
     "${DSH_ENSURE_OUT}${DSH_ENSURE_ERR}")
 endif()
 message(STATUS "dsh spike: ${DSH_ENSURE_OUT}${DSH_ENSURE_ERR}")
@@ -84,7 +84,7 @@ target_include_directories(spike PRIVATE
 # ZSTD_DISABLE_ASM (zstd's own switch) keeps every arch on the C fast loop.
 target_compile_definitions(spike PRIVATE ZSTD_DISABLE_ASM=1)
 
-# Mirror the desktop proof-build flags (runtime/spike/host/build.sh):
+# Mirror the desktop proof-build flags (runtime/dsh/host/build.sh):
 # C11, -O1, _GNU_SOURCE. Warnings from the upstream engine sources are not
 # this repo's to fix (D6) — silence only the noisy generic ones.
 set_target_properties(spike PROPERTIES

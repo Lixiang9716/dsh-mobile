@@ -104,12 +104,12 @@ function androidScriptFacts() {
   };
 }
 
-/** The pin dirs a `$(cd runtime/spike && find … | LC_ALL=C sort)` segment in
+/** The pin dirs a `$(cd runtime/dsh && find … | LC_ALL=C sort)` segment in
  * vendor-official.sh names — the generated-at-stage-time rows whose pin CHOICE
  * is still the script's own declaration. Both find segments are parsed; the
  * vendor/npm ones are the goal-trio faces the BUNDLE_FILES derivation walks. */
 function findSpanPinDirs(src, face) {
-  const span = new RegExp('\\$\\(cd runtime/spike && find ([\\s\\S]*?)\\| LC_ALL=C sort\\)', 'g');
+  const span = new RegExp('\\$\\(cd runtime/dsh && find ([\\s\\S]*?)\\| LC_ALL=C sort\\)', 'g');
   const dirs = new Set();
   for (const m of src.matchAll(span)) {
     for (const tok of m[1].replace(/\\\n/g, ' ').split(/\s+/)) {
@@ -169,7 +169,7 @@ const WEBCLIENT_TREES = [
  * green); rules.md rule 5: fail loud, naming the dir (exit 2). */
 function pinRowsOrFail(pin, opts) {
   if (!existsSync(join(SPIKE, pin))) {
-    fail(`pin tree absent: ${pin} — a stager names it; runtime/spike/vendor/ensure*.sh materializes the pins`);
+    fail(`pin tree absent: ${pin} — a stager names it; runtime/dsh/vendor/ensure*.sh materializes the pins`);
   }
   return dirPinRows(SPIKE, pin, opts) ?? [];
 }

@@ -53,7 +53,7 @@ wait_line() {
 
 # ---- 1. the mock LLM server (three-request script: probe, first turn) -------
 MOCK_LOG="$(mktemp /tmp/dsh-mock-llm-onb-sim.XXXXXX)"
-DSH_MOCK_SEQUENCE="success success" node runtime/spike/ci/mock-llm-server.mjs \
+DSH_MOCK_SEQUENCE="success success" node runtime/dsh/ci/mock-llm-server.mjs \
   > "$MOCK_LOG" 2>&1 &
 MOCK_PID=$!
 cleanup() { kill "$MOCK_PID" 2>/dev/null || true; wait "$MOCK_PID" 2>/dev/null || true; rm -f "$MOCK_LOG"; }

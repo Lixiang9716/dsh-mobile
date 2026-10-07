@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   makeTurnWatchdog, parseBudgetMs, DEFAULT_BUDGET_MS,
   isSemanticStreamFrame, apply,
-} from '../../runtime/spike/upstream/turn-watchdog.js';
+} from '../../runtime/dsh/upstream/turn-watchdog.js';
 
 const runningAgent = (id) => ({
   id,

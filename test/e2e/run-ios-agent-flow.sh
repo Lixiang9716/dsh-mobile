@@ -72,8 +72,8 @@ fail_deadline() {
 # ---- 1-3. vendor, regen the bundle header (the agent-flow scenario and the
 # skill closure embed), build, install
 log "1/5 vendor + regenerate the bundle header (embeds scenario/agent-flow.js + the skill closure)"
-runtime/spike/vendor/ensure.sh
-runtime/spike/vendor/ensure-dsh.sh
+runtime/dsh/vendor/ensure.sh
+runtime/dsh/vendor/ensure-dsh.sh
 python3 hosts/ios/Tools/gen_bundle_header.py
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
@@ -96,7 +96,7 @@ MOCK_LOG="$(mktemp /tmp/dsh-mock-agent-flow.XXXXXX)"
 DSH_MOCK_SEQUENCE='success tool_call_success success' \
 DSH_MOCK_TOOL_NAME='skill' \
 DSH_MOCK_TOOL_ARGS='{"name":"greeter"}' \
-    node runtime/spike/ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
+    node runtime/dsh/ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
 MOCK_PID=$!
 cleanup() {
   kill "$MOCK_PID" 2>/dev/null || true

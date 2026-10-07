@@ -137,10 +137,10 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            runtime/spike/vendor/quickjs-ng
-            runtime/spike/vendor/dsh
-            runtime/spike/vendor/npm
-          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+            runtime/dsh/vendor/quickjs-ng
+            runtime/dsh/vendor/dsh
+            runtime/dsh/vendor/npm
+          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/dsh/vendor/ensure.sh', 'runtime/dsh/vendor/ensure-dsh.sh') }}
 
       - name: Materialize the vendored official web app
         env:
@@ -151,7 +151,7 @@ jobs:
           # `pnpm --filter ...`), so the pinned shim must be on PATH — a
           # `corepack pnpm` entry point alone dies there ("pnpm: not found").
           corepack enable
-          runtime/spike/vendor/ensure-dsh.sh > /dev/null
+          runtime/dsh/vendor/ensure-dsh.sh > /dev/null
           test/e2e/ensure-official-dist.sh || {
             free -h; df -h / /tmp /mnt
             exit 1

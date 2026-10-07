@@ -2,7 +2,7 @@
 // dsh:logging-exempt (test-side scenario entry: the structured log IS the product)
 /**
  * lynx-mount.mjs — the lynx.mount E2E scenario entry, CLI host (plain Node;
- * the leg mirrors runtime/spike/ci/run-settings-surfaces-e2e.sh's evidence
+ * the leg mirrors runtime/dsh/ci/run-settings-surfaces-e2e.sh's evidence
  * discipline: unified-logger lines through __DSH_LOG_SINK__, the
  * dsh.spike.log: prefix, a one-to-one manifest under test/e2e/scenarios/,
  * and __dshComplete as the only exit).
@@ -23,7 +23,7 @@
  * raises them. Nothing here is pre-played — every record is what the loop
  * actually pushed, and both faces must satisfy their manifest one-to-one.
  */
-import { createLogger } from '../../runtime/spike/logger.js';
+import { createLogger } from '../../runtime/dsh/logger.js';
 import { startMockServe } from '../../presentation/lynx-client/driver/mock/mock-serve.mjs';
 import { createSessionServe } from '../../presentation/lynx-client/driver/wire/session-serve.js';
 import { createDriver } from '../../presentation/lynx-client/driver/driver.js';

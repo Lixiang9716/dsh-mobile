@@ -218,7 +218,7 @@ class SpikeHostM4 private constructor(
     }
 
     private val carrier = CarrierServer()
-    private val core = GatewayCore.create(File(activity.filesDir, "spike"))
+    private val core = GatewayCore.create(File(activity.filesDir, "dsh"))
     private val fs = FsPrimitives(activity)
     private val http = HttpPrimitive()
     private val keychain = KeychainPrimitives(activity)
@@ -280,7 +280,7 @@ class SpikeHostM4 private constructor(
     /** Runtime thread. */
     private fun begin() {
         carrierLog("client.selected", JSONObject().put("client", clientId))
-        val bundle = File(activity.filesDir, "spike")
+        val bundle = File(activity.filesDir, "dsh")
         wireCore()
         carrier.onWSMessage = { text -> pump.ingest(text) }
         carrier.onStaticServed = { path ->

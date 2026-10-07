@@ -126,7 +126,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "harmony.mic-plane",
   "launch": "dsh_phone emulator, --ps dsh.e2e.leg mic.plane (Debug, drive taps the OS mic prompt)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "harmony-mic-plane", "verdict": "verdict-harmony-mic-plane.json", "pass": true },
     { "manifest": "harmony-mic-plane-audit", "verdict": "verdict-harmony-mic-plane-audit.json", "pass": true }

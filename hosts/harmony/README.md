@@ -28,9 +28,9 @@ ONE launch on the emulator now proves the host end to end in two phases:
    screenshots, receipt).
 
 - `entry/src/main/cpp/gateway_smoke.cpp|h` — the platform twin of the desktop CLI
-  smoke backend (`runtime/spike/host/main_cli.c`): it answers the dispatched calls of
+  smoke backend (`runtime/dsh/host/main_cli.c`): it answers the dispatched calls of
   the gateway scenarios — fsRead/fsWrite/fsScope over the app files dir exposed as
-  scope `"app"` (`filesDir/spike-fs`, passed by ArkTS as the `fsRoot` argument,
+  scope `"app"` (`filesDir/dsh-fs`, passed by ArkTS as the `fsRoot` argument,
   mkdir -p parity on write), keychain honestly `unavailable` (declared so in the
   RuntimeDescriptor served to `__dshGatewayDescriptor()`), unknown primitives
   `invalid`. Calls are only QUEUED in the dispatch callback; settlement is deferred
@@ -127,8 +127,8 @@ records):
    structured-unavailable. Verdict: `dsh.spike.verdict:
    harmony.composer.live-write`.
 
-The spine closure travels in `rawfile/spike/` byte-identical to the
-runtime/spike canonicals: `ci/vendor-official.sh` copies + cmp-verifies the
+The spine closure travels in `rawfile/dsh/` byte-identical to the
+runtime/dsh canonicals: `ci/vendor-official.sh` copies + cmp-verifies the
 authored spine files, the 14 vendored spine packages (lib/ trees +
 package.json) and the pinned zod classic closure (gitignored verbatim
 bytes — the content gates never judge vendored upstream JS), and
@@ -149,7 +149,7 @@ runtime); settlement rides later UI-callback ticks.
 ## The carrier spike (landed)
 
 The original carrier spike that embedded the merged runtime core spike
-([runtime/spike/README.md](../../runtime/spike/README.md)) and verified scenario
+([runtime/dsh/README.md](../../runtime/dsh/README.md)) and verified scenario
 `boot.verification` on the local HarmonyOS emulator. Evidence:
 [artifacts/m1-spike/](artifacts/m1-spike/) (logs, sink capture, verdict, screenshot,
 receipt).
@@ -160,16 +160,16 @@ Layout:
   (hvigor 6.x, modelVersion 5.0.0, `compatibleSdkVersion: "26.0.0"`).
 - `AppScope/` — app identity (`com.dshmobile.spike`).
 - `entry/src/main/cpp/` — the NAPI library (`libspike.so`): CMake compiles
-  `runtime/spike/host/dsh_spike_host.c`, `gateway_smoke.cpp`, plus the pinned
+  `runtime/dsh/host/dsh_spike_host.c`, `gateway_smoke.cpp`, plus the pinned
   quickjs-ng 0.17.0 sources (`dtoa.c libregexp.c libunicode.c quickjs.c`) through
-  hvigor's externalNativeOptions. CMake runs `runtime/spike/vendor/ensure.sh`
+  hvigor's externalNativeOptions. CMake runs `runtime/dsh/vendor/ensure.sh`
   first, so the vendor tree is always materialized before compiling.
 - `entry/src/main/ets/pages/Index.ets` — materializes the bundled spike (byte-identical
   rawfile copies of `logger.js`, `gateway.js`, `registry.js`, the three scenarios, the
   three system plugins, and the vendored util-crypto package) into the app cache dir
   preserving layout, then calls `startSpike` ONCE and shows the returned verdict.
-- `entry/src/main/resources/rawfile/spike/` — the bundled spike JS (kept byte-identical
-  to the `runtime/spike/` and `system-plugins/` originals; the boot-verification.js copy
+- `entry/src/main/resources/rawfile/dsh/` — the bundled spike JS (kept byte-identical
+  to the `runtime/dsh/` and `system-plugins/` originals; the boot-verification.js copy
   was found stale after the first-session slimming landed upstream and is refreshed here — drift
   in these copies is silent otherwise, see the surprise ledger).
 

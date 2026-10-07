@@ -31,7 +31,7 @@
  * scenario id, the JS entry and the carrier-side evidence set change —
  * exactly how the Android host's SpikeHostM4 swaps its entry for
  * `--ez dsh.llm true`. The leg evals the canonical
- * `runtime/spike/scenario/llm-live-stream.js` byte for byte (the platform-neutral
+ * `runtime/dsh/scenario/llm-live-stream.js` byte for byte (the platform-neutral
  * client over this host's REAL httpFetch), and emits the carrier-side
  * records its own manifest pins (`llm.live-stream.carrier`); the m5-only records are
  * gated because each manifest is one-to-one with nothing extra.
@@ -874,7 +874,7 @@ export class HostPhase {
   }
 
   /** presentShare's file resolver: the app scope is the C backend's own
-   * profile container (filesDir/spike-fs, a plain path the share want can
+   * profile container (filesDir/dsh-fs, a plain path the share want can
    * carry); user scopes resolve through the picker's registry. null = the
    * path is outside every granted scope (the share primitive settles
    * denied). */
@@ -885,7 +885,7 @@ export class HostPhase {
       if (comps.length === 0 || comps.includes('..') || comps.includes('.')) {
         return null;
       }
-      return ctx.filesDir + '/spike-fs/' + comps.join('/');
+      return ctx.filesDir + '/dsh-fs/' + comps.join('/');
     }
     return this.picker?.resolveForShare(scope, rel) ?? null;
   }

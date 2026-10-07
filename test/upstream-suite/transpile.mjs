@@ -15,7 +15,7 @@
  * imports never appear in the spec's own text (the session-snapshot suite's
  * vi.waitFor hid inside a helper for a whole round).
  *
- * usage: node transpile.mjs   (writes runtime/spike/upstream-tests/ + manifest.json)
+ * usage: node transpile.mjs   (writes runtime/dsh/upstream-tests/ + manifest.json)
  */
 import esbuild from 'esbuild';
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, realpathSync, unlinkSync } from 'node:fs';
@@ -25,8 +25,8 @@ import { fileURLToPath } from 'node:url';
 // fileURLToPath, not .pathname: on Windows .pathname yields '/D:/...' and
 // every join below grows a phantom drive segment (measured 2026-10-06).
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const TESTS = join(ROOT, 'runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
-const OUT = join(ROOT, 'runtime/spike/upstream-tests');
+const TESTS = join(ROOT, 'runtime/dsh/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
+const OUT = join(ROOT, 'runtime/dsh/upstream-tests');
 const HARNESS_SPECIFIER = 'scenario/upstream-test-harness.js';
 // The path-rewrite machinery lives in transpile-rewrites.js (the file
 // crossed the size budget; these faces are pure source->source transforms).
@@ -283,8 +283,8 @@ const emitFixturesModule = (rel, flat) => {
 const emitPackageAssets = (rel, files) => {
   const pkgName = rel.split('/')[1];
   const assetCandidates = [
-    join(ROOT, `runtime/spike/vendor/npm/@deepseek-ai/dsh-${pkgName}@0.1.6-alpha.2/assets`),
-    join(ROOT, `runtime/spike/vendor/npm/@deepseek-ai/${pkgName}@0.1.6-alpha.2/assets`),
+    join(ROOT, `runtime/dsh/vendor/npm/@deepseek-ai/dsh-${pkgName}@0.1.6-alpha.2/assets`),
+    join(ROOT, `runtime/dsh/vendor/npm/@deepseek-ai/${pkgName}@0.1.6-alpha.2/assets`),
   ];
   for (const assetsDir of assetCandidates) {
     if (!existsSync(assetsDir)) continue;

@@ -197,7 +197,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "android.device-plane",
   "launch": "emulator, --ez dsh.deviceplane true (Debug)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "android-device-plane", "verdict": "verdict-android-device-plane.json", "pass": true },
     { "manifest": "android-device-plane-audit", "verdict": "verdict-android-device-plane-audit.json", "pass": true }

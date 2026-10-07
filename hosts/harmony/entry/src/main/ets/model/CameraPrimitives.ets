@@ -5,7 +5,7 @@
  * hosts/ios Gateway/CameraPrimitives.swift + the Kotlin CameraPrimitives:
  * the capture BURST (`cameraCapture`) is the v1 implementation face — each
  * frame lands in the app's capture scope (scope "app" is the C backend's own
- * profile container, <filesDir>/spike-fs/, so captures write beside it under
+ * profile container, <filesDir>/dsh-fs/, so captures write beside it under
  * captures/ and read back through fsRead) and the whole burst is one call,
  * one audit record. The recording rows (`cameraRecordStart`/`Stop`) answer
  * `unavailable` — their shape is contract, their implementation is phased.
@@ -380,11 +380,11 @@ class BurstState {
   }
 
   /** One frame's CapturedPhoto: written into the capture scope (<filesDir>/
-   * spike-fs/captures, the C backend's app-scope root), read back through
+   * dsh-fs/captures, the C backend's app-scope root), read back through
    * fsRead("app", "captures/<name>"). */
   private land(data: Uint8Array): PhotoEntry | null {
     try {
-      const dir = this.filesDir + '/spike-fs/captures';
+      const dir = this.filesDir + '/dsh-fs/captures';
       if (!fs.accessSync(dir)) {
         fs.mkdirSync(dir, true);
       }

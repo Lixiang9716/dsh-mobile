@@ -1,6 +1,6 @@
 /*
  * gateway_smoke.cpp — the HarmonyOS gateway-bridge smoke backend (M5).
- * Platform twin of runtime/spike/host/main_cli.c's smoke backend; see
+ * Platform twin of runtime/dsh/host/main_cli.c's smoke backend; see
  * gateway_smoke.h. Only the primitives gateway.bridge-smoke exercises are
  * implemented; everything else fails with the contract's error codes
  * (contract/primitives.md §3): keychain honestly "unavailable" (the

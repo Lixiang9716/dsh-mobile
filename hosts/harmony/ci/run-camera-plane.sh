@@ -192,7 +192,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "harmony.camera-plane",
   "launch": "physical device, --ps dsh.e2e.leg camera.plane (Debug)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "camera-plane-capture", "verdict": "verdict-camera-plane-capture.json", "pass": true }
   ],

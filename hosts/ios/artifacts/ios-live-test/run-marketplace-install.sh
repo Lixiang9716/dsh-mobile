@@ -56,7 +56,7 @@ wait_line() {
 
 # ---- 1. the mock catalog server (node, host loopback) -----------------------
 MOCK_LOG="$(mktemp /tmp/dsh-mock-market-ios.XXXXXX)"
-node runtime/spike/ci/mock-market-server.mjs > "$MOCK_LOG" 2>&1 &
+node runtime/dsh/ci/mock-market-server.mjs > "$MOCK_LOG" 2>&1 &
 MOCK_PID=$!
 cleanup() { kill "$MOCK_PID" 2>/dev/null || true; wait "$MOCK_PID" 2>/dev/null || true; rm -f "$MOCK_LOG"; }
 trap cleanup EXIT INT TERM
@@ -98,9 +98,9 @@ CONTAINER="$(xcrun simctl get_app_container "$UDID" "$BUNDLE" data)"
 mkdir -p "$CONTAINER/Documents/official-web"
 rm -rf "$CONTAINER/Documents/official-web/dist"
 cp -R presentation/official-web/dist "$CONTAINER/Documents/official-web/dist"
-runtime/spike/vendor/ensure-dsh.sh > /dev/null
+runtime/dsh/vendor/ensure-dsh.sh > /dev/null
 test/e2e/ensure-client-bundles.sh > /dev/null
-PKG_SRC="runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
+PKG_SRC="runtime/dsh/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
 rm -rf "$CONTAINER/Documents/web-plugins"
 mkdir -p "$CONTAINER/Documents/web-plugins/npm/@deepseek-ai"
 cp -R presentation/official-web/client-bundles/npm/@deepseek-ai/. \

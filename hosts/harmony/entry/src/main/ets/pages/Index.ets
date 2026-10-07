@@ -4,7 +4,7 @@
  * Index — the D9 host page. THREE phases on ONE launch:
  *
  * 1. Regression (synchronous): materializes the bundled spike (byte-identical
- *    rawfile copies of the runtime/spike originals + the Web Client plugin)
+ *    rawfile copies of the runtime/dsh originals + the Web Client plugin)
  *    into the app cache dir preserving layout, then calls startSpike ONCE on
  *    the UI thread — boot.verification, gateway.bridge-smoke, session.mock-llm on the ONE
  *    serial JS thread (ARCHITECTURE.md §6). The returned summary is the human
@@ -77,7 +77,7 @@ const LEG_UPSTREAM_SUITE: string = 'upstream.suite';
  * turn, streamed into the page. A demo: no one-to-one manifest. */
 const LEG_REAL_CREATE: string = 'real.create';
 
-// bundle-root-relative files shipped under resources/rawfile/spike/ —
+// bundle-root-relative files shipped under resources/rawfile/dsh/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
 // the scenarios at <bundle>/scenario/..., the vendored package under
 // <bundle>/vendor/... (the spike host's ESM loader resolves these paths).
@@ -85,7 +85,7 @@ const LEG_REAL_CREATE: string = 'real.create';
 // upstream/... + the vendor/npm libs are the D9 web-boot closure the
 // official-web phase runs, and the W-SESS spine closure below it is the
 // full upstream agent spine the session-live leg boots (byte-identical to
-// the runtime/spike canonicals — ci/vendor-official.sh cmp-verifies every
+// the runtime/dsh canonicals — ci/vendor-official.sh cmp-verifies every
 // copy; ci/check-bundle-files.mjs pins this list == the tracked rawfile
 // tree). EXTEND whenever the closure grows.
 const BUNDLE_FILES: string[] = [
@@ -1315,7 +1315,7 @@ struct Index {
       // mounted yet, so this is exactly one navigation).
       this.webUrl = url;
     };
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const credential: string | null = OfficialServe.loadCredential(ctx);
     // The served client: the launch selection (`--ps dsh.web.client <id>`)
     // maps to its staged web dir; the default serves the official dist.
@@ -1350,7 +1350,7 @@ struct Index {
     // rather than escaping the promise chain.
     let content: Promise<Uint8Array>;
     try {
-      content = ctx.resourceManager.getRawFileContent('spike/' + rel);
+      content = ctx.resourceManager.getRawFileContent('dsh/' + rel);
     } catch (e) {
       const be = e as BusinessError;
       return Promise.reject(new Error(
@@ -1390,7 +1390,7 @@ struct Index {
     const manifestRel = 'upstream-tests/__files.txt';
     let content: Promise<Uint8Array>;
     try {
-      content = ctx.resourceManager.getRawFileContent('spike/' + manifestRel);
+      content = ctx.resourceManager.getRawFileContent('dsh/' + manifestRel);
     } catch (e) {
       const be = e as BusinessError;
       hilog.warn(0x0000, TAG, 'suite extras: no manifest (%{public}s)', be.message ?? '');
@@ -1420,7 +1420,7 @@ struct Index {
   private runSpike(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const capturePath: string = ctx.cacheDir + '/dsh-spike-capture.log';
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     this.materializeBundle(ctx)
       .then((root: string): string => startSpike(root, capturePath, fsRoot))
       .then((summary: string) => {
@@ -1442,7 +1442,7 @@ struct Index {
    * turns itself. The verdict is the scenario's own. */
   private runRealAgentLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const configPath: string = fsRoot + '/llm-live-stream/config.json';
     const phase = HostPhase.getInstance();
     phase.onPhaseComplete = (passed: boolean): void => {
@@ -1476,7 +1476,7 @@ struct Index {
    * the runner waits for the summary marker and screenshots. */
   private runRealCreateLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const configPath: string = fsRoot + '/llm-live-stream/config.json';
     const phase = HostPhase.getInstance();
     phase.onPhaseComplete = (passed: boolean): void => {
@@ -1558,7 +1558,7 @@ struct Index {
       return;
     }
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const phase = HostPhase.getInstance();
     phase.onPhaseComplete = (passed: boolean): void => {
       this.verdict = (passed ? 'PASS' : 'FAIL') + ' upstream.suite (per-test verdicts in the capture)';
@@ -1580,7 +1580,7 @@ struct Index {
 
   private runLlmLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const configPath: string = fsRoot + '/llm-live-stream/config.json';
     const phase = HostPhase.getInstance();
     phase.onPhaseComplete = (passed: boolean): void => {
@@ -1636,7 +1636,7 @@ struct Index {
    * whale page as the carrier web root. */
   private runWhaleLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const phase = HostPhase.getInstance();
     phase.onPhaseComplete = (passed: boolean): void => {
       this.verdict = (passed ? 'PASS' : 'FAIL') + ' harmony.whale.mount (logs are the verdict)';
@@ -1679,7 +1679,7 @@ struct Index {
    * (NextWebPhase holds the chain). */
   private runNextWebLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const phase = NextWebPhase.getInstance();
     phase.openOrigin = (url: string): void => {
       // The fresh-Web remount trick (startOfficialPhase's): exactly one
@@ -1713,7 +1713,7 @@ struct Index {
    * install has no dialog). */
   private runMicPlaneLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const phase = HostPhase.getInstance();
     phase.setApprovalPresenter((title: string, resolve: (approved: boolean) => void): void => {
       this.showApproval(title, resolve);
@@ -1752,7 +1752,7 @@ struct Index {
 
   private runDevicePlaneLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const phase = HostPhase.getInstance();
     phase.setApprovalPresenter((title: string, resolve: (approved: boolean) => void): void => {
       this.showApproval(title, resolve);
@@ -1798,7 +1798,7 @@ struct Index {
    * golden (the runner pulls the capture). */
   private runParityLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const phase = HostPhase.getInstance();
     phase.onPhaseComplete = (passed: boolean): void => {
       this.verdict = (passed ? 'PASS' : 'FAIL') +
@@ -1846,7 +1846,7 @@ struct Index {
    * is the C `dsh.spike.verdict: harmony.camera-plane` line. */
   private runCameraPlaneLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const phase = HostPhase.getInstance();
     phase.setApprovalPresenter((title: string, resolve: (approved: boolean) => void): void => {
       this.showApproval(title, resolve);
@@ -1888,7 +1888,7 @@ struct Index {
    * no taps. The radio rides `--ps dsh.e2e.ble.mock` (E2eLeg.getBleMock). */
   private runBleLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const phase = HostPhase.getInstance();
     phase.setApprovalPresenter((title: string, resolve: (approved: boolean) => void): void => {
       this.showApproval(title, resolve);

@@ -50,8 +50,8 @@ const FAMILY = ['next', 'whale'];
 const PRODUCT_DIR = (name) => join(ROOT, 'presentation', `web-client-${name}`);
 // (label, mirror path builder) — the committed copies the platform builds consume.
 const MIRRORS = [
-  ['android', (name) => join(ROOT, 'hosts', 'android', 'app', 'src', 'main', 'assets', 'spike', `webclient-${name}`)],
-  ['harmony', (name) => join(ROOT, 'hosts', 'harmony', 'entry', 'src', 'main', 'resources', 'rawfile', 'spike', 'webclient', `dsh-web-client-${name}`)],
+  ['android', (name) => join(ROOT, 'hosts', 'android', 'app', 'src', 'main', 'assets', 'dsh', `webclient-${name}`)],
+  ['harmony', (name) => join(ROOT, 'hosts', 'harmony', 'entry', 'src', 'main', 'resources', 'rawfile', 'dsh', 'webclient', `dsh-web-client-${name}`)],
 ];
 const IOS_EMBEDDER = join(ROOT, 'hosts', 'ios', 'Tools', 'gen_bundle_header.py');
 

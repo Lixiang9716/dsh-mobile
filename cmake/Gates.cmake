@@ -11,7 +11,7 @@
 #   dsh-gate-closures
 #     Wraps `sh build/check-closures.sh` — the `closures` gate declared in
 #     gates.json. Byte-verifies that every committed per-host copy of the
-#     canonical runtime/spike closure (android assets, harmony rawfile, the
+#     canonical runtime/dsh closure (android assets, harmony rawfile, the
 #     ios generated bundle) is identical to its source.
 #
 #   dsh-gate-gov

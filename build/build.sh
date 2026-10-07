@@ -5,7 +5,7 @@
 # one-core-three-hosts model made executable):
 #
 #   sync      re-stage the host's committed closure from the canonical
-#             runtime/spike tree (byte-identical, single source — D6/D9)
+#             runtime/dsh tree (byte-identical, single source — D6/D9)
 #   compile   the platform's own toolchain build, the exact command its
 #             dev/<platform> CI workflow runs
 #   test      the platform's log-verified e2e leg (never screenshots)
@@ -118,7 +118,7 @@ stage_sync() {
             hosts/harmony/ci/vendor-official.sh --closure-only ;;
         core)
             echo "build: sync core (verify the vendored pins)"
-            (cd runtime/spike && ./vendor/ensure.sh) ;;
+            (cd runtime/dsh && ./vendor/ensure.sh) ;;
         *)
             echo "::error::build: sync: unknown platform '$1' (want ios|android|harmony|core)" >&2
             return 1 ;;
@@ -158,10 +158,10 @@ stage_compile() {
             core_toolchain
             if [ "$RELEASE" = "1" ]; then
                 echo "build: compile core (C host CLI, debug + release flavors)"
-                (cd runtime/spike && ./host/build.sh && ./host/build.sh --release)
+                (cd runtime/dsh && ./host/build.sh && ./host/build.sh --release)
             else
                 echo "build: compile core (C host CLI, debug flavor)"
-                (cd runtime/spike && ./host/build.sh)
+                (cd runtime/dsh && ./host/build.sh)
             fi ;;
         *)
             echo "::error::build: compile: unknown platform '$1' (want ios|android|harmony|core)" >&2
@@ -186,12 +186,12 @@ stage_test() {
             hosts/harmony/ci/run-host-e2e.sh ;;
         core)
             echo "build: test core (the CLI proof legs over the vendored upstream spine)"
-            runtime/spike/ci/run-upstream-e2e.sh
-            runtime/spike/ci/run-upstream-boot-e2e.sh
-            runtime/spike/ci/run-settings-surfaces-e2e.sh
-            runtime/spike/ci/run-open-design-e2e.sh
-            runtime/spike/ci/run-office-e2e.sh
-            runtime/spike/ci/run-shim-exposure-probe.sh ;;
+            runtime/dsh/ci/run-upstream-e2e.sh
+            runtime/dsh/ci/run-upstream-boot-e2e.sh
+            runtime/dsh/ci/run-settings-surfaces-e2e.sh
+            runtime/dsh/ci/run-open-design-e2e.sh
+            runtime/dsh/ci/run-office-e2e.sh
+            runtime/dsh/ci/run-shim-exposure-probe.sh ;;
         *)
             echo "::error::build: test: unknown platform '$1' (want ios|android|harmony|core)" >&2
             return 1 ;;

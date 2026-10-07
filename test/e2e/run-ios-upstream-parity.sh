@@ -65,7 +65,7 @@ fail_deadline() {
 
 # ---- 1-3. vendor, regen the bundle header (the parity scenario embeds), build
 log "1/5 vendor + regenerate the bundle header (embeds scenario/upstream-parity.js)"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 python3 hosts/ios/Tools/gen_bundle_header.py
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
@@ -88,7 +88,7 @@ MOCK_LOG="$(mktemp /tmp/dsh-mock-parity-ios.XXXXXX)"
 DSH_MOCK_SEQUENCE='success tool_call_success success auth_error' \
 DSH_MOCK_TOOL_NAME='todo_write' \
 DSH_MOCK_TOOL_ARGS='{"todos":[{"content":"Track the parity check","status":"in_progress"}]}' \
-    node runtime/spike/ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
+    node runtime/dsh/ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
 MOCK_PID=$!
 cleanup() {
   kill "$MOCK_PID" 2>/dev/null || true
@@ -151,7 +151,7 @@ fs.writeFileSync(`${art}/port.jsonl`, out.map((r) => JSON.stringify(r)).join('\n
 if (out.length === 0) { console.error('port leg produced no parity/event records'); process.exit(1); }
 EXTRACT
 
-node runtime/spike/ci/parity-compare.mjs "$GOLDEN" "$ART/port.jsonl" \
+node runtime/dsh/ci/parity-compare.mjs "$GOLDEN" "$ART/port.jsonl" \
   | tee "$ART/parity-verdict.txt"
 
 node test/e2e/check.mjs \
@@ -175,7 +175,7 @@ cat > "$ART/receipt.json" <<EOF
     "the tool round is real: the scripted todo_write tool-call streamed through the REAL gateway httpFetch primitive to the host-side mock, the upstream ToolRuntime dispatched it, and the todos projection landed identically",
     "the 401 transport-error leg surfaces as the same upstream error-finish"
   ],
-  "checker": "runtime/spike/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl + test/e2e/scenarios/upstream-parity-cli.json",
+  "checker": "runtime/dsh/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl + test/e2e/scenarios/upstream-parity-cli.json",
   "events": $EVENTS,
   "referenceRecords": $REF_COUNT,
   "exitCode": 0

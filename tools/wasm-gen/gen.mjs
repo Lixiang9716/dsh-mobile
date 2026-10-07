@@ -1,6 +1,6 @@
 // gen.mjs — compile the .wat starter programs to the byte arrays the
 // dsh-shell-wasm plugin ships, and verify each one against the ABI the C
-// runner (runtime/spike/host/dsh_wasm.c) actually implements.
+// runner (runtime/dsh/host/dsh_wasm.c) actually implements.
 //
 // The bytes land in system-plugins/dsh-shell-wasm/programs.js as committed
 // Uint8Array literals (the STARTER_ECHO precedent: the artifact is data, the

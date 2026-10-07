@@ -75,7 +75,7 @@ final class SessionServe {
     /// app scope, created on first use so the agent always has somewhere to
     /// work (see `runtimeConfig` for why it is not the staged bundle root).
     static var workspaceRoot: URL {
-        let url = appScopeRoot.appendingPathComponent("spike", isDirectory: true)
+        let url = appScopeRoot.appendingPathComponent("dsh", isDirectory: true)
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url
     }

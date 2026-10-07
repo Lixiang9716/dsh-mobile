@@ -2,8 +2,8 @@
   "leg": "perf.baseline (measurement) + leak.canary (leak canary)",
   "recordedAt": "2026-10-01",
   "receipts": {
-    "perf": "runtime/spike/artifacts/macos-cli-perf-baseline/receipt.json",
-    "leak": "runtime/spike/artifacts/macos-cli-leak-canary/receipt.json"
+    "perf": "runtime/dsh/artifacts/macos-cli-perf-baseline/receipt.json",
+    "leak": "runtime/dsh/artifacts/macos-cli-leak-canary/receipt.json"
   },
   "machine": {
     "os": "Darwin 27.0.0",

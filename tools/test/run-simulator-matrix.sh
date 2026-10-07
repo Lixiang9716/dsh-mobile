@@ -122,7 +122,7 @@ png_valid() { # a screenshot is debugging evidence, but the matrix checker
 
 count_of() { grep -c -F "$2" "$1" 2>/dev/null || true; }
 
-engine_pin() { sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh; }
+engine_pin() { sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh; }
 tree_line() {
     echo "origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
 }
@@ -132,8 +132,8 @@ tree_line() {
 # bundles. Fresh worktrees start without all four; fail loud, never half-build.
 materialize() {
     mx "materializing the untracked build trees (engine, dsh closure, dist, bundles)"
-    sh runtime/spike/vendor/ensure.sh || mx_die "runtime/spike/vendor/ensure.sh failed"
-    sh runtime/spike/vendor/ensure-dsh.sh || mx_die "runtime/spike/vendor/ensure-dsh.sh failed"
+    sh runtime/dsh/vendor/ensure.sh || mx_die "runtime/dsh/vendor/ensure.sh failed"
+    sh runtime/dsh/vendor/ensure-dsh.sh || mx_die "runtime/dsh/vendor/ensure-dsh.sh failed"
     # these two are bash-only (set -o pipefail, BASH_SOURCE) — sh(1) here is dash
     bash test/e2e/ensure-official-dist.sh || mx_die "test/e2e/ensure-official-dist.sh failed"
     bash test/e2e/ensure-client-bundles.sh || mx_die "test/e2e/ensure-client-bundles.sh failed"
@@ -498,7 +498,7 @@ android_release_leg() {
     unzip -l "$apk" > "$art/apk-release-listing.txt"
     grep -q "assets/official-web/dist/index.html" "$art/apk-release-listing.txt" \
         || mx_die "the release APK embeds no official dist"
-    grep -q "assets/spike/logger.js" "$art/apk-release-listing.txt" \
+    grep -q "assets/dsh/logger.js" "$art/apk-release-listing.txt" \
         || mx_die "the release APK embeds no spike bundle"
 
     # The shipped artifact is unsigned (release.yml uploads it that way); the

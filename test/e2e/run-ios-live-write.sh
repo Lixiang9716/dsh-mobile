@@ -74,7 +74,7 @@ log "1/5 official dist present + manifest-verified"
 test/e2e/ensure-official-dist.sh
 
 log "2/5 vendor quickjs-ng sources"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "3/5 xcodebuild (simulator, udid $UDID)"
@@ -96,9 +96,9 @@ mkdir -p "$APP_DATA/Documents/official-web"
 cp -R presentation/official-web/dist "$APP_DATA/Documents/official-web/dist"
 
 log "4b/5 stage the web-plugins tree (W-SHELL application tier + vendored bootstrap; fixed stamp)"
-runtime/spike/vendor/ensure-dsh.sh > /dev/null
+runtime/dsh/vendor/ensure-dsh.sh > /dev/null
 test/e2e/ensure-client-bundles.sh
-PKG_SRC="runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
+PKG_SRC="runtime/dsh/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
 [ -f "$PKG_SRC/lib/client.js" ] || die "vendored bootstrap package missing (ensure-dsh.sh)"
 rm -rf "$APP_DATA/Documents/web-plugins"
 mkdir -p "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai"

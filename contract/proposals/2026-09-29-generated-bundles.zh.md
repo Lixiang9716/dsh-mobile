@@ -7,7 +7,7 @@
 ## 动机
 
 iOS 宿主的生成字节目前是入库的：`hosts/ios/App/Generated/SpikeBundle.c` +
-`SpikeBundle.h`（以 C 字节数组嵌入的 runtime/spike closure），以及
+`SpikeBundle.h`（以 C 字节数组嵌入的 runtime/dsh closure），以及
 `hosts/ios/DSHSpike.xcodeproj/`（`project.pbxproj` + workspace 数据，由
 `xcodegen generate` 从 `project.yml` 再生成）。把它们放进去的决策记录在 M1
 spike-embed note
@@ -39,14 +39,14 @@ spike-embed note
   纯 bundle 的推送（`908c3bdd` 修复是单文件提交）事实上是 100%。简报的
   "99.9% of push payload" 就是这一类。
 - **一个 amend 顺序陷阱**（来自本轮运行简报；台账里记录的是它的同类）：
-  碰过 `runtime/spike` 之后的任何 amend 都多了一条
+  碰过 `runtime/dsh` 之后的任何 amend 都多了一条
   "先再生成的再 amend" 的顺序约束，走反了就会把陈旧 bundle 装进被 amend 的
   提交——与 surprise 台账已记录的同一失效类（2026-09-27：并行会话的重排一度
   把陈旧的 `SpikeBundle.c` 推上了分支）。
 
 本分支在飞的 `.gitattributes` 变更（生成路径标 `binary`/
 `linguist-generated`）治的是 review 渲染这个症状：diff 显示成 `Bin` 而不是
-六位数的行噪声。但字节照样传输、照样扰动 pack、照样让每次碰 runtime/spike
+六位数的行噪声。但字节照样传输、照样扰动 pack、照样让每次碰 runtime/dsh
 都变成一个 64 MB 的提交。
 
 **而且前提已经空心化了。** 入库副本的理由是"不用生成就能构建"。但
@@ -107,7 +107,7 @@ CI 路径都靠入库的 `project.pbxproj`（`dev-ios.yml:179`；
   `dev-ios.yml:77` 的 DerivedData cache key——pbxproj 退跟踪后，后者须改键
   到 `project.yml` + 源文件。
 - **P3——fresh 的 `gen.sh` 有它的输入。** `gen.sh:3-5` 要求先跑
-  `runtime/spike/vendor/ensure.sh`（xcodegen 需要磁盘上的 quickjs 源码才能
+  `runtime/dsh/vendor/ensure.sh`（xcodegen 需要磁盘上的 quickjs 源码才能
   引用它们）。`dev/ios` 已经在构建前 vendor（`dev-ios.yml:159-163`）；被
   翻转的 gate 的生成 leg 需要同样的顺序。
 - **P4——本地裸脚本路径仍然可用。** `run-ios*.sh` 脚本目前假设入库项目
@@ -147,7 +147,7 @@ regen-and-diff 机制存在要检验的性质，而且自那以后每次 gate �
   大字节问题，自包含的 APK/HAP 打包语义（D17："the copies are deliberate
   for self-contained APK/HAP and platform IDEs"）支持保留。`closures` 的
   逐字节比较对两者照旧。本提案只作用于 iOS 生成物。
-- **不改 `runtime/spike` 内容、bundle 布局、pre-build phase 行为。** app 的
+- **不改 `runtime/dsh` 内容、bundle 布局、pre-build phase 行为。** app 的
   运行时路径翻转前后完全一致。
 
 ## 若被接受

@@ -5,7 +5,7 @@
 # the on-device host, against the carrier's scripted mock route (MockLlmRoute
 # armed with the parity script), and the projected session log MUST equal the
 # committed golden (test/e2e/fixtures/upstream-parity-reference.jsonl) — the
-# byte-stream the Node reference leg (runtime/spike/ci/run-upstream-parity.sh
+# byte-stream the Node reference leg (runtime/dsh/ci/run-upstream-parity.sh
 # --reference-only) produced from the SAME vendored packages under plain Node.
 #
 # Every wait is a polled condition with a deadline (rule 8); the capture is
@@ -113,7 +113,7 @@ fs.writeFileSync(`${out}/port.jsonl`, records.map((r) => JSON.stringify(r)).join
 if (records.length === 0) { console.error('no parity/event records in the captured stream'); process.exit(1); }
 EXTRACT
 
-node runtime/spike/ci/parity-compare.mjs "$GOLDEN" "$OUT/port.jsonl" | tee "$OUT/parity-verdict.txt"
+node runtime/dsh/ci/parity-compare.mjs "$GOLDEN" "$OUT/port.jsonl" | tee "$OUT/parity-verdict.txt"
 
 # ---- receipt -----------------------------------------------------------------
 EVENTS="$(grep -c '"scenario":"upstream.parity"' "$OUT/logs.txt" || true)"
@@ -126,7 +126,7 @@ cat > "$OUT/receipt.json" <<EOF
   "proves": [
     "the vendored upstream spine produces the SAME projected session log on the Android emulator as under plain Node: the carrier's scripted mock route (MockLlmRoute, parity script) replayed the same wire, the real ToolRuntime dispatched the todo_write round, and the comparator demanded record-for-record identity against the committed golden"
   ],
-  "checker": "runtime/spike/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
+  "checker": "runtime/dsh/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
   "events": $EVENTS,
   "exitCode": 0
 }

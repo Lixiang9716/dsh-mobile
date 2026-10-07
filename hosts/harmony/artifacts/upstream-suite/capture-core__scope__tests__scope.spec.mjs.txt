@@ -1,0 +1,37 @@
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"launch spec facts","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"profile container pinned","data":[{"cwd":"/data/storage/el2/base/haps/entry/files/spike-fs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"real sibling staging begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/lsp/lsp-stdio/tests/fixture-server.ts","to":"fixture-server.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/lsp/lsp-stdio/tests/fixtur"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/host/directory-picker-native/src/win32-dialog-worker.ts","to":"win32-dialog-worker.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/host/directory-picker-nati"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/sdk/client/tests/fake-runtime.ts","to":"fake-runtime.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/sdk/client/tests/fake-runt"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/skill/skill-office/tests/check_office_test.py","to":"check_office_test.py","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/skill/skill-office/tests/c"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__scope__tests__scope.spec.mjs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"source-introspection staging begin","data":[{"spec":"upstream-tests/core__scope__tests__scope.spec.mjs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"source-introspection list failed","data":[{"code":null,"err":"ENOENT"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"fixtures seed begin","data":[{"spec":"upstream-tests/core__scope__tests__scope.spec.mjs"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"createScope > tags contexts and derived contexts, with the nearest tag winning"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"createScope > tags contexts and derived contexts, with the nearest tag winning"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"createScope > is usable synchronously before the backing fiber activates"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"createScope > is usable synchronously before the backing fiber activates"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"createScope > shares quiescence across repeat and raw-disposer-first calls"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"createScope > shares quiescence across repeat and raw-disposer-first calls"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"createScope > exposes the exact raw disposer for ordered composite teardown"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"createScope > exposes the exact raw disposer for ordered composite teardown"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"scopeTarget > routes scoped listeners by key while untagged listeners remain global"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"scopeTarget > routes scoped listeners by key while untagged listeners remain global"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"scopeTarget > preserves a base Cordis filter and its receiver"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"scopeTarget > preserves a base Cordis filter and its receiver"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"scopeTarget > { global: true } listeners retain Cordis global-listener semantics"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"scopeTarget > { global: true } listeners retain Cordis global-listener semantics"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"scopeTarget > uses an opaque branded carrier with a separately tracked key"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"scopeTarget > uses an opaque branded carrier with a separately tracked key"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"scope parent chain > links at mint, walks to the root, and rejects cycles"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"scope parent chain > links at mint, walks to the root, and rejects cycles"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"scope parent chain > re-links only through the binding held by the original binder"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"scope parent chain > re-links only through the binding held by the original binder"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"scope parent chain > admits an ancestor-tagged listener for a descendant dispatch, never the reverse"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"scope parent chain > admits an ancestor-tagged listener for a descendant dispatch, never the reverse"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/core__scope__tests__scope.spec.mjs","passed":11,"failed":0,"skipped":0}]}

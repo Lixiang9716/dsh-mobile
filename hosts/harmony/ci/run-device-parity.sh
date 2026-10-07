@@ -11,7 +11,7 @@
 #                round → success → 401), and the projected session log MUST
 #                equal the committed 25-record golden
 #                (test/e2e/fixtures/upstream-parity-reference.jsonl)
-#                record-for-record (runtime/spike/ci/parity-compare.mjs).
+#                record-for-record (runtime/dsh/ci/parity-compare.mjs).
 #   tool-rows  — T-0048 item 3: the interactive seat (nextweb.mount launch,
 #                which evals scenario/composer-web-live.js) probes
 #                agentPresets/list + pluginInventory/list on-device; the
@@ -224,7 +224,7 @@ fs.writeFileSync(`${out}/port.jsonl`, records.map((r) => JSON.stringify(r)).join
 if (records.length === 0) { console.error('no parity/event records in the pulled capture'); process.exit(1); }
 EXTRACT
 
-node runtime/spike/ci/parity-compare.mjs "$GOLDEN" "$PARITY_OUT/port.jsonl" \
+node runtime/dsh/ci/parity-compare.mjs "$GOLDEN" "$PARITY_OUT/port.jsonl" \
     | tee "$PARITY_OUT/parity-verdict.txt"
 grep -q 'identical' "$PARITY_OUT/parity-verdict.txt" \
     || die "parity differential FAILED — see $PARITY_OUT/parity-verdict.txt"
@@ -238,14 +238,14 @@ cat > "$PARITY_OUT/receipt.json" <<EOF
   "phase": "upstream.parity",
   "launch": "--ps dsh.e2e.leg upstream.parity (Debug, in-app ParityMockRoute)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "upstream": "@deepseek-ai/dsh-* (vendored verbatim, sha256-pinned; the SAME closure the Node reference ran)",
   "scenario": "upstream.parity",
   "proves": [
     "the vendored upstream spine produces the SAME projected session log on the HarmonyOS device as under plain Node: record-for-record identity against the committed ${REF_COUNT}-record golden, the scripted route replaying success → todo_write tool round → success → 401",
     "the 401 transport-error leg surfaces as the same upstream error-finish"
   ],
-  "checker": "runtime/spike/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
+  "checker": "runtime/dsh/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
   "referenceRecords": $REF_COUNT,
   "exitCode": 0
 }

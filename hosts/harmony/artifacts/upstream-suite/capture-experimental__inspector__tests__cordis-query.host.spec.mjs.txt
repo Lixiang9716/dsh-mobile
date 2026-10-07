@@ -1,0 +1,45 @@
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"launch spec facts","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"profile container pinned","data":[{"cwd":"/data/storage/el2/base/haps/entry/files/spike-fs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"real sibling staging begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/lsp/lsp-stdio/tests/fixture-server.ts","to":"fixture-server.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/lsp/lsp-stdio/tests/fixtur"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/host/directory-picker-native/src/win32-dialog-worker.ts","to":"win32-dialog-worker.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/host/directory-picker-nati"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/sdk/client/tests/fake-runtime.ts","to":"fake-runtime.ts","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/sdk/client/tests/fake-runt"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"sibling stage failed","data":[{"from":"packages/skill/skill-office/tests/check_office_test.py","to":"check_office_test.py","code":"cp: bad 'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/skill/skill-office/tests/c"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/experimental__inspector__tests__cordis-query.host.spec.mjs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"source-introspection staging begin","data":[{"spec":"upstream-tests/experimental__inspector__tests__cordis-query.host.spec.mjs"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"source-introspection list failed","data":[{"code":null,"err":"ENOENT"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"fixtures seed begin","data":[{"spec":"upstream-tests/experimental__inspector__tests__cordis-query.host.spec.mjs"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"consumer-neutral Cordis tree > projects a detached recursive tree without routing identifiers"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"consumer-neutral Cordis tree > projects a detached recursive tree without routing identifiers"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"Inspector query protocol > uses exact request and response codecs"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Inspector query protocol > uses exact request and response codecs"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"Inspector query protocol > correlates results and clears stale, malformed, timed-out, and closed requests"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Inspector query protocol > correlates results and clears stale, malformed, timed-out, and closed requests"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"Inspector query protocol > rejects malformed, stale, and oversized Worker requests with bounded outcomes"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Inspector query protocol > rejects malformed, stale, and oversized Worker requests with bounded outcomes"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"Inspector query protocol > revokes an older carrier when the same source opens a new generation"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Inspector query protocol > revokes an older carrier when the same source opens a new generation"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"Cordis query service integration > returns the same Worker snapshot to Host and Client services without a CDP connection"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/fail","name":"Cordis query service integration > returns the same Worker snapshot to Host and Client services without a CDP connection","message":"cannot load module '/upstream-tests/worker.js'"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/experimental__inspector__tests__cordis-query.host.spec.mjs","passed":5,"failed":1,"skipped":0,"firstFailure":{"name":"Cordis query service integration > returns the same Worker snapshot to Host and Client services without a CDP connection","message":"cannot load module '/upstream-tests/worker.js'","stack":""}}]}

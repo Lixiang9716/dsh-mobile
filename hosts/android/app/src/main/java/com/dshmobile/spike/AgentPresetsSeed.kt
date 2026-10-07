@@ -8,7 +8,7 @@ import java.io.File
  * The `agentPresets.seed` bus delivery for the write seat: the staged presets
  * tree plus one node_modules resolution marker per staged dsh package — the
  * same rule the iOS drive's `agentPresetsSeedDelivery` and
- * `runtime/spike/ci/gen-presets-seed.py` follow (one seed rule, three
+ * `runtime/dsh/ci/gen-presets-seed.py` follow (one seed rule, three
  * runtimes; T-0035). A preset row naming a package that is NOT staged stays
  * honestly `broken` (no speculative markers); a row naming a staged package
  * resolves through its marker onto the bare map's vendored tree. Null when

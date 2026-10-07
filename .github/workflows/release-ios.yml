@@ -136,18 +136,18 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            runtime/spike/vendor/quickjs-ng
-            runtime/spike/vendor/dsh
-            runtime/spike/vendor/npm
-          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+            runtime/dsh/vendor/quickjs-ng
+            runtime/dsh/vendor/dsh
+            runtime/dsh/vendor/npm
+          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/dsh/vendor/ensure.sh', 'runtime/dsh/vendor/ensure-dsh.sh') }}
 
       - name: Vendor quickjs-ng + the pinned upstream DSH closure
         # Both trees are untracked by design (upstream discipline D6);
         # gen_bundle_header.py pins the alpha.2 dsh closure at build time.
         run: |
           set -euo pipefail
-          sh runtime/spike/vendor/ensure.sh
-          sh runtime/spike/vendor/ensure-dsh.sh
+          sh runtime/dsh/vendor/ensure.sh
+          sh runtime/dsh/vendor/ensure-dsh.sh
 
       - name: Locate the pnpm store
         # Resolved, never guessed: `pnpm store path` prints it, and a guessed

@@ -58,7 +58,7 @@ fail_deadline() {
 
 # ---- 1-3. build + install (no dist staging: the client is embedded) ---------
 log "1/4 vendor quickjs-ng sources"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/4 regenerate the embedded bundle + xcodebuild (simulator, udid $UDID)"
@@ -84,9 +84,9 @@ APP_DATA=$(xcrun simctl get_app_container "$UDID" "$APP_BUNDLE_ID" data)
 mkdir -p "$APP_DATA/Documents/official-web"
 rm -rf "$APP_DATA/Documents/official-web/dist"
 cp -R presentation/official-web/dist "$APP_DATA/Documents/official-web/dist"
-runtime/spike/vendor/ensure-dsh.sh > /dev/null
+runtime/dsh/vendor/ensure-dsh.sh > /dev/null
 test/e2e/ensure-client-bundles.sh
-PKG_SRC="runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
+PKG_SRC="runtime/dsh/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
 [ -f "$PKG_SRC/lib/client.js" ] || die "vendored bootstrap package missing (ensure-dsh.sh)"
 rm -rf "$APP_DATA/Documents/web-plugins"
 mkdir -p "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai"

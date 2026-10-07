@@ -44,7 +44,7 @@ final — human evidence only), `receipt.json`.
 
 ## Regression status: gateway bridge + first session green on emulator
 
-The app embeds the shared spike host (`runtime/spike/host/dsh_spike_host.c`) with its REAL
+The app embeds the shared spike host (`runtime/dsh/host/dsh_spike_host.c`) with its REAL
 gateway dispatch bridge (no canned responses — the canned single-call slot is gone) and runs ALL
 THREE scenarios in one launch, judged by the shared checker:
 
@@ -66,7 +66,7 @@ Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logca
 ## How it works
 
 - `app/src/main/cpp/dsh_spike_smoke.c` — the Android smoke backend, sibling of
-  `runtime/spike/host/main_cli.c`'s: calls are only QUEUED inside the dispatch callback (which
+  `runtime/dsh/host/main_cli.c`'s: calls are only QUEUED inside the dispatch callback (which
   fires synchronously on the runtime thread) and settled in the post-pump drain pass — the
   deferred later-tick settlement the scenario proves. `fsRead`/`fsWrite` run base64 payloads
   against `filesDir/smoke-fs` (scope `app`, escape-checked, parent dirs created on write); the
@@ -78,7 +78,7 @@ Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logca
 - `app/src/main/cpp/dsh_spike_jni.c` — one fresh `dsh_spike_t` runtime per scenario, whole
   lifecycle on the CALLING thread; Kotlin (`SpikeRuntime`) keeps that caller a single
   `HandlerThread("dsh-spike-js")` (logcat pid/tid columns prove the split from the UI thread).
-- `app/src/main/assets/spike/` — the spike bundle as byte-identical copies of `runtime/spike/`
+- `app/src/main/assets/dsh/` — the spike bundle as byte-identical copies of `runtime/dsh/`
   (`gateway.js`, `registry.js`, `scenario/boot-verification.js`, `scenario/gateway-bridge-smoke.js`,
   `scenario/session-mock-llm.js`, `logger.js`, `vendor/dsh/util-crypto@0.1.6-alpha.1`) plus the three
   system plugins (`system-plugins/dsh-fs`, `dsh-subprocess-quickjs`, `dsh-ui` from the repo

@@ -10,19 +10,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // dsh-llm-retry's 1/5..5/5 rhythm then advances, and an exhausted budget
 // errors the turn (loop-u's turn-recovery continues the followups).
 //
-// The fake below mirrors the REAL gateway contract (runtime/spike/gateway.js
+// The fake below mirrors the REAL gateway contract (runtime/dsh/gateway.js
 // httpFetch): the body is an AsyncIterable whose next() parks until a bridge
 // event lands, and response.abort() marks the stream errored and WAKES the
 // parked read with a rejection — the exact primitive that makes the watchdog
 // able to unwind a byteless stall.
 
-vi.mock('../../runtime/spike/gateway.js', () => ({ httpFetch: vi.fn() }));
+vi.mock('../../runtime/dsh/gateway.js', () => ({ httpFetch: vi.fn() }));
 
-const { httpFetch } = await import('../../runtime/spike/gateway.js');
+const { httpFetch } = await import('../../runtime/dsh/gateway.js');
 const { createGatewayLlmAdapter } =
-  await import('../../runtime/spike/upstream/llm-transport.js');
+  await import('../../runtime/dsh/upstream/llm-transport.js');
 const { DEFAULT_READ_IDLE_TIMEOUT_MS } =
-  await import('../../runtime/spike/upstream/llm-read-idle.js');
+  await import('../../runtime/dsh/upstream/llm-read-idle.js');
 const { LlmError } = await import('@deepseek-ai/dsh-llm'); // the suite's stub alias
 
 /** The gateway bridge's error vocabulary, as the seam's catch sees it. */

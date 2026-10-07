@@ -3,7 +3,7 @@
 /**
  * shim-exposure.mjs — aggregate DSH_MODULE_MANIFEST loader manifests into the
  * per-shim exposure table: which of the self-owned shims
- * (runtime/spike/upstream/shims/*.js) the upstream suite runs actually load,
+ * (runtime/dsh/upstream/shims/*.js) the upstream suite runs actually load,
  * and which never do.
  *
  * The raw evidence is produced by the spike host's default-off diagnostic:
@@ -18,7 +18,7 @@
  *                                      fixed cost every spec leg pays — its
  *                                      shims are exposure by infrastructure,
  *                                      not by any spec body)
- *          [--shims-dir <dir>]         default runtime/spike/upstream/shims
+ *          [--shims-dir <dir>]         default runtime/dsh/upstream/shims
  *          [--json]                    machine-readable output instead of
  *                                      the markdown table
  *
@@ -38,7 +38,7 @@ const flag = (name) => {
   return at >= 0 ? args[at + 1] : undefined;
 };
 const baselineFile = flag('--baseline');
-const shimsDir = flag('--shims-dir') ?? 'runtime/spike/upstream/shims';
+const shimsDir = flag('--shims-dir') ?? 'runtime/dsh/upstream/shims';
 const asJson = args.includes('--json');
 
 /** The 86 self-owned shim modules: the top-level .js files of the shims dir
@@ -102,7 +102,7 @@ if (asJson) {
 }
 
 const lines = [];
-lines.push('# Shim exposure map (upstream suite → runtime/spike/upstream/shims)');
+lines.push('# Shim exposure map (upstream suite → runtime/dsh/upstream/shims)');
 lines.push('');
 lines.push(`- spec manifests: ${specRuns.size} (dir ${manifestDir})`);
 lines.push(`- shims total: ${shims.length} — exposed: ${exposed.length}, zero-exposure: ${zero.length}`);

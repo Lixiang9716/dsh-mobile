@@ -16,14 +16,14 @@
 # Surface: the CI-reachable shell scripts, enumerated BY RULE so the list
 # cannot go stale the way a hand-copied manifest does — every tracked .sh
 # under build/, tools/, hosts/{android,harmony,ios}/, test/{e2e,tools,panel}/,
-# packages/release/, deploy/marketplace/, presentation/, runtime/spike/{ci,vendor}/,
-# plus runtime/spike/host/build.sh — minus checked-in artifact fixtures
+# packages/release/, deploy/marketplace/, presentation/, runtime/dsh/{ci,vendor}/,
+# plus runtime/dsh/host/build.sh — minus checked-in artifact fixtures
 # (**/artifacts/**: run outputs and guest-root profiles, never entry points).
 # On the day this gate landed, the rule covered every script #289 swept with
 # findings (33/33), every script the #289 PR touched (29/29), and every
 # script reachable from .github/workflows (28/28).
 #
-# Availability (skip-on-absent precedent: runtime/spike/ci/check-quickjs-boot-parse.sh):
+# Availability (skip-on-absent precedent: runtime/dsh/ci/check-quickjs-boot-parse.sh):
 # agent machines vary; a missing shellcheck binary SKIPs loudly (exit 0 with
 # a named reason) instead of faking green. CI installs/asserts shellcheck in
 # .github/workflows/gov.yml before `gov run`, so the gate is never vacuous
@@ -61,7 +61,7 @@ if [ "$#" -gt 0 ]; then
     SCRIPTS="$*"
 else
     SCRIPTS="$(git ls-files '*.sh' \
-        | grep -E '^(build/|tools/|hosts/(android|harmony|ios)/|test/(e2e|tools|panel)/|packages/release/|deploy/marketplace/|presentation/|runtime/spike/(ci|vendor)/|runtime/spike/host/build\.sh$)' \
+        | grep -E '^(build/|tools/|hosts/(android|harmony|ios)/|test/(e2e|tools|panel)/|packages/release/|deploy/marketplace/|presentation/|runtime/dsh/(ci|vendor)/|runtime/dsh/host/build\.sh$)' \
         | grep -v '/artifacts/' || true)"
 fi
 if [ -z "$SCRIPTS" ]; then

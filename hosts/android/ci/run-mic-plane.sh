@@ -117,7 +117,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "android.mic-plane",
   "launch": "emulator, --ez dsh.micplane true (Debug, RECORD_AUDIO pre-granted)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "android-mic-plane", "verdict": "verdict-android-mic-plane.json", "pass": true },
     { "manifest": "android-mic-plane-audit", "verdict": "verdict-android-mic-plane-audit.json", "pass": true }

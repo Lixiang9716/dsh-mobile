@@ -29,7 +29,7 @@ object SessionWriteProbe {
 
     /** The seeded workspace's title: the profile container's basename (the
      * staged spike bundle directory). */
-    const val WORKSPACE_TITLE = "spike"
+    const val WORKSPACE_TITLE = "dsh"
 
     private const val FOLLOW_STREAM_ID = "bandroid-probe-follow"
     private const val MODEL_FOLLOW_STREAM_ID = "bandroid-model-follow"

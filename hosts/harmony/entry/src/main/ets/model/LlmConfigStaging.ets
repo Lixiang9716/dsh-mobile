@@ -12,7 +12,7 @@
  * handoff is split three ways, as a polled-condition handshake (rule 8):
  *
  *   1. the RUNTIME creates the placeholder — `e2e-stage.js` asks the C-side
- *      app-scope fsWrite (fopen, mode 0666) for `<filesDir>/spike-fs/
+ *      app-scope fsWrite (fopen, mode 0666) for `<filesDir>/dsh-fs/
  *      llm-live-stream/config.json` = `{}` and posts `stage.ready` on the bus seam,
  *      which HostPhase turns into the `stage-ready` drive marker;
  *   2. `hosts/harmony/ci/run-live-llm.sh` waits for that marker, then writes

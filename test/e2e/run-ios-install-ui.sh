@@ -74,7 +74,7 @@ fail_deadline() {
 
 # ---- 1-3. vendor, build, install -------------------------------------------
 log "1/5 vendor quickjs-ng sources"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 regenerate embedded bundle + xcodebuild (simulator, udid $UDID)"

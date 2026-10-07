@@ -15,7 +15,7 @@ cd "$ROOT"
 
 PKG=com.dshmobile.spike
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
-CORPUS="$ROOT/runtime/spike/upstream-tests"
+CORPUS="$ROOT/runtime/dsh/upstream-tests"
 OUT=${DSH_SUITE_OUT:-hosts/android/artifacts/upstream-suite}
 LAUNCH_DEADLINE_SECONDS=300
 
@@ -72,7 +72,7 @@ adb shell "run-as $PKG ls files/spike/upstream-tests | wc -l" | tr -d '\r' | \
     { read -r staged; say "staged $staged corpus files"; }
 
 # The suite driver + harness ship as TRACKED APK assets (staged by
-# stage-spine-closure.sh from runtime/spike/scenario — the single source).
+# stage-spine-closure.sh from runtime/dsh/scenario — the single source).
 # copyAssetDir re-merges assets over filesDir on every launch, so a
 # runner-pushed copy would be clobbered on first boot anyway; the APK is the
 # only source that sticks.

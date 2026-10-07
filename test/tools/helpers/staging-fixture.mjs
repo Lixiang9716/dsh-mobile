@@ -111,7 +111,7 @@ function vendorOfficialSh() {
     'SPINE_PKG_DSH="agent brand"',
     'PIN=0.1.6-alpha.2',
     `CLOSURE="${rows.join('\n')}`,
-    `$(cd runtime/spike && find ${ZOD_PIN} -name '*.js' | LC_ALL=C sort)`,
+    `$(cd runtime/dsh && find ${ZOD_PIN} -name '*.js' | LC_ALL=C sort)`,
     '"',
     'SPINE_OURS="$SPINE_OURS',
     'vendor/npm/cordis@4.0.2/package.json',
@@ -179,7 +179,7 @@ function genBundleHeaderPy() {
   return [
     'import pathlib',
     'REPO = pathlib.Path(__file__).resolve().parents[2]',
-    'SPIKE = REPO / "runtime" / "spike"',
+    'SPIKE = REPO / "runtime" / "dsh"',
     'RESOURCES = [',
     '    ("logger_js", SPIKE / "logger.js"),',
     `    # prose with an apostrophe: the loader's note; "quoted" and (parens)`,
@@ -257,8 +257,8 @@ export class StagingFixture {
   /** Write a spike file AND keep the harmony rawfile mirror row in step
    * (only needed for rows some manifest names). */
   writeSpike(rel, content) {
-    this.write(join('runtime/spike', rel), content);
-    const raw = join('hosts/harmony/entry/src/main/resources/rawfile/spike', rel);
+    this.write(join('runtime/dsh', rel), content);
+    const raw = join('hosts/harmony/entry/src/main/resources/rawfile/dsh', rel);
     if (existsSync(join(this.root, raw))) this.write(raw, content);
   }
 
@@ -282,7 +282,7 @@ export class StagingFixture {
     return { ...r, data: JSON.parse(r.stdout) };
   }
 
-  /** Add rows to Index.ets BUNDLE_FILES and materialize their rawfile/spike
+  /** Add rows to Index.ets BUNDLE_FILES and materialize their rawfile/dsh
    * copies (the stale check's root) — rows arrive covered by the primary
    * harmony surface. Spike rows copy from the spike tree. */
   addBundleRows(rows) {
@@ -295,7 +295,7 @@ export class StagingFixture {
     for (const row of rows) this.mirrorRawfileRow(row);
   }
 
-  /** The harmony rawfile/spike copy of one BUNDLE_FILES row: spike rows
+  /** The harmony rawfile/dsh copy of one BUNDLE_FILES row: spike rows
    * byte-copy; webclient rows map to their presentation sources. */
   mirrorRawfileRow(row) {
     const stagedPrefix = row.split('/').slice(0, 2).join('/');
@@ -303,7 +303,7 @@ export class StagingFixture {
     const source = staged
       ? join(this.root, staged.dir, row.split('/').slice(2).join('/'))
       : join(this.spike, row);
-    this.write(join('hosts/harmony/entry/src/main/resources/rawfile/spike', row), readFileSync(source, 'utf8'));
+    this.write(join('hosts/harmony/entry/src/main/resources/rawfile/dsh', row), readFileSync(source, 'utf8'));
   }
 }
 
@@ -317,7 +317,7 @@ export function buildGreenFixture() {
   }
   for (const [rel, src] of Object.entries(SPIKE_FILES)) fx.writeSpike(rel, src);
   for (const [rel, src] of Object.entries(PIN_TREE_FILES)) {
-    fx.write(join('runtime/spike', rel), src);
+    fx.write(join('runtime/dsh', rel), src);
   }
   for (const t of WEBCLIENT_TREES) fx.write(join(t.dir, 'index.html'), `<h1>${t.staged}</h1>\n`);
   fx.write('hosts/harmony/entry/src/main/ets/pages/Index.ets', indexEts(derivedBundleRows()));
@@ -328,7 +328,7 @@ export function buildGreenFixture() {
   return fx;
 }
 
-/** The harmony rawfile/spike copy of every BUNDLE_FILES row (the stale
+/** The harmony rawfile/dsh copy of every BUNDLE_FILES row (the stale
  * check's root): spike rows byte-copy; webclient rows map to their
  * presentation sources. */
 function mirrorRawfileBundle(fx) {

@@ -5,7 +5,7 @@
  * The dev carrier's boot payload is not hand-built: the VENDORED
  * `@deepseek-ai/dsh-client-modules` Node half (ClientModuleRegistry +
  * bootInjections) composes the same graph the mobile runtime composes
- * (runtime/spike/upstream/web-boot.js), over the same staged inputs
+ * (runtime/dsh/upstream/web-boot.js), over the same staged inputs
  * (presentation/official-web/client-bundles roster + the sha256-pinned
  * vendored bootstrap package). The mount below is web-boot.js's
  * `mountClientModules` decoration, ported for a real-filesystem host:
@@ -24,7 +24,7 @@ import { existsSync, readFileSync, readdirSync, symlinkSync, rmSync, mkdirSync, 
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const VENDOR_NPM = 'runtime/spike/vendor/npm';
+const VENDOR_NPM = 'runtime/dsh/vendor/npm';
 const BUNDLES_NPM = 'presentation/official-web/client-bundles/npm/@deepseek-ai';
 const BOOTSTRAP_NAME = '@deepseek-ai/dsh-client-modules';
 
@@ -213,7 +213,7 @@ const mountClientModules = (ctx, plugins, vendored) => {
  * /plugins route adopts revs from, bundles the staged {id, file} list.
  */
 export const composeBootWire = async ({ repoRoot, stageDir }) => {
-  demandTree(repoRoot, VENDOR_NPM, 'runtime/spike/vendor/ensure-dsh.sh');
+  demandTree(repoRoot, VENDOR_NPM, 'runtime/dsh/vendor/ensure-dsh.sh');
   mkdirSync(stageDir, { recursive: true });
   buildResolutionScope(stageDir, repoRoot);
   const entry = writeStageEntry(stageDir);

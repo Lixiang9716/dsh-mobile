@@ -222,7 +222,7 @@ class CliEndToEnd(unittest.TestCase):
         self.assertEqual((code, out.count("FILE")), (0, 0))
 
     def test_staged_closure_copy_is_exempt(self):
-        rel = "hosts/android/app/src/main/assets/spike/big.js"
+        rel = "hosts/android/app/src/main/assets/dsh/big.js"
         self.write_oversized(rel, tracked=True)
         code, out = self.run_tool()
         self.assertEqual((code, out.count("FILE")), (0, 0))

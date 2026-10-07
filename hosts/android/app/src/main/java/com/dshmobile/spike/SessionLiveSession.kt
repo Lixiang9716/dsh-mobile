@@ -149,7 +149,7 @@ class SessionLiveSession private constructor(private val activity: Activity) {
         carrier.register(CarrierRouteKind.EXACT, MockLlmRoute.PATH) { request, out ->
             MockLlmRoute.serve(request, out)
         }
-        carrier.start(File(files, "spike/webclient/web")) { /* readiness below */ }
+        carrier.start(File(files, "dsh/webclient/web")) { /* readiness below */ }
         eventLog.emit(
             "client.selected",
             JSONObject().put("client", CLIENT_ID).put("source", "launch"),
@@ -217,7 +217,7 @@ class SessionLiveSession private constructor(private val activity: Activity) {
      * runtime.config (scripted llm endpoint + profile container) followed by
      * the staged `web.plugins` files. Runtime thread. */
     private fun startSessionLiveRuntime(pluginsDelivery: JSONArray) {
-        val bundle = File(activity.filesDir, "spike")
+        val bundle = File(activity.filesDir, "dsh")
         core = GatewayCore.create(bundle)
         val fs = FsPrimitives(activity)
         fs.register(core)

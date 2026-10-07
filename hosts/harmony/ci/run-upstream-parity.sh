@@ -5,8 +5,8 @@
 # the in-app SCRIPTED mock-llm route (ParityMockRoute), the projected session
 # log MUST equal the committed golden (test/e2e/fixtures/
 # upstream-parity-reference.jsonl) — the byte-stream the Node reference leg
-# (runtime/spike/ci/run-upstream-parity.sh) produces. The comparator is
-# runtime/spike/ci/parity-compare.mjs; the evidence lands under
+# (runtime/dsh/ci/run-upstream-parity.sh) produces. The comparator is
+# runtime/dsh/ci/parity-compare.mjs; the evidence lands under
 # hosts/harmony/artifacts/upstream-parity/ (capture, port.jsonl,
 # parity-verdict.txt, receipt).
 #
@@ -92,7 +92,7 @@ fs.writeFileSync(`${out}/port.jsonl`, records.map((r) => JSON.stringify(r)).join
 if (records.length === 0) { console.error('no parity/event records in the captured stream'); process.exit(1); }
 EXTRACT
 
-node runtime/spike/ci/parity-compare.mjs "$GOLDEN" "$OUT/port.jsonl" | tee "$OUT/parity-verdict.txt"
+node runtime/dsh/ci/parity-compare.mjs "$GOLDEN" "$OUT/port.jsonl" | tee "$OUT/parity-verdict.txt"
 
 # ---- receipt -----------------------------------------------------------------
 RECORDS=$(grep -c '"event":"parity/event"' "$OUT/capture.txt" || true)
@@ -103,7 +103,7 @@ cat > "$OUT/receipt.json" <<EOF
   "leg": "upstream.parity (in-app scripted mock-llm route, ParityMockRoute)",
   "golden": "test/e2e/fixtures/upstream-parity-reference.jsonl",
   "parityEvents": $RECORDS,
-  "comparator": "runtime/spike/ci/parity-compare.mjs"
+  "comparator": "runtime/dsh/ci/parity-compare.mjs"
 }
 EOF
 say "parity differential complete — evidence under $OUT"

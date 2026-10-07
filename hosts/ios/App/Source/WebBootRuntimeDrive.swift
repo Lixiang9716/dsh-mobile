@@ -155,7 +155,7 @@ final class WebBootRuntimeDrive {
     /// by SpikeBundleStager from the embedded spine tree) as an
     /// `agentPresets.seed` delivery: every file base64 under its VFS path,
     /// plus one node_modules resolution marker per staged dsh package — the
-    /// same rule runtime/spike/ci/gen-presets-seed.py generates for the CLI.
+    /// same rule runtime/dsh/ci/gen-presets-seed.py generates for the CLI.
     /// A preset row naming a package that is NOT staged stays honestly
     /// `broken` (no speculative markers); a row naming a staged package
     /// resolves through its marker onto the bare map's vendored tree.

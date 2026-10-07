@@ -128,7 +128,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "harmony.ble.plane ($MODE)",
   "launch": "dsh_phone emulator, --ps dsh.e2e.leg ble.plane $MOCK_PS (Debug)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "$SCEN", "verdict": "verdict-$SCEN.json", "pass": true }
   ],

@@ -1,6 +1,6 @@
 # Generated iOS artifacts — never edit by hand.
 #
-# hosts/ios/App/Generated/** is the runtime/spike JS bundle embedded as C
+# hosts/ios/App/Generated/** is the runtime/dsh JS bundle embedded as C
 # byte arrays, and hosts/ios/DSHSpike.xcodeproj/** is regenerated from
 # project.yml by xcodegen — both produced by hosts/ios/gen.sh (committed
 # for D9 self-containment; a D9 amendment proposal lands alongside).

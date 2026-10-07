@@ -19,7 +19,7 @@
 set -e
 cd "$(dirname "$0")/../.."
 
-ART=runtime/spike/artifacts/macos-cli-socket-seam
+ART=runtime/dsh/artifacts/macos-cli-socket-seam
 SKIP_BUILD=0
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -39,13 +39,13 @@ mkdir -p "$ART"
 
 echo "== 1/2 build =="
 if [ "$SKIP_BUILD" -eq 0 ]; then
-    sh runtime/spike/host/build.sh >/dev/null
+    sh runtime/dsh/host/build.sh >/dev/null
 fi
 
 echo "== 2/2 JS gate: scenario → gateway → host seam =="
 LOG="$ART/logs.txt"
 rm -f "$LOG"
-(cd runtime/spike && ./build/dsh-spike-cli . scenario/socket-seam.js > "$LOG" 2>&1) || true
+(cd runtime/dsh && ./build/dsh-spike-cli . scenario/socket-seam.js > "$LOG" 2>&1) || true
 grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
 grep '^{"audit":"socket\.' "$LOG" > "$ART/socket-audit.jsonl" || true
 node test/e2e/check.mjs --manifest test/e2e/scenarios/socket-seam-local.json \
@@ -76,7 +76,7 @@ cat > "$ART/receipt.json" <<EOF
 {
  "host": "macOS $(uname -m) (the desktop CLI, no simulator)",
  "phase": "contract v1.8.0 \`socketListen\`/\`socketConnect\` — audited loopback-only TCP (decision D-d); the desktop CLI is the dev/test profile, so the loopback grants come from the descriptor alone and nothing prompts",
- "launchConfiguration": "(cd runtime/spike) ./build/dsh-spike-cli . scenario/socket-seam.js",
+ "launchConfiguration": "(cd runtime/dsh) ./build/dsh-spike-cli . scenario/socket-seam.js",
  "scenarios": [
   {
    "id": "socket.seam",
@@ -85,7 +85,7 @@ cat > "$ART/receipt.json" <<EOF
    "note": "19 records, one-to-one: host-picked listen port, a real TCP echo roundtrip with a half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp (bytes crossing between two OS processes), the two out-of-scope denials (lan listen, non-loopback connect), and the dead-port dial refused loud ECONNREFUSED (the negotiation floor, proven WITH the seam on)"
   }
  ],
- "audit": "counts quoted FROM THIS RUN's gate above, generated not hardcoded: listen=$N_LISTEN connect=$N_CONNECT accept=$N_ACCEPT denied=$N_DENIED — every attempt one record, loopback-scoped (runtime/spike/artifacts/macos-cli-socket-seam/socket-audit.jsonl)",
+ "audit": "counts quoted FROM THIS RUN's gate above, generated not hardcoded: listen=$N_LISTEN connect=$N_CONNECT accept=$N_ACCEPT denied=$N_DENIED — every attempt one record, loopback-scoped (runtime/dsh/artifacts/macos-cli-socket-seam/socket-audit.jsonl)",
  "notes": "Negotiation floor: hosts without the seam keep descriptorless descriptors and the JS face answers the honest ECONNREFUSED/EACCES — zero behavior change where the seam is absent; with the seam on, a dead-port dial fails loud ECONNREFUSED (scenario leg 4), never a hang."
 }
 EOF

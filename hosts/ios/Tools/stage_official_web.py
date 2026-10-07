@@ -42,7 +42,7 @@ CLIENT_NPM = OFFICIAL / "client-bundles" / "npm"
 # The pinned vendored tarball wins for the bootstrap package (D6 pin record;
 # the same precedence test/e2e/run-ios-official-web-mount.sh and the Android staging apply).
 VENDORED_BOOTSTRAP = (
-    REPO / "runtime" / "spike" / "vendor" / "npm"
+    REPO / "runtime" / "dsh" / "vendor" / "npm"
     / "@deepseek-ai" / "dsh-client-modules@0.1.6-alpha.2"
 )
 SCOPE = "@deepseek-ai"
@@ -81,7 +81,7 @@ def main() -> int:
         if not src.is_dir():
             die(f"missing source tree {src} — run test/e2e/"
                 f"ensure-official-dist.sh + ensure-client-bundles.sh + "
-                f"runtime/spike/vendor/ensure-dsh.sh before the release build")
+                f"runtime/dsh/vendor/ensure-dsh.sh before the release build")
 
     root = resources / "official-web"
     if root.exists():

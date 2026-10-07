@@ -37,7 +37,7 @@ jobs:
         run: pip install govrail==0.48.0
       - name: Cache the vendored closure
         # The closures gate byte-verifies the committed host copies against
-        # the canonical runtime/spike closure; the closure's vendored source
+        # the canonical runtime/dsh closure; the closure's vendored source
         # trees are untracked by design (D6) and materialized by sha256-pinned
         # ensure scripts — cached the same way the platform workflows do,
         # keyed on the pin tables themselves. v5: v4 is forced onto Node 24
@@ -45,18 +45,18 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            runtime/spike/vendor/quickjs-ng
-            runtime/spike/vendor/dsh
-            runtime/spike/vendor/npm
-          key: vendor-gov-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+            runtime/dsh/vendor/quickjs-ng
+            runtime/dsh/vendor/dsh
+            runtime/dsh/vendor/npm
+          key: vendor-gov-${{ hashFiles('runtime/dsh/vendor/ensure.sh', 'runtime/dsh/vendor/ensure-dsh.sh') }}
       - name: Materialize the vendored closure
         # Idempotent with the cache above; without it the closures gate (and
         # its iOS regen leg) fail loud on absent sources instead of verifying.
         run: |
-          runtime/spike/vendor/ensure.sh
-          runtime/spike/vendor/ensure-dsh.sh
+          runtime/dsh/vendor/ensure.sh
+          runtime/dsh/vendor/ensure-dsh.sh
       - name: Materialize the harmony spike closure
-        # The bundle-files gate (#57) walks hosts/harmony's rawfile/spike ON
+        # The bundle-files gate (#57) walks hosts/harmony's rawfile/dsh ON
         # DISK — its documented contract is "the vendor script materializes it
         # before any check runs" — and the pinned zod closure there is
         # deliberately gitignored (verbatim upstream bytes; see .gitignore),
@@ -69,7 +69,7 @@ jobs:
         run: |
           hosts/harmony/ci/vendor-official.sh --closure-only
           git diff --exit-code -- hosts/harmony/entry/src/main/resources/rawfile \
-            || { echo "::error::the committed harmony rawfile drifted from runtime/spike — run build/build.sh sync harmony and commit" >&2; exit 1; }
+            || { echo "::error::the committed harmony rawfile drifted from runtime/dsh — run build/build.sh sync harmony and commit" >&2; exit 1; }
       # The actionlint gate skip-louds on an absent binary by design (agent
       # machines vary) — here the pinned release is installed so the gate is
       # never vacuous: v1.7.12, verified against the release's own
@@ -146,14 +146,14 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            runtime/spike/vendor/quickjs-ng
-            runtime/spike/vendor/zstd
-            runtime/spike/vendor/wasm3
-            runtime/spike/vendor/ish
-          key: qjs-boot-arm64-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-ish.sh') }}
+            runtime/dsh/vendor/quickjs-ng
+            runtime/dsh/vendor/zstd
+            runtime/dsh/vendor/wasm3
+            runtime/dsh/vendor/ish
+          key: qjs-boot-arm64-${{ hashFiles('runtime/dsh/vendor/ensure.sh', 'runtime/dsh/vendor/ensure-ish.sh') }}
       - name: Materialize the engine + ish trees
         run: |
-          runtime/spike/vendor/ensure.sh
-          runtime/spike/vendor/ensure-ish.sh
+          runtime/dsh/vendor/ensure.sh
+          runtime/dsh/vendor/ensure-ish.sh
       - name: Run the quickjs-boot-parse gate
         run: gov run --gate quickjs-boot-parse

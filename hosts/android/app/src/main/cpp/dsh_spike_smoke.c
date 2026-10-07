@@ -1,7 +1,7 @@
 /*
  * dsh_spike_smoke.c — Android smoke backend over the shared spike host's
  * gateway dispatch bridge (dsh_spike_set_gateway_dispatch). Handler set
- * mirrors runtime/spike/host/main_cli.c: calls are only QUEUED inside
+ * mirrors runtime/dsh/host/main_cli.c: calls are only QUEUED inside
  * on_call (which fires synchronously on the runtime thread) and settled in
  * the post-pump drain pass — the deferred later-tick settlement the
  * gateway.bridge-smoke scenario exists to prove. fs payloads travel base64; the

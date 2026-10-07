@@ -1,0 +1,3 @@
+dsh_ish_verify: verdict=ok rootfs=/Users/lixiang/workspace/dsh-mobile/runtime/dsh/artifacts/macos-cli-userland-shell/guest-root entries=521 additions=0 mutable-changed=0 tree-sha256=6350bda3e3e5f090cf89618276665e22760c6ab38e6cfe1763ea0877efd9e705 elapsed-ms=141
+{"exitCode":0,"stdout":"aarch64\n","stderr":"","timedOut":false,"truncated":false}
+{"exitCode":0,"stdout":"c-gate\n","stderr":"","timedOut":false,"truncated":false}

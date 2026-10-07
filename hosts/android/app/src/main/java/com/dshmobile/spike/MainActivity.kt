@@ -435,7 +435,7 @@ class MainActivity : Activity() {
 
     /** Copies the asset spike bundle to filesDir/spike preserving the layout. */
     private fun materializeBundle() {
-        syncAssetDir("spike", File(filesDir, "spike"))
+        syncAssetDir("dsh", File(filesDir, "dsh"))
     }
 
     /** The asset-set stamp written INSIDE each synced tree: the exact sorted

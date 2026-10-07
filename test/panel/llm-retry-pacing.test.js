@@ -25,7 +25,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 //   the exhaustion attempt hands the error to next() (the turn still
 //   errors), and an unpaced slow failure keeps the ~500ms local rhythm.
 
-vi.mock('../../runtime/spike/gateway.js', () => ({ httpFetch: vi.fn() }));
+vi.mock('../../runtime/dsh/gateway.js', () => ({ httpFetch: vi.fn() }));
 
 // dsh-llm-retry imports `zod` at module top for its projection state
 // schema; the bare specifier has no tracked bytes (the C host's bare map
@@ -40,15 +40,15 @@ vi.mock('zod', () => {
   return { z: schemaish };
 });
 
-const { httpFetch } = await import('../../runtime/spike/gateway.js');
+const { httpFetch } = await import('../../runtime/dsh/gateway.js');
 const { createGatewayLlmAdapter } =
-  await import('../../runtime/spike/upstream/llm-transport.js');
+  await import('../../runtime/dsh/upstream/llm-transport.js');
 const {
   FAST_TRANSPORT_FAIL_MS,
   FAST_TRANSPORT_PACES_MS,
   FAST_TRANSPORT_MAX_PACE_MS,
   FAST_TRANSPORT_EPISODE_MS,
-} = await import('../../runtime/spike/upstream/llm-retry-pacing.js');
+} = await import('../../runtime/dsh/upstream/llm-retry-pacing.js');
 const { LlmError } = await import('@deepseek-ai/dsh-llm'); // the suite's stub alias
 
 const SLOW_MS = FAST_TRANSPORT_FAIL_MS + 1_000; // a "slow" transport failure for the tests

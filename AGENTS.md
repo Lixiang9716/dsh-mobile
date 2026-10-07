@@ -21,7 +21,7 @@ system implementation plugins, and the UI as a pluggable Web Client. Full design
 4. **No `hostType` branching (RFC 0002 anti-pattern)**: platform differences are expressed only via
    capability negotiation.
 5. **Logging through the unified logger only**: `createLogger` — the module every host actually
-   bundles is `runtime/spike/logger.js` (the canonical TS source `runtime/logger/index.ts` is the
+   bundles is `runtime/dsh/logger.js` (the canonical TS source `runtime/logger/index.ts` is the
    contract that port must match, but nothing bundles it; the `logging` gate names the operative
    one) — with `log.debug(...)` at entry of every non-trivial function; bare `console.*` fails the
    `logging` gate. Release builds keep only `warn`/`error`: each platform's Release configuration

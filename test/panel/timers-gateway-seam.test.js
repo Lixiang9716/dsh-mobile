@@ -61,7 +61,7 @@ globalThis.__asyncContextSet = (value) => { asyncSlot = value; };
 await import('upstream/shims/timers.js');
 
 const { DEFAULT_READ_IDLE_TIMEOUT_MS } = await import(
-  '../../runtime/spike/upstream/llm-read-idle.js');
+  '../../runtime/dsh/upstream/llm-read-idle.js');
 
 /** The bridge fire: what TimerPrimitive's emitFn hands the runtime on the
  * serving seat — the exact event the unwired seat never delivered. */

@@ -27,9 +27,9 @@ const REGISTRY_DOC = {
 };
 
 /** The device seat's geometry: workspace = <scopeRoot>/spike. */
-const SEAT = { containerRoot: '/data/user/0/com.dshmobile.spike/files/profiles/default/spike',
+const SEAT = { containerRoot: '/data/user/0/com.dshmobile.spike/files/profiles/default/dsh',
   scopeRoot: '/data/user/0/com.dshmobile.spike/files/profiles/default' };
-const SEAT_REGISTRY = 'spike/plugins/registry.json';
+const SEAT_REGISTRY = 'dsh/plugins/registry.json';
 
 const encode = (text) => new TextEncoder().encode(text);
 const seedRegistry = (doc, path = SEAT_REGISTRY) => {
@@ -159,8 +159,8 @@ describe('plugin_manager install leg (the workspace-tree adoption)', () => {
 
 describe('the workspace geometry the tool and the LIST tier share', () => {
   it('derives the device seat prefix (containerRoot below the scope root)', () => {
-    expect(workspacePrefix(SEAT)).toBe('spike');
-    expect(workspaceRegistryPath(SEAT)).toBe('spike/plugins/registry.json');
+    expect(workspacePrefix(SEAT)).toBe('dsh');
+    expect(workspaceRegistryPath(SEAT)).toBe('dsh/plugins/registry.json');
   });
 
   it('derives the bare spelling when the workspace IS the scope root (CLI seats)', () => {

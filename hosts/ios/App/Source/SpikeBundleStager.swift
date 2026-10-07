@@ -1,7 +1,7 @@
 import Foundation
 
 /// Stages the embedded JS bundle into a fresh writable sandbox directory,
-/// preserving the runtime/spike layout the C loader expects: logger.js and
+/// preserving the runtime/dsh layout the C loader expects: logger.js and
 /// gateway.js at the root, manifest.json beside them (the M2 embedder reads
 /// the scenario's declared capabilities from it), the entries under
 /// scenario/, and the vendored upstream package under vendor/ (the
@@ -11,7 +11,7 @@ import Foundation
 enum SpikeBundleStager {
     static func stage() throws -> URL {
         let root = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            .appendingPathComponent("spike", isDirectory: true)
+            .appendingPathComponent("dsh", isDirectory: true)
         if FileManager.default.fileExists(atPath: root.path) {
             try FileManager.default.removeItem(at: root)
         }

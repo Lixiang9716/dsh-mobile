@@ -359,7 +359,7 @@ drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
 
 # ---- 1-4. vendor, build, boot, install, launch -----------------------------
 log "1/6 vendor quickjs-ng sources"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/6 xcodebuild (simulator, udid $UDID)"

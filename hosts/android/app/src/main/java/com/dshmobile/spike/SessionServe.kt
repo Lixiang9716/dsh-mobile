@@ -56,7 +56,7 @@ class SessionServe private constructor(
          * The custom skills dir lives INSIDE it for the same reason — the fs
          * views refuse anything outside the granted scope. */
         fun workspaceRoot(activity: Activity): File =
-            File(SessionServeConfig.appScopeRoot(activity), "spike").apply { mkdirs() }
+            File(SessionServeConfig.appScopeRoot(activity), "dsh").apply { mkdirs() }
 
         @Volatile private var instance: SessionServe? = null
 
@@ -163,7 +163,7 @@ class SessionServe private constructor(
         val servesNext = clientID == NEXT_CLIENT_ID
         dist = CarrierWebDist(
             distRoot = if (servesNext) {
-                File(files, "spike/webclient-next/web")
+                File(files, "dsh/webclient-next/web")
             } else {
                 File(files, "official-web/dist")
             },
@@ -185,7 +185,7 @@ class SessionServe private constructor(
         carrier.register(CarrierRouteKind.EXACT, MockLlmRoute.PATH) { request, out ->
             MockLlmRoute.serve(request, out)
         }
-        carrier.start(File(files, "spike/webclient/web")) { /* readiness below */ }
+        carrier.start(File(files, "dsh/webclient/web")) { /* readiness below */ }
         Log.i(TAG, "serving $clientID on 127.0.0.1:${carrier.port}")
         startSpine(staged)
     }
@@ -228,7 +228,7 @@ class SessionServe private constructor(
      * watchdog armed and never fired while emitFn went unwired). Returns the
      * spike bundle dir the spine entry loads from. */
     private fun wirePrimitives(): File {
-        val bundle = File(activity.filesDir, "spike")
+        val bundle = File(activity.filesDir, "dsh")
         core = GatewayCore.create(bundle)
         val fs = FsPrimitives(activity)
         fs.register(core)

@@ -58,7 +58,7 @@ HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
 BUNDLE=com.dshmobile.spike
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry
 CAPTURE_REMOTE=$BASE/cache/dsh-llm-live-stream-capture.log
-CONFIG_REMOTE=$BASE/files/spike-fs/llm-live-stream/config.json
+CONFIG_REMOTE=$BASE/files/dsh-fs/llm-live-stream/config.json
 LEG=llm.live-stream
 STREAM=/tmp/dsh-harmony-llm-live-stream-hilog.txt
 MAX_ATTEMPTS=${DSH_M2_LLM_ATTEMPTS:-2}
@@ -335,7 +335,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "harmony.llm.live-stream",
   "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real backend",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "llm-live-stream-device", "verdict": "verdict-llm-live-stream-device.json", "pass": true },
     { "manifest": "llm-live-stream-carrier", "verdict": "verdict-llm-live-stream-carrier.json", "pass": true }

@@ -12,7 +12,7 @@
  *
  * Package tarball (the frozen layout, spike fixtures show the shape):
  *   members: manifest.json (verbatim bytes) + bundle/<file> for every source
- *   file; ustar exactly as runtime/spike/tar-mini.js writes it (mtime 0,
+ *   file; ustar exactly as runtime/dsh/tar-mini.js writes it (mtime 0,
  *   uid/gid 0, empty uname/gname, POSIX magic) so the spike pipeline can read
  *   these packages unchanged; then gzip with mtime 0 — bytes are
  *   reproducible run to run, which is what makes `blobSha256` meaningful.
@@ -29,7 +29,7 @@
  * Canonical JSON (what the signature covers): everything except
  * `signatures`, serialized with object keys sorted recursively, arrays in
  * order, no whitespace — UTF-8 bytes. Signer and verifier MUST share this
- * one function; it is runtime/spike/canonical-json.js and nowhere else —
+ * one function; it is runtime/dsh/canonical-json.js and nowhere else —
  * this tool imports it, so what the publisher signs is byte-for-byte what
  * the runtime resolver verifies.
  *
@@ -44,7 +44,7 @@ import { gunzipSync, gzipSync } from 'node:zlib';
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs';
 import { join, basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { canonicalJson } from '../../runtime/spike/canonical-json.js';
+import { canonicalJson } from '../../runtime/dsh/canonical-json.js';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const BLOCK = 512;
@@ -54,11 +54,11 @@ const die = (msg) => { console.error(`generate-index: ${msg}`); process.exit(1);
 const sha256Hex = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const toB64 = (bytes) => Buffer.from(bytes).toString('base64');
 
-// canonicalJson comes from runtime/spike/canonical-json.js — the one
+// canonicalJson comes from runtime/dsh/canonical-json.js — the one
 // canonical form, one module (its fail-loud undefined rejection is the
 // rule-5 discipline this tool's embedded copy pioneered).
 
-// --- ustar writer, byte-for-byte the layout of runtime/spike/tar-mini.js ---
+// --- ustar writer, byte-for-byte the layout of runtime/dsh/tar-mini.js ---
 
 const octal = (value, width) => {
   const digits = value.toString(8).padStart(width - 1, '0');

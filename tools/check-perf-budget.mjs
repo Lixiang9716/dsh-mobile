@@ -4,8 +4,8 @@
 // and the leak.canary leg) against baselines/perf-baseline.json — the
 // recorded real numbers plus their warn-tier margins. Over margin = exit 1.
 //
-// The receipts are COMMITTED evidence (runtime/spike/artifacts/…), produced
-// by runtime/spike/ci/run-perf-baseline.sh and run-leak-canary.sh — the gate
+// The receipts are COMMITTED evidence (runtime/dsh/artifacts/…), produced
+// by runtime/dsh/ci/run-perf-baseline.sh and run-leak-canary.sh — the gate
 // audits, it does not re-run (the office-plane lesson's evidence-audit
 // shape: a stale receipt is the runner's re-run away, and the baselines
 // file's recordedAt names the run the numbers came from).

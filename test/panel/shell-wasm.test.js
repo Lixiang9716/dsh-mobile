@@ -62,7 +62,7 @@ describe('shell-wasm: echo and wc execute and their output comes back', () => {
     await activate();
     workspace.set('app/spike/probe.wc', WC_BYTES);
     const throughShell = await shellExecutor.run({ command: 'wc a b c\nd e\n' });
-    const direct = await wasmRun('app', 'spike/probe.wc', 'run', 'a b c\nd e');
+    const direct = await wasmRun('app', 'dsh/probe.wc', 'run', 'a b c\nd e');
     expect(throughShell.stdout).toBe(direct.output);
     expect(throughShell.exitCode).toBe(direct.result);
     expect(direct.output).toBe('2 5 9\n');

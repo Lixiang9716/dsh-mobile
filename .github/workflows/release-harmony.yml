@@ -162,13 +162,13 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            runtime/spike/vendor/quickjs-ng
-            runtime/spike/vendor/dsh
-            runtime/spike/vendor/npm
-          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+            runtime/dsh/vendor/quickjs-ng
+            runtime/dsh/vendor/dsh
+            runtime/dsh/vendor/npm
+          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/dsh/vendor/ensure.sh', 'runtime/dsh/vendor/ensure-dsh.sh') }}
 
       - name: Vendor quickjs-ng
-        run: sh runtime/spike/vendor/ensure.sh
+        run: sh runtime/dsh/vendor/ensure.sh
 
       - name: Install dependencies (ohpm) and build the release HAP (unsigned)
         working-directory: hosts/harmony

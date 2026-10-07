@@ -169,7 +169,7 @@ class OfficialWebSession private constructor(
         bridge.install(carrier)
         // mux seats → the bridge (the bridge filters to its own path)
         carrier.onWSFrame = { text, path -> bridge.ingestFrame(text, path) }
-        carrier.start(File(files, "spike/webclient/web")) { /* readiness below */ }
+        carrier.start(File(files, "dsh/webclient/web")) { /* readiness below */ }
         eventLog.emit(
             "client.selected",
             JSONObject().put("client", CLIENT_ID).put("source", "launch"),
@@ -278,7 +278,7 @@ class OfficialWebSession private constructor(
     /** Evals the scenario through the frozen bridge and delivers the staged
      * `web.plugins` files. Runtime thread. */
     private fun startWebBootRuntime(pluginsDelivery: JSONArray) {
-        val entry = File(activity.filesDir, "spike/$ENTRY")
+        val entry = File(activity.filesDir, "dsh/$ENTRY")
         handle = SpikeRuntime.m4Begin(
             activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
             "android-officialweb-mount", runtimeBridge,

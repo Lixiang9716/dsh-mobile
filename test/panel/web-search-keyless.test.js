@@ -14,7 +14,7 @@ import {
   CODE_STATUS,
   CODE_UNREACHABLE,
   CODE_CONFIG,
-} from '../../runtime/spike/upstream/web-search-keyless.js';
+} from '../../runtime/dsh/upstream/web-search-keyless.js';
 
 // A fixed sample of the DuckDuckGo HTML results page (html.duckduckgo.com/
 // html/?q=…): the result__a title anchors wrapped in the /l/?uddg= redirect,

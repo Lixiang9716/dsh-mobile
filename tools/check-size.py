@@ -46,7 +46,7 @@ SOURCE_EXTS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".swift", ".kt", ".
 # code this repo authors. Same precedent as the logging gate's VENDOR_SEGMENT.
 VENDOR_SEGMENT = "/vendor/"
 
-# Staged platform copies of the canonical runtime/spike closure (the Android
+# Staged platform copies of the canonical runtime/dsh closure (the Android
 # app assets and the HarmonyOS rawfile tree): byte-identical mirrors of the
 # canonical files, byte-verified by the closures gate (build/check-closures.sh
 # in --check mode). Judging a copy here is double judgment of already-reviewed
@@ -54,8 +54,8 @@ VENDOR_SEGMENT = "/vendor/"
 # is the one that carries the violation. Same rationale as the .gov/checks/
 # exclude.json entry for the Android assets subtree.
 STAGED_CLOSURE_DIRS = (
-    "hosts/android/app/src/main/assets/spike/",
-    "hosts/harmony/entry/src/main/resources/rawfile/spike/",
+    "hosts/android/app/src/main/assets/dsh/",
+    "hosts/harmony/entry/src/main/resources/rawfile/dsh/",
 )
 
 # Pinned vendored agent skills (.agents/skills/*/ORIGIN.md carries the pin):
