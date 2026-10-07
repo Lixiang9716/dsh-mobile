@@ -28,6 +28,20 @@ SPIKE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VENDOR="$SPIKE_ROOT/vendor"
 NM="$VENDOR/node_modules"
 SCOPE="$NM/@deepseek-ai"
+
+# pkgname <dir> — the package.json name of the vendored package at <dir>.
+# The path is embedded inside a node -e script string, where MSYS argument
+# conversion cannot reach it: on Windows-hosted shells (git-bash) a POSIX
+# /tmp/... dir would reach node unresolved and die in the CJS loader. Convert
+# to the drive-letter mixed form when cygpath exists; Linux keeps the path
+# verbatim (no cygpath there).
+pkgname() { # pkgname <dir>
+    d="$1"
+    command -v cygpath >/dev/null 2>&1 && d="$(cygpath -m "$d")"
+    case "$d" in */) ;; *) d="$d/" ;; esac   # cygpath -m drops the trailing slash
+    node -e "console.log(require('${d}package.json').name)"
+}
+
 PARITY_ONLY=0
 for arg in "$@"; do
     case "$arg" in
@@ -44,7 +58,7 @@ mkdir -p "$SCOPE"
 # the absent face instead of leaving a silent half-layout (#328).
 if [ -d "$VENDOR/dsh" ]; then
     for dir in "$VENDOR"/dsh/*/; do
-        name="$(node -e "console.log(require('${dir}package.json').name)")"
+        name="$(pkgname "$dir")"
         link="$SCOPE/${name#@deepseek-ai/}"
         mkdir -p "$(dirname "$link")"
         ln -sfn "$dir" "$link"
@@ -117,7 +131,7 @@ printf '%s\n' chokidar readdirp > "$TEST_LINKED"
 ln -sfn "$VENDOR/npm/picomatch@4.0.4" "$NM/picomatch"
 for dir in "$VENDOR"/npm/*/ "$VENDOR"/npm/@*/*/; do
     [ -f "${dir}package.json" ] || continue
-    name="$(node -e "console.log(require('${dir}package.json').name)")"
+    name="$(pkgname "$dir")"
     link="$NM/$name"
     # A link whose target vanished (a re-pin moved the version dir, a row
     # was dropped) is STALE, not present — rule 5: present-but-stale must

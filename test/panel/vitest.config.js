@@ -20,6 +20,14 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+      // The fs-shim suites model a POSIX device: mountWorkspace demands
+      // '/'-prefixed roots and the seam passes device spellings back, but
+      // node:path is win32 on a Windows host, so the first shim-internal
+      // join backslash-contaminates the spelling and the containment gate
+      // refuses it. Pin the suite's path algebra to the posix namespace
+      // (path-posix.mjs) on every host; the toolface child runners get the
+      // same mapping from toolface-loader-hooks.mjs.
+      { find: /^node:path$/, replacement: fileURLToPath(new URL('./path-posix.mjs', import.meta.url)) },
       { find: 'logger.js', replacement: fileURLToPath(new URL('./logger-shim.js', import.meta.url)) },
       { find: 'ed25519.js', replacement: fileURLToPath(new URL('../../runtime/dsh/ed25519.js', import.meta.url)) },
       { find: 'canonical-json.js', replacement: fileURLToPath(new URL('../../runtime/dsh/canonical-json.js', import.meta.url)) },

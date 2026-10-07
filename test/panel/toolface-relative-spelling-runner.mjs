@@ -23,17 +23,27 @@
  *                     loop-v2 containment gate refuses it.
  *   editorEmpty     — the vendored empty-path answer is preserved.
  */
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync, readdirSync as nodeReaddirSync, readFileSync as nodeReadFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync, readdirSync as nodeReaddirSync, readFileSync as nodeReadFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
+import { mkdtempPosix } from './posix-fixture.mjs';
 import { anchoredEditorPlugin } from '../../runtime/dsh/upstream/tool-path-anchor.js';
+
+// The simulation is the POSIX device seat: this runner already fakes the C
+// seam over real node and mounts a '/'-prefixed workspace, and the vendored
+// closure branches on process.platform (fs-local's ancestor walk stats the
+// ancestor only on win32 — a branch the device never takes) — present the
+// device platform so the pinned semantics are the device's. A no-op on the
+// POSIX CI runners.
+if (process.platform !== 'posix') {
+  Object.defineProperty(process, 'platform', { value: 'posix' });
+}
 
 const { LocalFileSystem } = await import('@deepseek-ai/dsh-fs-local');
 const ToolFs = await import('@deepseek-ai/dsh-tool-fs');
 const StrReplaceEditor = await import('@deepseek-ai/dsh-tool-str-replace-editor');
 
-const root = mkdtempSync(join(tmpdir(), 'dsh-toolface-z3-'));
+const root = mkdtempPosix('dsh-toolface-z3-');
 mountWorkspace(root);
 
 // The battery shape (r16 v2c): root/dsh is the dsh tree, the registry
@@ -46,9 +56,9 @@ writeFileSync(join(root, 'plugins', 'registry.json'), '{\n  "version": 1\n}\n');
 
 // An EXISTING directory outside the root (the /system/app sibling) and an
 // absent outside spelling (the r16 v2b shape).
-const outsideDir = join(tmpdir(), `dsh-toolface-z3-out-${process.pid}`, 'app');
+const outsideDir = `/tmp/dsh-toolface-z3-out-${process.pid}/app`;
 mkdirSync(outsideDir, { recursive: true });
-const outsideAbsent = join(tmpdir(), `dsh-toolface-z3-out-${process.pid}`, 'nope-xyz');
+const outsideAbsent = `/tmp/dsh-toolface-z3-out-${process.pid}/nope-xyz`;
 
 // The C seam faked over node:fs (stat/readdir/read — the fields the shim
 // fallbacks read; the runner module itself speaks REAL fs for fixtures).
@@ -126,7 +136,15 @@ facts.editorRelativeAbsent = await drive(editor, { command: 'view', path: 'no-su
 facts.editorInside = await drive(editor, { command: 'view', path: join(root, 'plugins', 'registry.json') });
 facts.editorOutsideExisting = await drive(editor, { command: 'view', path: outsideDir });
 facts.editorOutsideAbsent = await drive(editor, { command: 'view', path: outsideAbsent });
-facts.editorClimbOut = await drive(editor, { command: 'view', path: '../../../../etc/passwd' });
+// The climb-out must land on a path the HOST holds — the containment anchor
+// rides existence ("what the host actually holds", loop-v2). /etc/passwd was
+// the device-shaped spelling, but the suite runs wherever panel-tests runs:
+// climb out to the runner's own staged outside tree instead — held on every
+// host, still four hops out of the mounted root.
+facts.editorClimbOut = await drive(editor, {
+  command: 'view',
+  path: `../../../../tmp/dsh-toolface-z3-out-${process.pid}/app`,
+});
 facts.editorEmpty = await drive(editor, { command: 'view', path: '' });
 // No model-reachable spelling may surface the vendored gate (and its
 // device-root suggestion) on the anchored composition.
@@ -135,6 +153,6 @@ facts.gateTextSeen = [facts.editorRelative, facts.editorRelativeAbsent, facts.ed
   .some((outcome) => !outcome.ok && outcome.message.includes('is not an absolute path'));
 
 rmSync(root, { recursive: true, force: true });
-rmSync(join(tmpdir(), `dsh-toolface-z3-out-${process.pid}`), { recursive: true, force: true });
+rmSync(`/tmp/dsh-toolface-z3-out-${process.pid}`, { recursive: true, force: true });
 
 console.log(JSON.stringify(facts));

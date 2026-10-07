@@ -32,4 +32,7 @@ fi
   echo "panel-tests: vitest still missing after provisioning — npm install failed" >&2
   exit 2
 }
-exec "$NODE" ./node_modules/.bin/vitest run
+# The package entry, not the .bin face: on POSIX .bin/vitest is a symlink to
+# vitest.mjs, but Windows npm writes a shell shim there and `node <shim>`
+# dies parsing shell as JavaScript. The entry file exists in both layouts.
+exec "$NODE" ./node_modules/vitest/vitest.mjs run

@@ -45,6 +45,14 @@ const VENDOR_BARE = {
 
 const shimUrl = (name) => pathToFileURL(join(repoRoot, 'runtime/dsh/upstream/shims', name)).href;
 
+// The runner modules' FIXTURE side (mkdtemp/mkdir of the outside-root
+// shapes) must speak real host fs — the same split the vitest suites have
+// (test file = real node, shims = mapped). The shared fixture helper counts
+// as fixture side too.
+const isFixtureSide = (parent) => parent.includes('/toolface-fs-local-runner.mjs')
+  || parent.includes('/toolface-relative-spelling-runner.mjs')
+  || parent.includes('/posix-fixture.mjs');
+
 export function resolve(specifier, context, next) {
   const parent = context.parentURL ?? '';
   const mapped = VENDOR_BARE[specifier];
@@ -73,13 +81,18 @@ export function resolve(specifier, context, next) {
   // own `node:fs` / `node:fs/promises` imports (fs-promises-fh pulls the
   // _ws* internals through the mapped specifier). fs.js itself imports no
   // fs specifier (only a lazy node:child_process), so the map is acyclic.
-  // The runner module itself is exempt: its FIXTURE side (mkdtemp/mkdir of
-  // the outside-root shapes) must speak real host fs, the same split the
-  // vitest suites have (test file = real node, shims = mapped).
-  if ((parent.includes('/toolface-fs-local-runner.mjs')
-    || parent.includes('/toolface-relative-spelling-runner.mjs'))
+  if (isFixtureSide(parent)
     && (specifier === 'node:fs' || specifier === 'node:fs/promises')) {
     return next(specifier, context);
+  }
+  // The path algebra pins to the posix namespace on every host (the shim
+  // family models a POSIX device; win32 joins would backslash-contaminate
+  // the '/'-prefixed spellings the containment gate requires) — the vitest
+  // config aliases 'node:path' the same way for the in-process suites. The
+  // stub module itself is exempt: its createRequire('node:path') must reach
+  // the real builtin.
+  if (specifier === 'node:path' && !parent.includes('/path-posix.mjs')) {
+    return { url: pathToFileURL(join(here, 'path-posix.mjs')).href, shortCircuit: true };
   }
   if (specifier === 'node:fs') return { url: shimUrl('fs.js'), shortCircuit: true };
   if (specifier === 'node:fs/promises') return { url: shimUrl('fs-promises.js'), shortCircuit: true };

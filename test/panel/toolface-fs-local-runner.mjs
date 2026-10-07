@@ -15,18 +15,27 @@
  *       stat lands absent (the FS_NOT_FOUND handoff to the tools).
  *   (c) a real INSIDE-root directory still answers and lists (unchanged).
  */
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync, readdirSync as nodeReaddirSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync, readdirSync as nodeReaddirSync } from 'node:fs';
 import { join } from 'node:path';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
+import { mkdtempPosix } from './posix-fixture.mjs';
+
+// The simulation is the POSIX device seat: this runner already fakes the C
+// seam over real node and mounts a '/'-prefixed workspace, and the vendored
+// closure branches on process.platform (fs-local's ancestor walk stats the
+// ancestor only on win32) — present the device platform so the pinned
+// semantics are the device's. A no-op on the POSIX CI runners.
+if (process.platform !== 'posix') {
+  Object.defineProperty(process, 'platform', { value: 'posix' });
+}
 
 const { LocalFileSystem } = await import('@deepseek-ai/dsh-fs-local');
 
-const root = mkdtempSync(join(tmpdir(), 'dsh-toolface-'));
+const root = mkdtempPosix('dsh-toolface-');
 mountWorkspace(root);
 
 // (a)'s shape: a real directory OUTSIDE the root (the /system/app sibling).
-const systemApp = join(tmpdir(), `dsh-toolface-system-${process.pid}`);
+const systemApp = `/tmp/dsh-toolface-system-${process.pid}`;
 mkdirSync(systemApp, { recursive: true });
 writeFileSync(join(systemApp, 'BasicDreams.apk'), 'apk\n');
 
@@ -100,7 +109,7 @@ const facts = { root, systemApp };
 
 // (b) absent outside-root path.
 {
-  const absent = join(tmpdir(), `dsh-toolface-absent-${process.pid}`, 'definitely-not-here-xyz');
+  const absent = `/tmp/dsh-toolface-absent-${process.pid}/definitely-not-here-xyz`;
   let resolveOk = true;
   let displayPath = null;
   let resolveError = null;
