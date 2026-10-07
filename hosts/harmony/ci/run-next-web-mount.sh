@@ -88,7 +88,7 @@ pull_verified=0
 for _ in 1 2 3; do
     "$HDC" file recv "$CAPTURE" "$OUT/logs.txt" >/dev/null 2>&1 \
         || die "capture file $CAPTURE never landed"
-    if grep -q "creation.opened" "$OUT/logs.txt" && grep -q "dsh.dsh.verdict" "$OUT/logs.txt"; then
+    if grep -q "creation.opened" "$OUT/logs.txt" && grep -q "dsh.runtime.verdict" "$OUT/logs.txt"; then
         pull_verified=1
         break
     fi

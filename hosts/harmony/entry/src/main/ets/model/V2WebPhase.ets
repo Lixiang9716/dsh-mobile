@@ -399,7 +399,7 @@ export class V2WebPhase {
     this.finished = true;
     hilog.info(0x0000, TAG, 'v2web: verdict %{public}s (%{public}s)',
       passed ? 'PASS' : 'FAIL', error);
-    hostCarrierLine(2, 'dsh.rt.verdict: ' + SCENARIO +
+    hostCarrierLine(2, 'dsh.runtime.verdict: ' + SCENARIO +
       (passed ? ' PASS | quickjs-ng 0.17.0' : ' FAIL | ' + error));
     hostCarrierLine(2, 'dsh.rt.result: ALL ' + (passed ? 'PASS' : 'FAIL'));
   }

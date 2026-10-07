@@ -24,7 +24,7 @@ export const startSpike: (bundleRoot: string, capturePath: string, fsRoot: strin
  * seam. The two callbacks are `(line: string) => void` (JS bus post) and
  * `(callId: number, name: string, args: string) => void` (platform
  * primitive dispatch — queue it, never settle from inside). The optional
- * scenario label names the `dsh.rt.verdict:` line (default
+ * scenario label names the `dsh.runtime.verdict:` line (default
  * harmony.capability-binding).
  */
 export const hostStart: (bundleRoot: string, capturePath: string, fsRoot: string,

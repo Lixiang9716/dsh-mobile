@@ -155,7 +155,7 @@ process.exit(hit ? (console.log(hit[0] + " " + hit[1]), 0) : 1);' 2>/dev/null ||
             fi
         fi
     fi
-    VERDICT_LINE=$(grep "dsh.dsh.verdict: harmony.camera-plane" "$STREAM" 2>/dev/null | tail -1 || true)
+    VERDICT_LINE=$(grep "dsh.runtime.verdict: harmony.camera-plane" "$STREAM" 2>/dev/null | tail -1 || true)
     [ -n "$VERDICT_LINE" ] && break
     sleep 2
 done

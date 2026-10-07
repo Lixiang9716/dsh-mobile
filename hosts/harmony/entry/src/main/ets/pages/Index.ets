@@ -1546,7 +1546,7 @@ struct Index {
    * other path). Then the SAME carrier + HostPhase wiring the binding phase
    * uses, with the canonical llm-live-stream scenario as the entry. No user-store
    * seeding and no D9 chain: this leg is the whole run, so the default chain
-   * never spends serve quota. The verdict is the C `dsh.rt.verdict:
+   * never spends serve quota. The verdict is the C `dsh.runtime.verdict:
    * llm.live-stream` line, asserted record by record by the E2E checkers. */
   /** The upstream-suite leg: materialize the bundle (the --suite-extras
    * staged corpus + test closure ride the same copy), then hand the driver
@@ -1705,7 +1705,7 @@ struct Index {
    * phase's carrier + HostPhase machinery with the device-plane scenario as
    * the entry — no web client mounts (the scenario drives primitives only),
    * and the page's approval dialog serves clipboardRead's gate. The verdict
-   * is the C `dsh.rt.verdict: harmony.device-plane` line. */
+   * is the C `dsh.runtime.verdict: harmony.device-plane` line. */
   /** The capability plane's microphone leg (v1.10.0 candidate): the
    * device-plane leg's shape — micStart/micStop + the mic.frame channel,
    * no web client mounts. The OS microphone prompt is driven by the
@@ -1843,7 +1843,7 @@ struct Index {
    * phase's carrier + HostPhase machinery with the camera-plane scenario as
    * the entry — the capture burst against a real camera; a camera-less image
    * answers `unavailable` and the ladder walks the denial legs. The verdict
-   * is the C `dsh.rt.verdict: harmony.camera-plane` line. */
+   * is the C `dsh.runtime.verdict: harmony.camera-plane` line. */
   private runCameraPlaneLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const fsRoot: string = ctx.filesDir + '/dsh-fs';

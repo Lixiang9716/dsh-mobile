@@ -167,7 +167,7 @@ run_attempt() {
     deadline=$(( $(date +%s) + 480 ))
     next_wake=0
     while :; do
-        grep -q "dsh.dsh.verdict: $LEG " "$STREAM" && break
+        grep -q "dsh.runtime.verdict: $LEG " "$STREAM" && break
         if [ "$(date +%s)" -ge "$deadline" ]; then
             return 1
         fi
@@ -234,7 +234,7 @@ streamer=""
 trap cleanup EXIT INT TERM
 
 grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
-grep "dsh.dsh.verdict: $LEG " "$STREAM" > "$OUT/results.txt" || true
+grep "dsh.runtime.verdict: $LEG " "$STREAM" > "$OUT/results.txt" || true
 cat "$OUT/results.txt"
 
 # The truncation-proof second capture: the app's own sink file, pulled from
@@ -273,7 +273,7 @@ node test/e2e/check.mjs --manifest test/e2e/scenarios/real-agent-loop.json \
     --log "$OUT/capture.txt" --out "$OUT/verdict-real-agent-loop.json" || true
 cat "$OUT/verdict-real-agent-loop.json"
 
-grep "dsh.dsh.verdict: $LEG " "$OUT/results.txt" | grep -q " PASS" \
+grep "dsh.runtime.verdict: $LEG " "$OUT/results.txt" | grep -q " PASS" \
     || die "the scenario verdict is not PASS — see $OUT/results.txt"
 for v in "$OUT/verdict-real-agent-loop.json" "$OUT/verdict-real-agent-loop.json"; do
     grep -q '"pass": true' "$v" || die "$(basename "$v") is not a PASS verdict"

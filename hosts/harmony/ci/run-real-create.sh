@@ -165,7 +165,7 @@ run_attempt() {
     deadline=$(( $(date +%s) + 900 ))
     next_wake=0
     while :; do
-        grep -q "dsh.dsh.verdict: $LEG " "$STREAM" && break
+        grep -q "dsh.runtime.verdict: $LEG " "$STREAM" && break
         if [ "$(date +%s)" -ge "$deadline" ]; then
             return 1
         fi

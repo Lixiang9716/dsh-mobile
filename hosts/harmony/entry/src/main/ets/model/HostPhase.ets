@@ -306,7 +306,7 @@ export class HostPhase {
   /** The capability plane's camera leg (`harmony.camera-plane`, ONE launch):
    * the same machinery with the camera-plane scenario as the entry — no web
    * client mounts (the scenario drives primitives only). The verdict is the
-   * C `dsh.rt.verdict: harmony.camera-plane` line. */
+   * C `dsh.runtime.verdict: harmony.camera-plane` line. */
   beginCameraPlane(ctx: common.UIAbilityContext, bundleRoot: string,
     capturePath: string, fsRoot: string): void {
     this.scenario = SCENARIO_CAMERA_PLANE;

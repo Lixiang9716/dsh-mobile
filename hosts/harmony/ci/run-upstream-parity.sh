@@ -52,7 +52,7 @@ done
 "$HDC" shell "aa start -b $BUNDLE -a EntryAbility --ps dsh.e2e.leg upstream.parity" >/dev/null 2>&1 || true
 deadline=$(( $(date +%s) + 600 ))
 verdict=""
-until verdict=$("$HDC" shell "grep -h 'dsh.dsh.verdict: upstream.parity' $CAPTURE_REMOTE 2>/dev/null" | head -1); do
+until verdict=$("$HDC" shell "grep -h 'dsh.runtime.verdict: upstream.parity' $CAPTURE_REMOTE 2>/dev/null" | head -1); do
     [ "$(date +%s)" -ge "$deadline" ] && {
         "$HDC" file recv "$CAPTURE_REMOTE" "$OUT/capture.txt" >/dev/null 2>&1 || true
         tail -40 "$OUT/capture.txt" 2>/dev/null >&2 || true

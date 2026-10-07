@@ -259,7 +259,7 @@ ios_release_leg() {
     for f in "$art/plain-launch-release.stdout.txt" "$art/plain-launch-release.stderr.txt" \
              "$art/plain-launch-release.oslog.txt"; do
         for pat in 'dsh: sequence' 'dsh: ui-wait' 'dsh: app launched' \
-                   'dsh.dsh.verdict' 'dsh.runtime.result' 'ALL PASS' 'ALL FAIL' \
+                   'dsh.runtime.verdict' 'dsh.runtime.result' 'ALL PASS' 'ALL FAIL' \
                    '"level":"debug"' '"level":"info"'; do
             [ "$(count_of "$f" "$pat")" -eq 0 ] \
                 || mx_die "release emitted drive machinery '$pat' in $f — the flavor split regressed"
@@ -310,7 +310,7 @@ proof = {
     "assertions": {
         "driveMachineryMarkers": 0,
         "assertedZero": ["dsh: sequence", "dsh: ui-wait", "dsh: app launched",
-                          "dsh.dsh.verdict", "dsh.runtime.result", "ALL PASS", "ALL FAIL",
+                          "dsh.runtime.verdict", "dsh.runtime.result", "ALL PASS", "ALL FAIL",
                           "level:debug records", "level:info records"],
         "officialUiReached": "plain-launch-release.png",
         "driveRefusal": "refusal.oslog.txt — refusing '-dsh-mode session' by name",

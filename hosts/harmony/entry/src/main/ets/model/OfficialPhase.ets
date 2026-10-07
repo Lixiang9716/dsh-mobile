@@ -517,7 +517,7 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     if (BuildFlavor.isRelease()) {
       return;
     }
-    let line = 'dsh.rt.verdict: ' + this.legScenario + (passed ? ' PASS' : ' FAIL');
+    let line = 'dsh.runtime.verdict: ' + this.legScenario + (passed ? ' PASS' : ' FAIL');
     line += ' probe=' + (passed ? 'pass' : 'fail');
     if (!passed) {
       line += ' error="' + reason + '"';
@@ -670,13 +670,13 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
             this.runSessionLiveLeg(ctx);
           }, 200);
         } else {
-          hostCarrierLine(2, 'dsh.rt.verdict: ' + SCENARIO_SESSION +
+          hostCarrierLine(2, 'dsh.runtime.verdict: ' + SCENARIO_SESSION +
             ' FAIL probe=not-run error="the httpfetch leg failed; session-live leg not started"');
         }
         return;
       }
       if (Date.now() > deadline) {
-        hostCarrierLine(2, 'dsh.rt.verdict: ' + SCENARIO_SESSION +
+        hostCarrierLine(2, 'dsh.runtime.verdict: ' + SCENARIO_SESSION +
           ' FAIL probe=not-run error="the httpfetch leg never completed"');
         return;
       }

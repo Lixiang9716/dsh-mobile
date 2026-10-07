@@ -41,7 +41,7 @@ ONE launch on the emulator now proves the host end to end in two phases:
   set widens per the binding descriptor.
 - `entry/src/main/cpp/napi_init.cpp` — `startSpike(bundleRoot, capturePath, fsRoot)`
   runs the regression trio synchronously (each on its own `dsh_runtime_t`, one
-  `dsh.dsh.verdict:` line per scenario). The binding phase exposes the same
+  `dsh.runtime.verdict:` line per scenario). The binding phase exposes the same
   runtime FINE-GRAINED (`hostStart`/`hostEval`/`hostEvent`/`hostBusDeliver`/
   `hostSettle`/`hostCarrierLine`/`hostStatus`/`hostFree`): ArkTS drives it per
   event, and every mutator still runs on the ArkTS main thread, which stays the
@@ -108,7 +108,7 @@ records):
    attaches the mux journal stream, collects the 19 frames (11-event
    baseline + the 8-event live turn 2), and reads the rendered state.
    The runtime half stays resident; the verdict is the drive's
-   (`dsh.dsh.verdict: harmony.session.live-read`).
+   (`dsh.runtime.verdict: harmony.session.live-read`).
 4. **harmony.composer.live-write** (W-HARMONY4) — the SESSION WRITE surface: a
    fresh runtime boots the spine and the web-boot producer composes WITH
    the write surface (`harmony-composer-live-write.js` → `upstream/web-write.js`):
@@ -124,7 +124,7 @@ records):
    (user/message → agent-loop events → assistant deltas → turn/end,
    11 events) streamed live over the mux and rendered in the official DOM
    (the reply screenshot). Everything the spine does not implement stays
-   structured-unavailable. Verdict: `dsh.dsh.verdict:
+   structured-unavailable. Verdict: `dsh.runtime.verdict:
    harmony.composer.live-write`.
 
 The spine closure travels in `rawfile/dsh/` byte-identical to the
@@ -227,7 +227,7 @@ HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 "$HDC" shell uinput -T -m 400 1600 400 400 300
 "$HDC" shell hilog -r                      # clear, then launch
 "$HDC" shell aa start -b com.dshmobile.host -a EntryAbility
-"$HDC" shell hilog -x | grep dsh.dsh     # four `dsh.dsh.verdict:` lines expected
+"$HDC" shell hilog -x | grep dsh.dsh     # four `dsh.runtime.verdict:` lines expected
 "$HDC" file recv /data/app/el2/100/base/com.dshmobile.host/haps/entry/cache/dsh-dsh-capture.log .
 "$HDC" file recv /data/app/el2/100/base/com.dshmobile.host/haps/entry/cache/dsh-host-capture.log .
 "$HDC" shell snapshot_display -f /data/local/tmp/m5-screenshot.jpeg

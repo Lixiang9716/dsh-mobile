@@ -317,9 +317,9 @@ napi_value start_spike(napi_env env, napi_callback_info info) {
      * unaffected — it is the ArkTS verdict Text, which the same release
      * branch in Index.ets never renders. */
 #ifndef DSH_RELEASE
-    OH_LOG_INFO(LOG_APP, "dsh.rt.verdict: %{public}s", m1.verdict.c_str());
-    OH_LOG_INFO(LOG_APP, "dsh.rt.verdict: %{public}s", m2.verdict.c_str());
-    OH_LOG_INFO(LOG_APP, "dsh.rt.verdict: %{public}s", session.verdict.c_str());
+    OH_LOG_INFO(LOG_APP, "dsh.runtime.verdict: %{public}s", m1.verdict.c_str());
+    OH_LOG_INFO(LOG_APP, "dsh.runtime.verdict: %{public}s", m2.verdict.c_str());
+    OH_LOG_INFO(LOG_APP, "dsh.runtime.verdict: %{public}s", session.verdict.c_str());
 #endif
     if (sink_ctx.capture != nullptr) {
         fclose(sink_ctx.capture);
@@ -367,7 +367,7 @@ struct HostPhase {
     PhaseHandlers handlers;
     char bundle_root[1024] = {0};
     /* The phase's scenario label — the verdict line names it (drive-binding
-     * watches for `dsh.rt.verdict: <scenario>`). */
+     * watches for `dsh.runtime.verdict: <scenario>`). */
     char scenario[64] = {0};
 };
 
@@ -470,7 +470,7 @@ int phase_drive(HostPhase *p) {
         if (!dsh_runtime_pass(p->rt) && strlen(dsh_runtime_error(p->rt)) > 0) {
             v += std::string(" error=\"") + dsh_runtime_error(p->rt) + "\"";
         }
-        OH_LOG_INFO(LOG_APP, "dsh.rt.verdict: %{public}s", v.c_str());
+        OH_LOG_INFO(LOG_APP, "dsh.runtime.verdict: %{public}s", v.c_str());
 #endif
     }
     return dsh_runtime_pass(p->rt) ? 1 : 2;

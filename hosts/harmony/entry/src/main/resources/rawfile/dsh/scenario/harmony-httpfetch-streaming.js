@@ -98,7 +98,7 @@ const proveRefused = async () => {
 const main = async (port) => {
   log.debug('main begin', { port });
   const descriptor = JSON.parse(globalThis.__dshGatewayDescriptor());
-  demand(descriptor.available.length === 6, 'expected 6 available primitives');
+  demand(descriptor.available.length === 8, 'expected 8 available primitives');
   demand(descriptor.unavailable.length === 3, 'expected 3 unavailable primitives');
   demand(descriptor.unavailable.includes('httpFetch') === false,
     'httpFetch must be available under the v2 descriptor');
