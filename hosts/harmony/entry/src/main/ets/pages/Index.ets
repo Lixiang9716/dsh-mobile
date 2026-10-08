@@ -276,6 +276,8 @@ const BUNDLE_FILES: string[] = [
   'upstream/web-write-plugin-manager.js',
   'upstream/web-write-session.js',
   'upstream/web-write-presets.js',
+  'upstream/boot-subagent-rows.js',
+  'upstream/web-write-subagents.js',
   'upstream/web-write-settings.js',
   'upstream/web-write-streams.js',
   'upstream/web-write-workspace.js',
