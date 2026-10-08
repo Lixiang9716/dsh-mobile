@@ -1,4 +1,4 @@
-# 能力网关 — 原语契约 v1.8.0
+# 能力网关 — 原语契约 v1.10.0
 
 > **状态:契约冻结阶段冻结**(2026-09-19,决策 D5)。本文档中的形状在主版本 1 的整个生命周期内不可变。
 > 演进策略见 [§8](#8-版本与演进)。机器可读接口:[primitives.d.ts](primitives.d.ts)。
@@ -50,6 +50,26 @@
 > 进程内分发通话)。与 v1.1.0–v1.5.0 同一增量规则:无该缝的宿主继续协商 `gateway@1` 并如实
 > 回答 `unavailable`。(v1.6.0 / v1.7.0 由事件通道与 render 面提案保留——它们仍未实现;
 > socket 缝取下一个空闲次要版本号。)
+>
+> **v1.9.0(增量,2026-10-08)**:事件通道缝——`channelOpen` / `channelClose` 加
+> `channel.event` 投递通道(§4「the channel seam (v1.9.0)」):一对订阅原语盖在封闭、
+> 版本化的源表上(fold 时为 `motion`、`battery`),一个 `channel` 权限旗标,按已采纳提案
+> `contract/proposals/2026-09-26-event-channel.zh.md`。负载下 latest-wins 合并(可见的
+> `seq` 空缺,永不积压增长队列)、挂起期间不投递、每源封闭负载 schema 见
+> [data-protocols.zh.md](data-protocols.zh.md)(`channel.payloads@1`)。提案曾保留
+> v1.6.0;该号从未被占用,单调的 fold 顺序优先,故本缝落为 v1.9.0。与 v1.1.0–v1.8.0
+> 同一增量规则:无该缝的宿主继续协商 `gateway@1` 并如实回答 `unavailable`。(v1.8.0 的
+> fold 漏记了 socket 表行——第 25–26 行在下补录,即 v1.5.0 fold 补录前例的重演。)
+>
+> **v1.10.0(增量,2026-10-08)**:render 面——`presentSurface` / `surfaceDraw` /
+> `closeSurface` 加 `surface.frame` 与 `surface.input` 通道(§4「the render surface
+> (v1.10.0)」):宿主原生的全屏立即模式绘制面,呈现于 Web Client 之上、用户可关闭,一个
+> `surface` 权限旗标,按已采纳提案 `contract/proposals/2026-09-26-render-surface.zh.md`。
+> 操作词汇为封闭、版本化集合 `surface.ops@1`([data-protocols.zh.md](data-protocols.zh.md);
+> fold 在提案草稿之上补了 `arc` 子路径操作与 `fillPath` 操作——首个消费者要创作的正是
+> 圆形 UI 类;只有 quad 的弧会把每个圆都逼成作者侧的近似)。帧泵仅在 `animate: true`
+> 时武装;两条通道都跑在 v1.9.0 缝上。与 v1.1.0–v1.9.0 同一增量规则:无该面的宿主继续
+> 协商 `gateway@1`、逐项如实回答 `unavailable`,Web Client 的创作视图器仍是协商下限。
 
 这是四个平台(iOS / Android / HarmonyOS / 桌面互通)共同的服务基础:**能力网关的窄原语表**。
 每个宿主实现同一张表;它之上的一切——上游 Harness 包、系统实现插件、Web Client——看到的都是
@@ -130,6 +150,30 @@
 
 保留标识符:范围句柄 `"app"` 表示宿主自己的 profile 容器(存储布局见
 [data-protocols.md](data-protocols.md));能力名 `gateway` 指本契约自身。
+
+**v1.8.0 补录(2)** —— socket 缝的表行,其自身 fold 漏记(v1.5.0 fold 补录前例的重演):
+
+| # | 原语 | 用途 | 权限旗标 | 流 |
+| --- | --- | --- | --- | --- |
+| 25 | `socketListen` | 开一个可审计的仅回环 TCP 监听 | `socket` | 否 |
+| 26 | `socketConnect` | 开一个可审计的仅回环 TCP 连接 | `socket` | 否 |
+
+**v1.9.0 增量(2)** —— 事件通道缝;一个权限旗标把关订阅这个控制点(事件投递是武装态,
+绝无逐调用审计——§6 的诚实规则):
+
+| # | 原语 | 用途 | 权限旗标 | 流 |
+| --- | --- | --- | --- | --- |
+| 27 | `channelOpen` | 在封闭源表上武装一个订阅 | `channel` | 否 |
+| 28 | `channelClose` | 解除订阅(幂等) | `channel` | 否 |
+
+**v1.10.0 增量(3)** —— render 面;一个权限旗标,无逐调用审批(打开 surface 本身即用户可见,
+`presentApproval` 的姿态):
+
+| # | 原语 | 用途 | 权限旗标 | 流 |
+| --- | --- | --- | --- | --- |
+| 29 | `presentSurface` | 打开一个宿主原生全屏绘制面 | `surface` | 否 |
+| 30 | `surfaceDraw` | 提交一帧原子立即模式绘制 | `surface` | 否 |
+| 31 | `closeSurface` | 结束 surface(幂等) | `surface` | 否 |
 
 ## 3. 签名约定
 
@@ -368,6 +412,28 @@ resolve 出范围句柄——读经范围,无相册访问。既有原语上的�
 字面 `127.0.0.1` → `denied`;请求畸形或 `port` 超出 1–65535 → `invalid`;宿主没有此缝 →
 `unavailable`(协商本应发现的 capability 缺口);`null` resolve 保留给用户在弹窗中拒绝授权。
 
+### the channel seam(v1.9.0)
+
+两个原语加一条投递通道,承载随时间而来的设备源——被治理的面是订阅,绝不是一个全局 `onEvent`:
+
+- `channelOpen(source, opts?) → { channelId }` —— 武装一个订阅;武装即 resolve,而非等到数据流动(`timerSchedule` 的姿态)。`source` 是封闭、版本化的表(fold 时为 `motion`、`battery`;负载见 [data-protocols.zh.md](data-protocols.zh.md) `channel.payloads@1`)。`opts.hz`(仅 motion)被钳制到宿主声明的范围;`opts.tag` 是调用者自选的审计标签(timer 先例)。扇出合法(对同一源的第二次 `channelOpen` 是一个新订阅);宿主按调用方声明一个小上限,超限按 `invalid` 拒绝。
+- `channelClose(channelId) → { closed }` —— 幂等;未知或已关闭的 id 返回 `{ closed: false }`(`timerCancel` 的形状)。
+- 投递:`channel.event`(§5)把 `{ channelId, source, seq, payload }` 送到调用方的串行队列。**负载下 latest-wins**:队列跟不上的宿主合并未决采样、投递最新者,`seq` 跳过被丢弃者——慢消费者退化到更低的有效速率且序号诚实,队列永不增长。**挂起期间不投递**:退后台的宿主暂停投递并在描述符散文中说明;调用方在恢复后重新 open。
+- 审计诚实(`ishRun` 规则):事件*投递*无逐调用审计——被钳制的流每秒产生的记录超过任何审计汇应承载的量。open/close 记录加消费者观察到的 `seq` 连续性即是轨迹;`channel` 旗标把关订阅,那才是控制点。
+
+拒绝:未知 source 或超过宿主声明上限 → `invalid`;缺旗标 → `denied`;宿主无此缝 → `unavailable`。
+
+### the render surface(v1.10.0)
+
+三个原语加两条通道,构成宿主原生的全屏立即模式绘制面——创作视图器的呈现姿态(Web Client 之上、用户可关闭),引擎只是宿主实现细节:
+
+- `presentSurface(request) → { surfaceId, width, height, scale } | null` —— 呈现 surface;`request.kind` 为 `"canvas2d"`(v0 唯一一种),`title` 与 `pixelRatio` 是宿主 chrome 提示。surface 上屏后 resolve;用户关闭它 → `null`(「用户放弃是值」规则)。v0 单 surface:已有一个打开时第二次 `presentSurface` 返回 `null`——fail-soft,绝不排队。
+- `surfaceDraw(surfaceId, ops, opts?) → { presented }` —— 提交一帧原子绘制:操作列表对后备缓冲求值并双缓冲呈现;畸形操作使整次调用失败、上一帧保留。操作词汇是封闭、版本化集合 `surface.ops@1`([data-protocols.zh.md](data-protocols.zh.md))。`opts.seq` 让宿主丢弃过期帧而非排队——跟不上的插件退化到更低帧率,绝不滞后堆积。任一次调用带 `opts.animate: true` 即武装 `surface.frame` 帧泵;下一次不带它的 `surfaceDraw` 解除武装。不武装就没有事件:一张静态图零帧成本。
+- `closeSurface(surfaceId) → void` —— 幂等;未知或已关闭的 surface 正常 resolve。
+- 通道(§5):`surface.frame` 只带 `{ surfaceId, timestamp, dropped }`——插件知道自己画了什么;`surface.input` 带触摸 begin/move/end 及 surface 坐标(平台提供时含按键事件)。输入的审计记录只带种类与计数,绝无载荷(触摸序列可能携带键入文本,一如剪贴板)。
+
+拒绝:畸形操作列表或未知 `kind` → `invalid`;缺旗标 → `denied`;宿主无此面 → `unavailable`(Web Client 的创作视图器仍是下限)。提供此面的宿主须在描述符中说明帧泵是 vsync 调度还是定时间隔——绝不静默。
+
 ## 5. 事件通道
 
 由桥接派发到运行时队列——不是按调用计的原语,但属于本契约、随其一起版本化:
@@ -378,6 +444,9 @@ resolve 出范围句柄——读经范围,无相册访问。既有原语上的�
 | `notify.response` | `{ id, action? }` | 用户与通知发生了交互 |
 | `timer.fire` | `{ timerId, tag? }` | `timerSchedule` 的唤醒已触发(v1.4.0;一次 arm ⇒ 至多一次触发) |
 | `socket.*`(v1.8.0) | `connection.accepted` / `data` / `close` / `error`,以 `serverId` / `connectionId` 为键 | socket 缝的每服务器、每连接流(§4「the socket seam」);v1.8.0 仅回环 |
+| `channel.event`(v1.9.0) | `{ channelId, source, seq, payload }` | 每个已武装 `channelOpen` 订阅送达一个采样(§4「the channel seam」);负载下 latest-wins,挂起期间静默 |
+| `surface.frame`(v1.10.0) | `{ surfaceId, timestamp, dropped }` | 每个已武装帧泵一次动画帧节拍(§4「the render surface」);仅当最后一次 `surfaceDraw` 带 `animate: true` 时武装 |
+| `surface.input`(v1.10.0) | `{ surfaceId, kind: "begin" \| "move" \| "end" \| "key", x?, y?, key? }` | 打开的 surface 上的触摸与(平台提供时)按键事件;审计只带种类与计数,绝无载荷 |
 
 某次 `httpFetch` 调用的流式进度经该调用的响应体送达,不走全局通道。
 

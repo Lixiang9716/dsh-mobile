@@ -1,6 +1,6 @@
 # 提案：渲染面——面向 agent 创作图形的原生 present surface（v1.7.0 候选）
 
-> **状态：DRAFT（D5 提案——未冻结任何内容，未实现任何内容）。**
+> **状态：已采纳（2026-10-08，owner 决定：以 v1.10.0 增量冻结；primitives.zh.md §4「the render surface」，操作词汇见 data-protocols.zh.md §9；fold 在本草案之上补了 `arc` 子路径操作与 `fillPath`）。**
 > [English](2026-09-26-render-surface.md) | 简体中文
 
 ## 动机

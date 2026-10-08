@@ -310,3 +310,71 @@ export type SocketErrorEvent = {
   code: string;
   message: string;
 };
+
+/** ── v1.9.0: the event-channel seam (§4, "the channel seam") ─────────────── */
+
+/** The closed, versioned source table (`channel.payloads@1`, data-protocols §8). */
+export type ChannelSource = "motion" | "battery";
+export declare function channelOpen(
+  source: ChannelSource,
+  opts?: { hz?: number; tag?: string },
+): Promise<{ channelId: number }>;
+export declare function channelClose(channelId: number): Promise<{ closed: boolean }>;
+
+/** `channel.event` (§5): `{ event: "channel.event", channelId, source, seq, payload }`. */
+export type ChannelEvent = {
+  event: "channel.event";
+  channelId: number;
+  source: ChannelSource;
+  seq: number;
+  payload: { ts: string; accel: { x: number; y: number; z: number }; gyro?: { x: number; y: number; z: number } } | { level: number; state: "charging" | "discharging" | "full" };
+};
+
+/** ── v1.10.0: the render surface (§4, "the render surface") ───────────────── */
+
+export type SurfaceRequest = {
+  kind: "canvas2d";
+  title?: string;
+  pixelRatio?: "native";
+};
+export declare function presentSurface(request: SurfaceRequest): Promise<
+  { surfaceId: string; width: number; height: number; scale: number } | null
+>;
+
+/** The closed op vocabulary (`surface.ops@1`, data-protocols §9). */
+export type PathCommand =
+  | { c: "move"; x: number; y: number }
+  | { c: "line"; x: number; y: number }
+  | { c: "quad"; cx: number; cy: number; x: number; y: number }
+  | { c: "arc"; x: number; y: number; r: number; start: number; end: number; ccw?: boolean }
+  | { c: "close" };
+export type DrawOp =
+  | { op: "clear"; color?: string }
+  | { op: "setStyle"; fill?: string; stroke?: string; lineWidth?: number; font?: string }
+  | { op: "fillRect"; x: number; y: number; w: number; h: number }
+  | { op: "strokePath"; d: PathCommand[] }
+  | { op: "fillPath"; d: PathCommand[] }
+  | { op: "text"; x: number; y: number; text: string; baseline?: "top" | "middle" | "bottom" }
+  | { op: "drawImage"; path: string; x: number; y: number; w?: number; h?: number };
+export declare function surfaceDraw(
+  surfaceId: string,
+  ops: DrawOp[],
+  opts?: { seq?: number; animate?: boolean },
+): Promise<{ presented: boolean }>;
+export declare function closeSurface(surfaceId: string): Promise<void>;
+
+/** `surface.frame` / `surface.input` (§5). */
+export type SurfaceFrameEvent = {
+  event: "surface.frame";
+  surfaceId: string;
+  timestamp: string;
+  dropped: number;
+};
+export type SurfaceInputEvent = {
+  event: "surface.input";
+  surfaceId: string;
+  kind: "begin" | "move" | "end" | "key";
+  x?: number;
+  y?: number;
+  key?: string;
+};

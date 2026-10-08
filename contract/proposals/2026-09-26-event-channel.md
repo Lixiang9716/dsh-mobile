@@ -1,6 +1,6 @@
 # Proposal: the event channel seam — device sources over one subscription primitive (v1.6.0 candidate)
 
-> **Status: DRAFT (D5 proposal — nothing frozen, nothing implemented).**
+> **Status: ADOPTED (2026-10-08, owner decision: folded additively as v1.9.0; primitives.md §4 "the channel seam", payloads in data-protocols.md §8).**
 > English | [简体中文](2026-09-26-event-channel.zh.md)
 
 ## Motivation
