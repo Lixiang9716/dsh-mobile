@@ -11,7 +11,7 @@
   "checklist": [
     "[x] After the z.ai quota reset, run DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh and commit the served-turn evidence (closes 3 of the matrix findings)",
     "Owner action: make ci-verdict a required check so the platform legs actually block (the gh api command is in PR 124 body; read it back, the endpoint replaces the whole required set)",
-    "Owner action: confirm the e2e-matrix known-gaps register stays at 9 or fewer, or close the ones whose owner runs"
+    "[x] Owner action: confirm the e2e-matrix known-gaps register stays at 9 or fewer, or close the ones whose owner runs"
   ],
   "status": "open",
   "receipt": null,
