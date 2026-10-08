@@ -104,7 +104,27 @@ final class CardPlayerSurface {
     private func showCard(id: String, title: String, subtitle: String?, kind: String) {
         dismiss()
         guard let host = hostView else { return }
+        let card = buildCardView(id: id, title: title, subtitle: subtitle, kind: kind)
+        activateCardConstraints(card, in: host)
+        cardView = card
+        card.alpha = 0
+        card.transform = CGAffineTransform(translationX: 0, y: 60)
+        UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.8,
+                       initialSpringVelocity: 0.4) {
+            card.alpha = 1
+            card.transform = .identity
+        }
+        render()
+        // The local tick: between authoritative state patches the countdown
+        // runs on the main run loop; the run loop never touches the runtime.
+        tickTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) {
+            [weak self] _ in self?.render()
+        }
+    }
 
+    private func buildCardView(
+        id: String, title: String, subtitle: String?, kind: String
+    ) -> CardView {
         let card = CardView(frame: .zero)
         card.backgroundColor = .secondarySystemBackground
         card.layer.cornerRadius = 18
@@ -133,6 +153,10 @@ final class CardPlayerSurface {
             sub.translatesAutoresizingMaskIntoConstraints = false
             card.addSubview(sub)
         }
+        return card
+    }
+
+    private func activateCardConstraints(_ card: CardView, in host: UIView) {
         card.translatesAutoresizingMaskIntoConstraints = false
         host.addSubview(card)
         let safe = host.safeAreaLayoutGuide
@@ -152,22 +176,6 @@ final class CardPlayerSurface {
             card.subtitleLabel.topAnchor.constraint(equalTo: card.progress.bottomAnchor, constant: 8),
             card.subtitleLabel.centerXAnchor.constraint(equalTo: card.centerXAnchor),
         ])
-
-        cardView = card
-        card.alpha = 0
-        card.transform = CGAffineTransform(translationX: 0, y: 60)
-        UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.8,
-                       initialSpringVelocity: 0.4) {
-            card.alpha = 1
-            card.transform = .identity
-        }
-        render()
-
-        // The local tick: between authoritative state patches the countdown
-        // runs on the main run loop; the run loop never touches the runtime.
-        tickTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) {
-            [weak self] _ in self?.render()
-        }
     }
 
     private func render() {

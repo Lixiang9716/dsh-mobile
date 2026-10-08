@@ -59,10 +59,8 @@ final class SessionServe {
     /// verdict to fail, but the page cannot function either, so the host is
     /// told rather than left with a silently dead UI.
     var onRuntimeFailure: ((String) -> Void)?
-    /// The drive's scenario entry override — the card-player leg selects
-    /// scenario/card-player.js in place of the composer product boot. The
-    /// default stays the composer: the seat the manifests prove and the
-    /// path a user runs cannot drift apart.
+    /// The drive's scenario entry override (the card-player leg selects
+    /// scenario/card-player.js; the composer product boot stays the default).
     var scenarioEntry: (
         accessor: (UnsafeMutablePointer<Int>?) -> UnsafePointer<CChar>?,
         path: String
@@ -395,10 +393,7 @@ final class SessionServe {
     // ---- bus seam (runtime → carrier claims + answers) ------------------------
 
     /// A plugin's live card (PR-1 of the create-approve-hotmount-native
-    /// loop): `card.present`/`card.state`/`card.dismiss`/`card.complete` bus
-    /// lines flow runtime → host → the native CardPlayerSurface — a plugin
-    /// manifests in the APP's own chrome, not an HTML page. The drive wires
-    /// this; a seat with no surface attached drops the events silently.
+    /// loop): the card.* bus lines flow to the native CardPlayerSurface.
     var onCardEvent: (([String: Any]) -> Void)?
 
     /// One JS → host bus message: folds the runtime's claims and answers into

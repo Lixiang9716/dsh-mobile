@@ -222,13 +222,22 @@ enum BundleStager {
                   data: resData(dsh_runtime_res_upstream_web_write_streams_js), under: root)
         try write("upstream/web-write-settings.js",
                   data: resData(dsh_runtime_res_upstream_web_write_settings_js), under: root)
-        // Seven top-level boot.js imports the stager missed while their
-        // features landed (the loop-* fix rounds, #409's boot-producers move,
-        // #412's subagent rows): the bytes were always in SpikeBundle.c, but
-        // every serve boot died on the first unresolved one — measured live
-        // on the owner's first Release run, 2026-10-08 (`cannot load module
-        // 'upstream/boot-subagent-rows.js'`). CI never saw it: the m1 legs
-        // drive a different boot path.
+        try writeBootImportRows(root)
+        try writeTransitiveFaceRows(root)
+        // The npm bridge shim registers bare `diff` before the file tools
+        // resolve it (upstream/boot.js's FILE-TOOLS row).
+        // The writable workspace VFS half of the fs shim (the FILE-TOOLS
+        // row's world; split from fs.js at the file-size gate).
+    }
+
+    /// Seven top-level boot.js imports the stager missed while their
+    /// features landed (the loop-* fix rounds, #409's boot-producers move,
+    /// #412's subagent rows): the bytes were always in SpikeBundle.c, but
+    /// every serve boot died on the first unresolved one — measured live
+    /// on the owner's first Release run, 2026-10-08 (`cannot load module
+    /// 'upstream/boot-subagent-rows.js'`). CI never saw it: the m1 legs
+    /// drive a different boot path.
+    private static func writeBootImportRows(_ root: URL) throws {
         try write("upstream/boot-coverage-rows.js",
                   data: resData(dsh_runtime_res_upstream_boot_coverage_rows_js), under: root)
         try write("upstream/boot-subagent-rows.js",
@@ -243,15 +252,17 @@ enum BundleStager {
                   data: resData(dsh_runtime_res_upstream_turn_watchdog_js), under: root)
         try write("upstream/web-search-keyless.js",
                   data: resData(dsh_runtime_res_upstream_web_search_keyless_js), under: root)
-        // The same drift, second layer (transitive imports, caught live the
-        // same night): the llm transport's watchdog/pacing pair, the model
-        // selection holders, the tool path anchor, the five web-write split
-        // faces + subagents, the wire logger, and the workspace registry —
-        // every one embedded by gen_bundle_header.py but absent here until
-        // the serve boot named them one by one. Diffed against the generated
-        // harmony closure (tools/generated/staging/harmony-BUNDLE_FILES.rows)
-        // to end the whack-a-mole: everything else in that closure either
-        // already had a write row or rides the shims/vendor trees.
+    }
+
+    /// The same drift, second layer (transitive imports, caught live the
+    /// same night): the llm transport's watchdog/pacing pair, the model
+    /// selection holders, the tool path anchor, the five web-write split
+    /// faces + subagents, the wire logger, and the workspace registry —
+    /// every one embedded by gen_bundle_header.py but absent here until
+    /// the serve boot named them one by one. Diffed against the generated
+    /// harmony closure (tools/generated/staging/harmony-BUNDLE_FILES.rows)
+    /// to end the whack-a-mole.
+    private static func writeTransitiveFaceRows(_ root: URL) throws {
         try write("upstream/llm-read-idle.js",
                   data: resData(dsh_runtime_res_upstream_llm_read_idle_js), under: root)
         try write("upstream/llm-retry-pacing.js",
@@ -276,10 +287,6 @@ enum BundleStager {
                   data: resData(dsh_runtime_res_upstream_wire_logger_js), under: root)
         try write("workspace-registry.js",
                   data: resData(dsh_runtime_res_workspace_registry_js), under: root)
-        // The npm bridge shim registers bare `diff` before the file tools
-        // resolve it (upstream/boot.js's FILE-TOOLS row).
-        // The writable workspace VFS half of the fs shim (the FILE-TOOLS
-        // row's world; split from fs.js at the file-size gate).
     }
 
     /// The self-hosted Web Client (presentation/web-client-v2), embedded

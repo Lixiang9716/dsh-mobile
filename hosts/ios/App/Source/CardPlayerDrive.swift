@@ -8,6 +8,16 @@ import Foundation
 /// plugin will speak to (PR-2/3 plug the generation and the install into
 /// this same contract).
 enum CardPlayerDrive {
+    /// The mode-table entry: banner + the canonical stdout line, then the
+    /// drive (the MicPlane shape — announce(web:) builds the WebView the
+    /// origin loads into).
+    static func launch(_ appDelegate: AppDelegate) {
+        appDelegate.announce(
+            "DSH card player — card.player, a plugin card in the app's own chrome…",
+            line: "rt: app launched in card-player mode", web: true)
+        run(appDelegate)
+    }
+
     static func run(_ appDelegate: AppDelegate) {
         let surface = CardPlayerSurface()
         appDelegate.cardSurface = surface

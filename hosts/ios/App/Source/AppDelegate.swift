@@ -138,11 +138,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             runServingBoot()
         case "card-player":
             // PR-1 of the create-approve-hotmount-native loop: a plugin card
-            // rendered by the app's OWN chrome (not an HTML page) — the
-            // native surface the generated pomodoro plugin will speak to.
-            announce("DSH card player — card.player, a plugin card in the app's own chrome…",
-                     line: "rt: app launched in card-player mode", web: true)
-            CardPlayerDrive.run(self)
+            // rendered by the app's OWN chrome (not an HTML page).
+            CardPlayerDrive.launch(self)
         default:
             runDefaultChain()
         }
