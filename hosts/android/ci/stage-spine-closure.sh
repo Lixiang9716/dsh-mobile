@@ -76,7 +76,8 @@ for pkg in agent agent-loop brand llm sandbox scope session \
            typert-protocol util-values agent-presets atomic-write \
            home-paths fs attachment fs-local tool-fs \
            tool-str-replace-editor tool-todo \
-           skill skill-filesystem tool-skill; do
+           skill skill-filesystem tool-skill \
+           subagent chunked-list; do
     say "staging vendor/dsh/$pkg@$VER"
     stage_pkg "$DSH/vendor/dsh/$pkg@$VER" "$ASSETS/vendor/dsh/$pkg@$VER"
 done
@@ -159,7 +160,9 @@ cp "$DSH/vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js" \
 mkdir -p "$ASSETS/vendor/npm/js-yaml@4.1.0/dist"
 cp "$DSH/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs" \
    "$ASSETS/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs"
-for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry; do
+# The SUBAGENT row's listing service (T-0050 item 2): boot.js mounts the
+# vendored sessionQuery engine (subagents/list's corpus source).
+for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry dsh-session-query dsh-session-title dsh-session-format-catalog dsh-compaction-image-offload; do
     say "staging vendor/npm/@deepseek-ai/$pkg@$VER (lib)"
     (cd "$DSH/vendor/npm/@deepseek-ai/$pkg@$VER" && find lib -type f ! -name '*.d.ts') |
         while IFS= read -r rel; do
@@ -421,7 +424,8 @@ for pkg in agent agent-loop brand llm sandbox scope session \
            typert-protocol util-values agent-presets atomic-write \
            home-paths fs attachment fs-local tool-fs \
            tool-str-replace-editor tool-todo \
-           skill skill-filesystem tool-skill; do
+           skill skill-filesystem tool-skill \
+           subagent chunked-list; do
     (cd "$DSH/vendor/dsh/$pkg@$VER" && find lib -type f ! -name '*.d.ts'; echo LICENSE; echo package.json) |
     while IFS= read -r rel; do
         [ -f "$DSH/vendor/dsh/$pkg@$VER/$rel" ] || continue
@@ -487,7 +491,9 @@ fi
         cmp -s "$DSH/vendor/npm/yaml@2.9.0/browser/$rel" "$ASSETS/vendor/npm/yaml@2.9.0/browser/$rel" ||
             note_drift "npm/yaml@2.9.0/browser/$rel"
     done
-for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry; do
+# The SUBAGENT row's listing service (T-0050 item 2): boot.js mounts the
+# vendored sessionQuery engine (subagents/list's corpus source).
+for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry dsh-session-query dsh-session-title dsh-session-format-catalog dsh-compaction-image-offload; do
     (cd "$DSH/vendor/npm/@deepseek-ai/$pkg@$VER" && find lib -type f ! -name '*.d.ts') |
         while IFS= read -r rel; do
             path="vendor/npm/@deepseek-ai/$pkg@$VER/$rel"

@@ -340,6 +340,8 @@ upstream/model-selection-holder.js
 upstream/web-write.js
 upstream/web-write-session.js
 upstream/web-write-presets.js
+upstream/boot-subagent-rows.js
+upstream/web-write-subagents.js
 upstream/web-write-settings.js
 upstream/web-write-streams.js
 upstream/web-write-coverage.js
@@ -639,6 +641,14 @@ stage_npm_face_at_dsh_path() {
 if [ "$MODE" != "check" ]; then
     stage_npm_face_at_dsh_path tool-web
     stage_npm_face_at_dsh_path plugin-manager
+    # The SUBAGENT row's listing service + control plane (T-0050 item 2):
+    # boot.js mounts the vendored sessionQuery engine (the catalog's corpus
+    # source) and the subagent runtime whose static graph links the title
+    # and format-catalog packages.
+    stage_npm_face_at_dsh_path session-query
+    stage_npm_face_at_dsh_path session-title
+    stage_npm_face_at_dsh_path session-format-catalog
+    stage_npm_face_at_dsh_path compaction-image-offload
     mkdir -p "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/lib"
     cp "runtime/dsh/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/package.json" \
        "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/package.json"

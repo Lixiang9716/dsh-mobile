@@ -47,9 +47,20 @@ const like = (value, subset, why) => {
 };
 
 /** The error triple an handler throw maps to (probe-local mirror of
- * errorOf's remote passthrough). */
-const errorOf = (error) => (error && typeof error === 'object' && error.remote === true
-  ? error : { code: 'gateway/unavailable', message: String(error) });
+ * errorOf's two passthroughs: this adapter's remoteError shape AND the
+ * vendored upstream RemoteError the forwarded services throw — identified
+ * structurally by its isDSHRemoteError marker, the same cross-realm
+ * identification the wire guard uses). */
+const errorOf = (error) => {
+  if (error && typeof error === 'object' && error.remote === true) {
+    return error;
+  }
+  if (error && typeof error === 'object' && error.isDSHRemoteError === true
+    && typeof error.code === 'string') {
+    return { code: error.code, message: error.message, details: error.details ?? {} };
+  }
+  return { code: 'gateway/unavailable', message: String(error) };
+};
 
 /** Run one handler, expecting a remote refusal with `code`. */
 const demandRefusal = async (handler, args, code, why) => {
@@ -305,12 +316,14 @@ const changesPhase = async (ctx, s) => {
  * ones): session/attachment has no attachment store to read bytes from;
  * openWorkspacePath's asker is gated off by canOpenWorkspacePath=false;
  * the reference resolver's context-preparation half needs the unvendored
- * dsh-session-reference package. */
+ * dsh-session-reference package; fileUploads/upload's backing chain needs
+ * the attachments store + a verbatim-file provider + the connection
+ * service (none mounted — the vendored FileUploads inject names them). */
 const gapsPhase = async (ctx, s) => {
   for (const endpoint of ['terminal/create', 'terminal/list', 'terminal/write',
     'terminal/shells', 'directoryPicker/pick', 'settings/replace',
     'settings/openSettingsDocument', 'settings/openAgentPresetDirectory',
-    'llm/discoverModels', 'subagents/list', 'subagents/prompt',
+    'llm/discoverModels',
     'fileUploads/upload', 'officeToPdf/render',
     'session/attachment', 'session/openWorkspacePath',
     'sessionReferenceResolver/candidates']) {
@@ -318,13 +331,15 @@ const gapsPhase = async (ctx, s) => {
   }
   // The legs that LEFT the gap list: session/cancel (the stop button,
   // 2026-09-25), sessionFeedback/record (#312), session/fork (2026-10-02),
-  // and — this round — the session deep-page legs + the opener gate +
-  // permissionPresets/catalog (upstream/web-write-session.js); their live
-  // semantics are asserted by sessionLegsPhase above.
+  // the session deep-page legs + the opener gate + permissionPresets/
+  // catalog (upstream/web-write-session.js), and the subagent control
+  // plane (upstream/web-write-subagents.js); their live semantics are
+  // asserted by the phases above.
   for (const endpoint of ['session/cancel', 'sessionFeedback/record',
     'session/fork', 'session/page', 'session/search', 'session/rename',
     'session/updateQueue', 'session/canOpenWorkspacePath',
-    'permissionPresets/catalog']) {
+    'permissionPresets/catalog', 'subagents/list', 'subagents/prompt',
+    'subagents/interruptByParent']) {
     demand(typeof s.api[endpoint] === 'function',
       `${endpoint} is claimed`);
   }
