@@ -55,13 +55,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "c195c538562be1aecd34d90ea5299839e5fc2c3a4c7197965f7baaebd342815d"
+      "sha256": "6d186be6616493c3d8ae7d24174a4e1634711180ca5b3b760452d3c09d7cdb90"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-08T11:01:58+00:00",
+    "ts": "2026-10-08T12:17:34+00:00",
     "caller": "13957@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "the four live-tree rejection cases' per-worktree lock home gains the win32 drive-letter absolute branch: git rev-parse --git-dir prints D:/... on Windows linked worktrees, the /* case-pattern misclassified it as relative, the lock dir resolved to <repo>/D:/... and mkdir could never succeed \u2014 asset-mirrors burned its 5s deadline, the other three were SIGKILLed at the 10s case budget (surprise sig gov-task-close-runs)"
+    "reason": "the staging consolidation extends the plane: staging-check gains the gen_bundle_resources.py + generated rows triggers, staging-generated covers the android stager and the ios embedder blocks (T-0050 item 4, the android+ios manifests join the generated store); gate commands unchanged, paths only"
   }
 }

@@ -6,8 +6,8 @@
  * derives, this emits and enforces).
  *
  * Single source: the DERIVATION (the import graph + the stagers' own pin
- * declarations) plus two small committed policy files for the rows no
- * derivation can see:
+ * declarations) plus small committed policy files for the rows no
+ * derivation can see. Under tools/generated/staging/:
  *
  *   harmony-BUNDLE_FILES.rows         — the generated manifest (sorted):
  *                                       (derived − excluded) ∪ policy
@@ -17,29 +17,41 @@
  *                                       row must exist on disk
  *   harmony-BUNDLE_FILES.exclude.rows — derived rows the host deliberately
  *                                       does not stage: hand-declared
+ *   android-scenario.rows / android-web-live.rows
+ *                                     — the stager's generated rosters;
+ *   android-*.policy.rows             — the declared staged entries
+ *   ios-RESOURCES.rows / ios-TREES.rows
+ *                                     — the embedder's declared accession
+ *                                       table + mirror roots (the py blocks
+ *                                       materialize from them)
  *
  * modes:
  *   --check <dir>  the enforcement gate: recompute the derivation and
- *                  verify the three committed files + the committed
- *                  Index.ets array match it exactly; ANY drift exits 1
- *                  with the remedy line (run --emit, review, commit).
- *   --emit <dir>   refresh the three files + splice the Index.ets array
- *                  block in place (the committed row ORDER is preserved —
- *                  the splice only adds/removes rows — so the first emit
- *                  on a correct tree is a no-op diff).
+ *                  verify the committed rows files + the committed host
+ *                  blocks (Index.ets, the android stager's four for-in
+ *                  lists, the ios RESOURCES/TREES py blocks) match it
+ *                  exactly; ANY drift exits 1 with the remedy line (run
+ *                  --emit, review, commit).
+ *   --emit <dir>   refresh the rows files + splice the host blocks in
+ *                  place (the committed ORDER is preserved — a splice only
+ *                  adds/removes rows — so an emit on a correct tree is a
+ *                  no-op diff).
  *
  * The policy/exclude files are hand-DECLARED (a row there is a staging
  * decision a human made, reviewable in diffs); the derived rows are
  * machine-derived (never hand-edited — --check fails on drift). This is
- * what makes the manifest single-sourced: the 1007 graph/pin rows arrive
+ * what makes the manifests single-sourced: graph/pin rows arrive
  * automatically on every new import, and only genuinely edge-less files
  * need a policy decision.
  *
- * Scope: harmony's BUNDLE_FILES (the derivation covers it completely).
- * The android/iOS scenario rosters are HOST POLICY (per-host staged
- * subsets, round-trip-verified by gen-staging-manifests) — consolidating
- * them needs a per-host policy-input redesign and is deliberately not
- * attempted here.
+ * Scope: all three hosts' manifests — harmony's BUNDLE_FILES (the
+ * derivation covers it completely), the android stager's scenario/web-live
+ * rosters (entry policy + the transitive graph half; mechanics in
+ * gen-staging-emit-hosts.mjs), and the ios embedder's RESOURCES/TREES
+ * (declared rows files; the accessor suffixes are Swift-linked policy no
+ * derivation can mint, so there the rows files are the source and the py
+ * blocks are materialized). The harmony vendor-official.sh CLOSURE rawfile
+ * staging remains CLOSURE-driven (find-generated at stage time).
  *
  * usage:
  *   node tools/gen-staging-emit.mjs --emit <dir>
@@ -51,6 +63,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { walkGraph, inScope } from './check-staging-graph.mjs';
 import { buildHosts } from './check-staging-hosts.mjs';
+import { androidCheck, androidEmit, iosCheck, iosEmit } from './gen-staging-emit-hosts.mjs';
 
 const fail = (msg) => { throw new Error(`gen-staging-emit: ${msg}`); };
 
@@ -120,10 +133,10 @@ function manifestRows(dir, derived) {
   return { rows, policy, excluded };
 }
 
-/** --check: the committed Index.ets array + the three files must match the
- * derivation exactly. */
-function check(dir) {
-  if (!dir) fail('--check requires the artifacts directory');
+/** --check, harmony half: the committed Index.ets array + the three files
+ * must match the derivation exactly. Returns the drift lines (empty =
+ * green). */
+function harmonyCheck(dir) {
   const derived = derivedRows();
   const { rows: committed } = committedRows();
   for (const name of ['harmony-BUNDLE_FILES.rows', 'harmony-BUNDLE_FILES.policy.rows',
@@ -142,19 +155,11 @@ function check(dir) {
   if (onDisk !== readFileSync(join(dir, 'harmony-BUNDLE_FILES.rows'), 'utf8').trim()) {
     drift.push('the committed .rows file drifted from its own bytes (line-ending noise?)');
   }
-  if (drift.length) {
-    console.error('gen-staging-emit: the generated manifest drifted — run'
-      + ` \`node tools/gen-staging-emit.mjs --emit ${dir}\`, review, commit:`);
-    for (const d of drift) console.error(`  DRIFT ${d}`);
-    process.exitCode = 1;
-    return;
-  }
-  console.log(`gen-staging-emit: generated manifest matches the derivation (${rows.length} rows)`);
+  return { drift, rows: rows.length };
 }
 
-/** --emit: refresh the three files + splice Index.ets. */
-function emit(dir) {
-  if (!dir) fail('--emit requires the artifacts directory');
+/** --emit, harmony half: refresh the three files + splice Index.ets. */
+function harmonyEmit(dir) {
   const derived = derivedRows();
   const { rows: committed } = committedRows();
   const derivedSet = new Set(derived);
@@ -175,8 +180,8 @@ function emit(dir) {
   writeFileSync(join(dir, excludeName), `${excluded.join('\n')}\n`);
   writeFileSync(join(dir, 'harmony-BUNDLE_FILES.rows'), `${rows.join('\n')}\n`);
   const spliced = spliceIndex(rows);
-  console.log(`gen-staging-emit: ${rows.length} rows (derived ${derived.length - excluded.length}`
-    + ` + policy ${policy.length}) → ${dir}; Index.ets ${spliced ? 'spliced' : 'already current'}`);
+  return [`harmony: ${rows.length} rows (derived ${derived.length - excluded.length}`
+    + ` + policy ${policy.length}); Index.ets ${spliced ? 'spliced' : 'already current'}`];
 }
 
 function mkdirs(dir) {
@@ -190,8 +195,25 @@ function main() {
   if ((mode !== '--emit' && mode !== '--check') || !dir) {
     fail('usage: gen-staging-emit.mjs (--emit|--check) <artifacts-dir>');
   }
-  if (mode === '--check') check(dir);
-  else emit(dir);
+  mkdirs(dir);
+  if (mode === '--check') {
+    const ios = iosCheck(dir);
+    if (ios.disk.length) fail(`the declared ios rows are structurally broken (no emit can heal them): ${ios.disk.join(' · ')}`);
+    const drift = [...harmonyCheck(dir).drift, ...androidCheck(dir).drift, ...ios.drift];
+    if (drift.length) {
+      console.error('gen-staging-emit: the generated manifests drifted — run'
+        + ` \`node tools/gen-staging-emit.mjs --emit ${dir}\`, review, commit:`);
+      for (const d of drift) console.error(`  DRIFT ${d}`);
+      process.exitCode = 1;
+      return;
+    }
+    console.log('gen-staging-emit: the generated staging manifests match their'
+      + ` derivations (harmony + android + ios) in ${dir}`);
+  } else {
+    for (const line of [...harmonyEmit(dir), ...androidEmit(dir), ...iosEmit(dir)]) {
+      console.log(`gen-staging-emit: ${line}`);
+    }
+  }
 }
 
 try {
