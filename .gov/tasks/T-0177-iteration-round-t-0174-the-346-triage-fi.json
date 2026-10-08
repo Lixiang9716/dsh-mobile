@@ -2,7 +2,7 @@
   "title": "Iteration round (T-0174): the #346 triage fixes \u2014 zero-anchor error, think-phase watchdog, plugin-manager mount, workspace tier device path",
   "created": "2026-10-03T23:05:19+00:00",
   "rules": {
-    "hash": "5bb9228ad09444a42e6701e4aa62c9bf03adbaace180f48df88660e58041241f",
+    "hash": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
@@ -40,6 +40,13 @@
       "from": "0ed822f51a8838e5b84a27d4653a84bba73d7960ecda0dee754cb70525579a3c",
       "to": "5bb9228ad09444a42e6701e4aa62c9bf03adbaace180f48df88660e58041241f",
       "reason": "plane advanced (transport-tokens gate merged + this branch's rejection cases) \u2014 brief unchanged"
+    },
+    {
+      "ts": "2026-10-08T02:39:05+00:00",
+      "by": "13957@DESKTOP-AOFQD6F",
+      "from": "5bb9228ad09444a42e6701e4aa62c9bf03adbaace180f48df88660e58041241f",
+      "to": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
+      "reason": "constitution advanced: the staging-generated gate joined the default DAG (PR3 staging manifest consolidation) \u2014 briefs unchanged, re-pinned per the gate's remedy"
     }
   ]
 }

@@ -17,7 +17,16 @@
  * files together are one tool — see the CLI's header for the full contract.
  */
 import { readFileSync, existsSync } from 'node:fs';
-import { join, dirname, normalize } from 'node:path';
+import { join, dirname, normalize, sep } from 'node:path';
+
+/** The walk and every derived manifest row speak FORWARD slashes (the staged
+ * manifests and the host surfaces are POSIX-spelled); node:path's normalize
+ * emits host separators, which would desync the coverage comparison and
+ * silently blind inScope on Windows (measured 2026-10-08: the harmony
+ * BUNDLE_FILES coverage of upstream files was invisible on a Windows dev
+ * host while CI failed on the very same gaps). Normalize, then flip host
+ * separators — one helper, every resolved row rides it. */
+const posixNormalize = (p) => normalize(p).split(sep).join('/');
 import { fileURLToPath } from 'node:url';
 
 export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -124,14 +133,14 @@ function specifiersOf(src) {
 function resolveSpecifier(spec, fromRel) {
   if (spec.startsWith('node:')) return { type: 'skip', reason: 'node-builtin' };
   if (spec.startsWith('./') || spec.startsWith('../')) {
-    return { type: 'path', rel: normalize(join(dirname(fromRel), spec)) };
+    return { type: 'path', rel: posixNormalize(join(dirname(fromRel), spec)) };
   }
-  if (spec.startsWith('/')) return { type: 'path', rel: normalize(spec.slice(1)) };
+  if (spec.startsWith('/')) return { type: 'path', rel: posixNormalize(spec.slice(1)) };
   if (spec.startsWith('@')) return { type: 'skip', reason: 'bare-npm' };
   const first = spec.split('/')[0];
-  if (BUNDLE_DIRS.has(first)) return { type: 'path', rel: normalize(spec) };
+  if (BUNDLE_DIRS.has(first)) return { type: 'path', rel: posixNormalize(spec) };
   if (/^[A-Za-z0-9_.-]+\.(js|mjs|json)$/.test(spec)) {
-    return { type: 'path', rel: normalize(spec) };
+    return { type: 'path', rel: posixNormalize(spec) };
   }
   return { type: 'skip', reason: 'bare-npm' };
 }
