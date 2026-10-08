@@ -1,0 +1,7 @@
+{
+  "strict": false,
+  "checks": [
+    {"context": "gates",      "app_id": 15368},
+    {"context": "ci-verdict", "app_id": 15368}
+  ]
+}

@@ -1,0 +1,8 @@
+fields changed by PUT (whole protection object, normalized):
+CHANGED $.required_status_checks.checks:
+  before: [{"app_id": 15368, "context": "gates"}]
+  after:  [{"app_id": 15368, "context": "gates"}, {"app_id": 15368, "context": "ci-verdict"}]
+CHANGED $.required_status_checks.contexts:
+  before: ["gates"]
+  after:  ["gates", "ci-verdict"]
+total changed fields: 2
