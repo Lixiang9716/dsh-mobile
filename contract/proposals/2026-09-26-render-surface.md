@@ -1,6 +1,6 @@
 # Proposal: the render surface — a native present surface for agent-authored graphics (v1.7.0 candidate)
 
-> **Status: DRAFT (D5 proposal — nothing frozen, nothing implemented).**
+> **Status: ADOPTED (2026-10-08, owner decision: folded additively as v1.10.0; primitives.md §4 "the render surface", op vocabulary in data-protocols.md §9; the fold adds the `arc` sub-path op and `fillPath` over this draft).**
 > English | [简体中文](2026-09-26-render-surface.zh.md)
 
 ## Motivation

@@ -1,4 +1,4 @@
-# Data Protocols — Bundle Layout, Manifest, Receipt, Signed Catalog (v1.1.0)
+# Data Protocols — Bundle Layout, Manifest, Receipt, Signed Catalog (v1.2.0)
 
 > **Status: FROZEN at the contract freeze** (2026-09-19, decision D5); **additively extended to
 > v1.1.0** (2026-10-01: §7, the signed catalog — proposal
@@ -190,3 +190,41 @@ The resolver (index fetch over `httpFetch` + §7.1 verification + §7.2 rotation
 lookup) is the ONE new seam; the §4 install transaction is unchanged — the resolver passes the
 signed trust record through untouched, so tampered hosting can never produce an installable
 package (the signature covers the digests; the transaction re-derives them from bytes).
+
+## 8. Channel payloads (v1.2.0 — `channel.payloads@1`)
+
+Per-source closed schemas for the v1.9.0 event-channel seam
+([primitives.md](primitives.md) §4, "the channel seam"). The source table is
+versioned with this section: adding a source is a minor bump here, changing
+an existing payload shape is a major.
+
+| Source | Payload | Notes |
+| --- | --- | --- |
+| `motion` | `{ ts, accel: { x, y, z }, gyro?: { x, y, z } }` | `ts` is the host's ISO-8601 sample time; SI units (m/s², rad/s); gyro is present where the platform provides it — its absence is honest, never zero-filled |
+| `battery` | `{ level, state }` | `level` is 0–1; `state` is `"charging" \| "discharging" \| "full"`; delivered on change only |
+
+## 9. Surface op vocabulary (v1.2.0 — `surface.ops@1`)
+
+The closed, versioned op set for the v1.10.0 render surface's `surfaceDraw`
+([primitives.md](primitives.md) §4, "the render surface"). One op list = one
+atomic frame; a malformed op fails the whole call and the previous frame
+stays. The fold adds `arc` over the proposal draft (the circular-UI class
+the first consumer authors). Adding an op or field is a minor bump here;
+changing or removing one is a major.
+
+Ops, in submission order:
+
+| Op | Fields | Meaning |
+| --- | --- | --- |
+| `clear` | `{ op: "clear", color? }` | fill the backing buffer (default opaque black) |
+| `setStyle` | `{ op: "setStyle", fill?, stroke?, lineWidth?, font? }` | style state for subsequent ops; colors are `#rrggbb`/`#rrggbbaa`; `font` is `<size>px <family>` |
+| `fillRect` | `{ op: "fillRect", x, y, w, h }` | axis-aligned rect in the current fill |
+| `strokePath` | `{ op: "strokePath", d }` | `d` is a sub-path array (below) stroked in the current stroke/lineWidth |
+| `fillPath` | `{ op: "fillPath", d }` | the same sub-path array, filled |
+| `text` | `{ op: "text", x, y, text, baseline? }` | fill-styled text; `baseline` is `"top" \| "middle" \| "bottom"` (default `"alphabetic"`-free v0: `"top"`) |
+| `drawImage` | `{ op: "drawImage", path, x, y, w?, h? }` | decode an image from a granted fs scope and draw it; `path` is scope-relative |
+
+Sub-path entries for `strokePath` / `fillPath` (`d`): `{ c: "move", x, y }`,
+`{ c: "line", x, y }`, `{ c: "quad", cx, cy, x, y }`, `{ c: "arc", x, y, r,
+start, end, ccw? }` (angles in radians), `{ c: "close" }`. A `d` that starts
+anywhere but `move` rejects the frame as `invalid`.

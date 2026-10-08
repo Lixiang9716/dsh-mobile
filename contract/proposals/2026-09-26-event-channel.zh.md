@@ -1,6 +1,6 @@
 # 提案：事件通道接缝——设备数据源走一对订阅原语（v1.6.0 候选）
 
-> **状态：DRAFT（D5 提案——未冻结任何内容，未实现任何内容）。**
+> **状态：已采纳（2026-10-08，owner 决定：以 v1.9.0 增量冻结；primitives.zh.md §4「the channel seam」，负载 schema 见 data-protocols.zh.md §8）。**
 > [English](2026-09-26-event-channel.md) | 简体中文
 
 ## 动机

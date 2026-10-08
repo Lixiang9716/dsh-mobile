@@ -8,9 +8,9 @@
 # last_confirmed is the UTC ISO-8601 instant of the confirmation
 # (datetime.isoformat(), +00:00).
 pair:
-  en: a689bcd48d4e03313c606bd1eff8095b04ad4221
-  zh: 8ac11d06835881e5808691a28f1b5c79c5b354fc
+  en: e647cbb3a4d4f91016f6d888bad88b91a1f2f18f
+  zh: fa57d243fd1acb14aaf29a4e330df43157ffe3b5
 counterpart: 2026-09-26-event-channel.zh.md
-last_confirmed: 2026-09-26T14:54:13+00:00
-en_commit: untracked
-zh_commit: untracked
+last_confirmed: 2026-10-08T23:38:40+00:00
+en_commit: ae26765a
+zh_commit: ae26765a

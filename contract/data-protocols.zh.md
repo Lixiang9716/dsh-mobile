@@ -1,4 +1,4 @@
-# 数据协议 — Bundle 布局、Manifest、Receipt、签名目录(v1.1.0)
+# 数据协议 — Bundle 布局、Manifest、Receipt、签名目录(v1.2.0)
 
 > **状态:契约冻结阶段冻结**(2026-09-19,决策 D5);**以可加性方式扩展到 v1.1.0**
 > (2026-10-01:§7 签名目录——提案
@@ -170,3 +170,36 @@ marketplace.lookup(id@range?)   → 验证过的目录条目
 resolver(经 `httpFetch` 取索引 + §7.1 验签 + §7.2 轮换状态 + 条目查找)是唯一的新缝;
 §4 安装事务零改动——resolver 把签名的信任记录原样透传,因此被篡改的托管永远产不出可安装的
 包(签名覆盖摘要;事务从字节重新推导它们)。
+
+## 8. 通道负载(v1.2.0 —— `channel.payloads@1`)
+
+v1.9.0 事件通道缝的每源封闭 schema([primitives.zh.md](primitives.zh.md) §4「the channel
+seam」)。源表随本节版本化:加一个源是此处的次要版本,改既有负载形状是主版本。
+
+| 源 | 负载 | 说明 |
+| --- | --- | --- |
+| `motion` | `{ ts, accel: { x, y, z }, gyro?: { x, y, z } }` | `ts` 是宿主的 ISO-8601 采样时刻;SI 单位(m/s²、rad/s);平台提供时有 `gyro`——缺失是诚实的,绝不零填充 |
+| `battery` | `{ level, state }` | `level` 为 0–1;`state` 为 `"charging" \| "discharging" \| "full"`;仅在变化时投递 |
+
+## 9. Surface 操作词汇(v1.2.0 —— `surface.ops@1`)
+
+v1.10.0 render 面 `surfaceDraw` 的封闭、版本化操作集([primitives.zh.md](primitives.zh.md)
+§4「the render surface」)。一个操作列表 = 一帧原子绘制;畸形操作使整次调用失败、上一帧
+保留。fold 在提案草稿之上补了 `arc`(首个消费者要创作的正是圆形 UI 类)。加操作或字段是
+此处的次要版本;改/删是主版本。
+
+操作按提交顺序:
+
+| 操作 | 字段 | 含义 |
+| --- | --- | --- |
+| `clear` | `{ op: "clear", color? }` | 填充后备缓冲(默认不透明黑) |
+| `setStyle` | `{ op: "setStyle", fill?, stroke?, lineWidth?, font? }` | 后续操作的样式状态;颜色为 `#rrggbb`/`#rrggbbaa`;`font` 为 `<size>px <family>` |
+| `fillRect` | `{ op: "fillRect", x, y, w, h }` | 以当前 fill 画轴对齐矩形 |
+| `strokePath` | `{ op: "strokePath", d }` | `d` 为子路径数组(见下),以当前 stroke/lineWidth 描边 |
+| `fillPath` | `{ op: "fillPath", d }` | 同一子路径数组,填充 |
+| `text` | `{ op: "text", x, y, text, baseline? }` | fill 样式文本;`baseline` 为 `"top" \| "middle" \| "bottom"`(v0 默认 `"top"`) |
+| `drawImage` | `{ op: "drawImage", path, x, y, w?, h? }` | 解码已授权 fs scope 内的图片并绘制;`path` 相对范围 |
+
+`strokePath` / `fillPath` 的子路径项(`d`):`{ c: "move", x, y }`、`{ c: "line", x, y }`、
+`{ c: "quad", cx, cy, x, y }`、`{ c: "arc", x, y, r, start, end, ccw? }`(角度为弧度)、
+`{ c: "close" }`。不以 `move` 开头的 `d` 按使整帧 `invalid` 拒绝。

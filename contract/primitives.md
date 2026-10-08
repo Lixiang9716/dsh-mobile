@@ -1,4 +1,4 @@
-# Capability Gateway — Primitive Contract v1.8.0
+# Capability Gateway — Primitive Contract v1.10.0
 
 > **Status: FROZEN at the contract freeze** (2026-09-19, decision D5). Shapes in this document are immutable
 > for the life of major version 1. Evolution policy in [§8](#8-versioning--evolution).
@@ -66,6 +66,36 @@
 > seam keeps negotiating `gateway@1` and answers `unavailable`. (v1.6.0 /
 > v1.7.0 stay reserved by the event-channel and render-surface proposals,
 > which remain unimplemented; the socket seam took the next free minor.)
+>
+> **v1.9.0 (additive, 2026-10-08)**: the event-channel seam — `channelOpen` /
+> `channelClose` plus the `channel.event` delivery channel (§4, "the channel
+> seam"): one subscription primitive pair over a closed, versioned source
+> table (`motion`, `battery` at fold), under one `channel` permission flag,
+> per the adopted proposal `contract/proposals/2026-09-26-event-channel.md`.
+> Latest-wins coalescing under load (visible `seq` gaps, never a growing
+> queue), no delivery while suspended, per-source closed payload schemas in
+> [data-protocols.md](data-protocols.md) (`channel.payloads@1`). The proposal
+> reserved v1.6.0; that number was never taken, and monotonic fold ordering
+> wins, so the seam lands as v1.9.0. Same additive rule as v1.1.0–v1.8.0: a
+> host without the seam keeps negotiating `gateway@1` and answers
+> `unavailable`. (The v1.8.0 fold omitted the socket table rows — rows 25–26
+> are recorded below, the v1.5.0 fold's own precedent for recording a
+> predecessor's omission.)
+>
+> **v1.10.0 (additive, 2026-10-08)**: the render surface — `presentSurface` /
+> `surfaceDraw` / `closeSurface` plus the `surface.frame` and `surface.input`
+> channels (§4, "the render surface"): a host-native fullscreen immediate-mode
+> drawing surface for agent-authored graphics, presented above the Web Client
+> and closable by the user, under one `surface` permission flag, per the
+> adopted proposal `contract/proposals/2026-09-26-render-surface.md`. The op
+> vocabulary is the closed, versioned set `surface.ops@1` in
+> [data-protocols.md](data-protocols.md) (the fold adds the `arc` sub-path op
+> and the `fillPath` op over the proposal draft — the circular-UI class the
+> first consumer authors; a quad-only arc would force every circle into an
+> authoring-side approximation). The frame pump arms only on `animate: true`; both channels
+> ride the v1.9.0 seam. Same additive rule as v1.1.0–v1.9.0: a host without
+> the surface keeps negotiating `gateway@1`, answers each `unavailable`, and
+> the Web Client's creation viewer remains the negotiation floor.
 
 This is the shared service foundation of all four platforms (iOS / Android / HarmonyOS /
 desktop interop): the **narrow primitive table of the capability gateway**. Every host
@@ -154,6 +184,32 @@ scope-granted handle the same way `mode: "file"` does (§4).
 Reserved identifiers: the scope handle `"app"` denotes the host's own profile container
 (the storage layout of [data-protocols.md](data-protocols.md)); the capability name
 `gateway` refers to this contract itself.
+
+**v1.8.0 additions recorded here (2)** — the socket seam's rows, omitted by its own fold
+(the v1.5.0 fold's precedent for recording a predecessor's omission):
+
+| # | Primitive | Purpose | Permission flag | Streams |
+| --- | --- | --- | --- | --- |
+| 25 | `socketListen` | open one audited loopback-only TCP listener | `socket` | no |
+| 26 | `socketConnect` | open one audited loopback-only TCP connection | `socket` | no |
+
+**v1.9.0 additions (2)** — the event-channel seam; one permission flag gates the
+subscription, the control point (per-event delivery is arm-state, never per-call
+audited — the honesty rule of §6):
+
+| # | Primitive | Purpose | Permission flag | Streams |
+| --- | --- | --- | --- | --- |
+| 27 | `channelOpen` | arm one subscription on a closed source table | `channel` | no |
+| 28 | `channelClose` | disarm a subscription (idempotent) | `channel` | no |
+
+**v1.10.0 additions (3)** — the render surface; one permission flag, no per-call
+approval (opening a surface is itself user-visible, the `presentApproval` posture):
+
+| # | Primitive | Purpose | Permission flag | Streams |
+| --- | --- | --- | --- | --- |
+| 29 | `presentSurface` | open one host-native fullscreen drawing surface | `surface` | no |
+| 30 | `surfaceDraw` | submit one atomic immediate-mode frame | `surface` | no |
+| 31 | `closeSurface` | end the surface (idempotent) | `surface` | no |
 
 ## 3. Signature conventions
 
@@ -445,6 +501,68 @@ literal `127.0.0.1`; `invalid` for a malformed request or a `port` outside
 negotiation should have caught); `null` resolution is reserved for the user
 refusing a prompted grant.
 
+### the channel seam (v1.9.0)
+
+Two primitives plus one delivery channel for device sources over time — the
+subscription is the governed surface, never a global `onEvent`:
+
+- `channelOpen(source, opts?) → { channelId }` — arms a subscription; resolves when
+  armed, not when data flows (the `timerSchedule` posture). `source` is a closed,
+  versioned table (`motion`, `battery` at fold; payloads in
+  [data-protocols.md](data-protocols.md) `channel.payloads@1`). `opts.hz` (motion only)
+  is clamped to the host's declared range; `opts.tag` is a caller-chosen audit tag (the
+  timer precedent). Fan-out is legal (a second `channelOpen` on the same source is a new
+  subscription); hosts cap live subscriptions per caller at a declared small number and
+  reject past it as `invalid`.
+- `channelClose(channelId) → { closed }` — idempotent; `{ closed: false }` for an
+  unknown or already-closed id (the `timerCancel` shape).
+- Delivery: `channel.event` (§5) carries `{ channelId, source, seq, payload }` onto the
+  caller's serial queue. **Latest-wins under load**: a host whose queue falls behind
+  coalesces pending samples and delivers the newest, advancing `seq` past the dropped
+  ones — a slow consumer degrades to a lower effective rate with honest sequence
+  numbers, never to a growing queue. **No delivery while suspended**: a backgrounded
+  host pauses delivery and says so in its descriptor prose; the caller re-opens after
+  resume.
+- Audit honesty (the `ishRun` rule): event *delivery* is not per-call audited — a
+  clamped-rate stream produces more records per second than any audit sink should
+  carry. The open/close records plus the `seq` continuity the consumer observes are the
+  trail; the `channel` flag gates the subscription, which is the control.
+
+Rejections: `invalid` for an unknown source or a subscription past the host's declared
+cap; `denied` without the flag; `unavailable` on a host without the seam.
+
+### the render surface (v1.10.0)
+
+Three primitives plus two channels for a host-native fullscreen immediate-mode drawing
+surface — the presentation posture of the creation viewer (above the Web Client,
+closable by the user), with the engine as a host implementation detail:
+
+- `presentSurface(request) → { surfaceId, width, height, scale } | null` — presents the
+  surface; `request.kind` is `"canvas2d"` (v0's one kind), `title` and `pixelRatio` are
+  host chrome hints. Resolves once the surface is on screen; the user dismissing it
+  resolves `null` (the "user dismissal is a value" rule). v0 is single-surface: a
+  second `presentSurface` while one is open resolves `null` — fail-soft, never queue.
+- `surfaceDraw(surfaceId, ops, opts?) → { presented }` — submits one atomic frame: the
+  op list resolves against a backing buffer and presents double-buffered; a malformed
+  op fails the whole call and the previous frame stays. The op vocabulary is the closed,
+  versioned set `surface.ops@1` ([data-protocols.md](data-protocols.md)). `opts.seq`
+  lets the host drop stale frames instead of queuing them — a plugin that cannot keep
+  up degrades to a lower frame rate, never to lag. `opts.animate: true` on any call
+  arms the `surface.frame` pump; the next `surfaceDraw` without it disarms it. No arm,
+  no events: a static diagram costs zero frames.
+- `closeSurface(surfaceId) → void` — idempotent; an unknown or already-closed surface
+  resolves normally.
+- Channels (§5): `surface.frame` carries `{ surfaceId, timestamp, dropped }` only —
+  the plugin knows what it drew; `surface.input` carries touch begin/move/end with
+  surface coordinates (and key events where the platform provides them). Input audit
+  records carry kinds and counts, never payloads (a touch sequence can carry typed
+  text the way a clipboard can).
+
+Rejections: `invalid` for a malformed op list or unknown `kind`; `denied` without the
+flag; `unavailable` on a host without the surface (the Web Client's creation viewer
+remains the floor). A host offering the surface states in its descriptor whether the
+frame pump is vsync-scheduled or interval-scheduled — never silently.
+
 ## 5. Event channels
 
 Delivered by the bridge onto the runtime queue — not per-call primitives, part of this
@@ -456,6 +574,9 @@ contract and versioned with it:
 | `notify.response` | `{ id, action? }` | user interacted with a notification |
 | `timer.fire` | `{ timerId, tag? }` | a `timerSchedule`d wake-up fired (v1.4.0; one arm ⇒ at most one fire) |
 | `socket.*` (v1.8.0) | `connection.accepted` / `data` / `close` / `error`, keyed by `serverId` / `connectionId` | the socket seam's per-server and per-connection streams (§4, "the socket seam"); loopback-only in v1.8.0 |
+| `channel.event` (v1.9.0) | `{ channelId, source, seq, payload }` | one delivered sample per armed `channelOpen` subscription (§4, "the channel seam"); latest-wins under load, silent while suspended |
+| `surface.frame` (v1.10.0) | `{ surfaceId, timestamp, dropped }` | one animation-frame tick per armed pump (§4, "the render surface"); armed only while the last `surfaceDraw` carried `animate: true` |
+| `surface.input` (v1.10.0) | `{ surfaceId, kind: "begin" \| "move" \| "end" \| "key", x?, y?, key? }` | touch and (where provided) key events on an open surface; audit carries kinds and counts, never payloads |
 
 Streaming progress of a specific `httpFetch` call is delivered through that call's response
 body, not a global channel.
