@@ -55,13 +55,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "009a40c44c7a2a6b2b493b4de2878908e7e9dc4e1760604ec0c50d9b1b97059c"
+      "sha256": "c195c538562be1aecd34d90ea5299839e5fc2c3a4c7197965f7baaebd342815d"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-07T16:40:41+00:00",
+    "ts": "2026-10-08T02:38:10+00:00",
     "caller": "13957@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "rebase onto main (#407 descriptor-parity merged): re-seal with this branch's rejection cases"
+    "reason": "PR3 lands the staging manifest consolidation: a new staging-generated gate (gen-staging-emit --check over the committed generated manifest) joins the default DAG after staging-check"
   }
 }

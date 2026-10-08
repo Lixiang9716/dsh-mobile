@@ -29,7 +29,7 @@
  * one tool.
  */
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, sep } from 'node:path';
 
 /** Recursive listing of `abs` (files only), stable order. */
 export function walkDiskDir(abs) {
@@ -64,12 +64,12 @@ export function dshPinRows(spikeAbs, pin) {
   const rows = [];
   if (existsSync(join(abs, 'package.json'))) rows.push(`${pin}/package.json`);
   for (const f of walkDiskDir(join(abs, 'lib'))) {
-    const rel = f.slice(abs.length + 1);
+    const rel = f.slice(abs.length + 1).split(sep).join('/');
     if (!rel.endsWith('.d.ts')) rows.push(`${pin}/${rel}`);
   }
   if (existsSync(join(abs, 'presets'))) {
     for (const f of walkDiskDir(join(abs, 'presets'))) {
-      rows.push(`${pin}/${f.slice(abs.length + 1)}`);
+      rows.push(`${pin}/${f.slice(abs.length + 1).split(sep).join('/')}`);
     }
   }
   return rows;
@@ -92,7 +92,7 @@ export function dshRosterRows(spikeAbs, names, ver) {
     } else if (existsSync(npmAbs)) {
       if (existsSync(join(npmAbs, 'package.json'))) rows.push(`${at}/package.json`);
       for (const f of walkDiskDir(join(npmAbs, 'lib'))) {
-        const rel = f.slice(npmAbs.length + 1);
+        const rel = f.slice(npmAbs.length + 1).split(sep).join('/');
         if (!rel.endsWith('.d.ts')) rows.push(`${at}/${rel}`);
       }
     } else absent.push(at);
@@ -113,7 +113,7 @@ export function dirPinRows(spikeAbs, pin, opts = {}) {
       const rel = f.slice(base.length + 1);
       return !rel.endsWith('.d.ts') && exts.some((e) => rel.endsWith(e)) && keep(rel);
     })
-    .map((f) => `${prefix}/${f.slice(base.length + 1)}`);
+    .map((f) => `${prefix}/${f.slice(base.length + 1).split(sep).join('/')}`);
 }
 
 /** The vendored zod's runtime closure: walk the pin's own relative import
@@ -147,7 +147,7 @@ export function zodClosureRows(spikeAbs, pin) {
       if (hit) queue.push(hit);
     }
   }
-  return [...seen].sort().map((f) => `${pin}/${f}`);
+  return [...seen].sort().map((f) => `${pin}/${f.split(sep).join('/')}`);
 }
 
 /** The webclient trees: presentation/<dir> staged at webclient/<staged-name>.
@@ -159,7 +159,7 @@ export function webclientRows(repoAbs, trees) {
   for (const t of trees) {
     const src = join(repoAbs, t.dir);
     if (!existsSync(src)) { missing.push(t.dir); continue; }
-    for (const f of walkDiskDir(src)) rows.push(`webclient/${t.staged}/${f.slice(src.length + 1)}`);
+    for (const f of walkDiskDir(src)) rows.push(`webclient/${t.staged}/${f.slice(src.length + 1).split(sep).join('/')}`);
   }
   return { rows, missing };
 }
