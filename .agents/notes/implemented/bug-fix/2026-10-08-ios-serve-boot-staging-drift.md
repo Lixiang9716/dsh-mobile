@@ -30,6 +30,15 @@ release leg is a non-gated ritual):
    rode a whole-dir tree row; the others' index.js + manifest.json had
    per-file rows, and `dsh-shell-wasm/programs.js` (imported by index.js)
    was never listed anywhere.
+4. **domino's package.json absent from the staged tree**: the package rode
+   a lib/-only tree row, but cjs-loader's BARE_PACKAGES loads it through
+   loadPackageEntry, which reads `<dir>/package.json` for `main` — the
+   missing manifest made the entry fall back to `'.'`, and the boot died at
+   `require('./.')` when tool-web's turndown chain required domino bare
+   (QuickJS has no DOMParser global). In Release this failure is invisible
+   (its log line is debug-level, stripped by DSH_RELEASE) and the seat
+   waits forever on `settings.probes.done` — the eternal "正在启动 DSH…"
+   splash.
 
 Android's committed assets and harmony's generated closure were both already
 correct — iOS is the only hand-list host, and it drifted.
@@ -47,9 +56,16 @@ correct — iOS is the only hand-list host, and it drifted.
 - The four plugin dirs become TREES rows — the office row's whole-dir rule,
   applied to the rest ("a file joins the embed by existing, not by list
   edit").
-- Verified end-to-end: regen → Release build → install on dsh-iphone →
-  launch → the stderr shows the gateway audit stream (fsRead/fsWrite
-  granted) and the serving port listens; no `runtime failed` line.
+- domino's package.json rides an explicit FILES row beside the lib/ tree
+  (the cordis manifest pattern). A whole-dir row was tried first and broke
+  the stager's fail-loud empty guard on the package's zero-byte
+  `.yarn/versions/*.yml` junk — the explicit-file row avoids embedding it.
+- Verified end-to-end on BOTH flavors: Debug (`-dsh-mode serve`) logs the
+  full event chain (runtime.booted → settings.preset.roster →
+  settings.plugin.inventory → settings.pluginManager.readonly) and the
+  carrier takes 33 inbound page connections; the user-facing Release boots
+  to the 内测声明 modal over the live sidebar (screenshot evidence,
+  tmp/release-watch + /tmp/dsh-release-final.png this session).
 
 ## Alternatives considered
 
