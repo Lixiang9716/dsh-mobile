@@ -455,13 +455,12 @@ function parseArgs(argv) {
       only[argv[i]] = argv[i + 1];
       i += 1;
     } else if (argv[i] === '--json') only['--json'] = true;
-    else fail(`unknown argument: ${argv[i]} (usage: gen-staging-manifests.mjs [--host h] [--out DIR] [--json])`);
+    else fail(`unknown argument: ${argv[i]}`);
   }
   return only;
 }
 
-/** The generated content + the machine-readable delta (harmony-BUNDLE_FILES.rows
- * is what Phase 3 would commit in place of the hand list). */
+/** The generated content + the machine-readable delta. */
 function emitArtifacts(out, reports, fatal) {
   mkdirSync(out, { recursive: true });
   for (const r of reports) {
