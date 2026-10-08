@@ -1,0 +1,25 @@
+{
+  "title": "the bottom system-bar inset lands \u2014 the Settings gear leaves the nav bar's dead region",
+  "created": "2026-10-08T04:48:14+00:00",
+  "rules": {
+    "hash": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "c195c538562be1aecd34d90ea5299839e5fc2c3a4c7197965f7baaebd342815d"
+    }
+  },
+  "checklist": [
+    "MainActivity pads the navigationBars bottom inset (with pre-30 fallback)",
+    "on-device: content ends at the bar's top; a plain tap on the gear center opens settings; the plugins tab opens by touch",
+    "drive regression green on the change (run-android-full phases 1+5)",
+    "issue #415 filed with the instrumented-tap repro; agent note (bug-fix)"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0204",
+  "void": {
+    "ts": "2026-10-08T04:48:45+00:00",
+    "by": "13957@DESKTOP-AOFQD6F",
+    "reason": "id collision across serial PRs: the summaries fix's card (PR #414, same branch-independent next id) owns T-0204 once both land \u2014 re-issued as a fresh card"
+  }
+}

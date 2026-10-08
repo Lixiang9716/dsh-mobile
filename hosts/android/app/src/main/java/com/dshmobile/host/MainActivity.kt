@@ -94,12 +94,16 @@ class MainActivity : Activity() {
      * page viewport simply starts below them. Registered here — after the
      * content view exists — and re-dispatched, because an insets listener
      * attached before setContentView() never sees the first dispatch.
+     *
+     * The BOTTOM bar is inset too (issue #415): the edge-to-edge window put the
+     * page's bottom edge under the navigation bar's touch-dead region (the rail's
+     * Settings gear kept only a tappable top sliver); padding is the top inset's trade.
      */
     override fun onResume() {
         super.onResume()
         val content = findViewById<android.view.ViewGroup>(android.R.id.content) ?: return
         content.setOnApplyWindowInsetsListener { view, insets ->
-            view.setPadding(0, statusBarInsetTop(insets), 0, 0)
+            view.setPadding(0, statusBarInsetTop(insets), 0, navigationBarsInsetBottom(insets))
             insets
         }
         content.requestApplyInsets()
@@ -117,6 +121,14 @@ class MainActivity : Activity() {
             @Suppress("DEPRECATION")
             insets.systemWindowInsetTop
         }
+
+    /** Bottom navigation-bar inset (#415: keep the page out of the dead region). */
+    private fun navigationBarsInsetBottom(insets: android.view.WindowInsets): Int {
+        if (android.os.Build.VERSION.SDK_INT < 30) {
+            @Suppress("DEPRECATION") return insets.systemWindowInsetBottom
+        }
+        return insets.getInsets(android.view.WindowInsets.Type.navigationBars()).bottom
+    }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

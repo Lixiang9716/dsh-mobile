@@ -1,10 +1,10 @@
 {
-  "host": "Android emulator (emulator-5554, unknown-avd / API 35)",
+  "host": "Android emulator (emulator-5554, dsh-e2e / API 35)",
   "engine": "quickjs-ng",
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "phase": "composer-live-write",
-  "launchConfiguration": "am start -n com.dshmobile.spike/.MainActivity --ez dsh.write true",
-  "tree": "origin/main f3d364561695 (dirty working tree at receipt time)",
+  "launchConfiguration": "am start -n com.dshmobile.host/.MainActivity --ez dsh.write true",
+  "tree": "origin/main a382f616fef1 (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "android.composer.live-write",
@@ -20,6 +20,6 @@
     "screens/03-reply-rendered.png",
     "screens/04-final-state.png"
   ],
-  "timestamp": "2026-10-05T15:17:27+08:00",
+  "timestamp": "2026-10-08T13:07:50+08:00",
   "exitCode": 0
 }
