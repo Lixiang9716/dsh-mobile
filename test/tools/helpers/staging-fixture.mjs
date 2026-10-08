@@ -87,6 +87,9 @@ export function derivedBundleRows() {
     'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/index.json',
     ...ZOD_ROWS,
     'vendor/npm/cordis@4.0.2/package.json',
+    `vendor/dsh/goalish@${VER}/package.json`, `vendor/dsh/goalish@${VER}/lib/index.js`,
+    `vendor/dsh/agent-presets@${VER}/presets/mobile/agent.cordis.yml`,
+    `vendor/dsh/agent-presets@${VER}/presets/mobile/preset.yml`,
     ...WEBCLIENT_TREES.map((t) => `webclient/${t.staged}/index.html`),
   ].sort();
 }
@@ -122,6 +125,12 @@ function vendorOfficialSh() {
     '"',
     'CLOSURE="$CLOSURE',
     '$SPINE_OURS"',
+    '',
+    'for face in goalish; do',
+    '    stage_npm_face_at_dsh_path "$face"',
+    'done',
+    'cp "runtime/dsh/presets-mobile/mobile/preset.yml" "$RAW/vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/preset.yml"',
+    'cp "runtime/dsh/presets-mobile/mobile/agent.cordis.yml" "$RAW/vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/agent.cordis.yml"',
     '',
   ].join('\n');
 }
@@ -259,6 +268,12 @@ const PIN_TREE_FILES = {
   [ZOD_PIN + '/v4/classic/checks.js']: "export * from '../../errors.js';\n",
   [ZOD_PIN + '/errors.js']: 'export class ZodError extends Error {}\n',
   'vendor/npm/pin@1.0.0/package.json': '{"name":"pin"}\n',
+  [`vendor/dsh/goalish@${VER}/package.json`]: '{"name":"goalish"}\n',
+  [`vendor/dsh/goalish@${VER}/lib/index.js`]: 'export const g = 1;\n',
+  [`vendor/dsh/agent-presets@${VER}/presets/mobile/preset.yml`]: 'name: fixture\n',
+  [`vendor/dsh/agent-presets@${VER}/presets/mobile/agent.cordis.yml`]: '- id: persona\n',
+  'presets-mobile/mobile/preset.yml': 'name: fixture\n',
+  'presets-mobile/mobile/agent.cordis.yml': '- id: persona\n',
 };
 
 // --- the fixture -------------------------------------------------------------

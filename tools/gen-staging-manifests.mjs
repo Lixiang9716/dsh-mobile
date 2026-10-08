@@ -237,8 +237,9 @@ function deriveBundleFiles(host, closureRows, roster, facts, closure) {
   legs.set('graph', [...walkGraph(host.roots(host.surfaces)).reached.keys()].sort());
   const dsh = dshRosterRows(DSH, roster, facts.ver);
   if (dsh.absent.length) fail(`dsh roster pins absent from the materialized tree: ${dsh.absent.join(', ')}`);
-  // The harmony-only faces + the MOBILE preset docs (gen-staging-legs).
-  const harmonyOnly = harmonyOnlyRows(DSH, facts);
+  // The harmony-only faces + the MOBILE preset docs (gen-staging-legs);
+  // the pin version stays the joint VER (android's declaration).
+  const harmonyOnly = harmonyOnlyRows(DSH, closure, facts.ver);
   legs.set('dshpins', [...dsh.rows, ...harmonyOnly].sort());
   legs.set('pinfiles', [
     ...pinRowsOrFail(closure.noble, { exts: ['.js'] }),
