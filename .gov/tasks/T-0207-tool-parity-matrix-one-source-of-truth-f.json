@@ -1,0 +1,21 @@
+{
+  "title": "Tool parity matrix: one source of truth for per-platform tool mounting + a parity gate",
+  "created": "2026-10-08T13:55:51+00:00",
+  "rules": {
+    "hash": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "c195c538562be1aecd34d90ea5299839e5fc2c3a4c7197965f7baaebd342815d"
+    }
+  },
+  "checklist": [
+    "Single-source expectation table (three platforms x tool rows: mounted / disabled-with-reason / unavailable) as data in runtime/dsh, committed",
+    "A parity gate asserts each host's staging manifest + binding descriptor against the table (rejection case proves it fires on drift)",
+    "Current drift surfaced and dispositioned: android's health-skipped tool-ralph/tool-pwsh rows and !!js-gated tool-bash vs harmony's expected-mount rows \u2014 each row either aligned or disabled with a recorded reason",
+    "Device-side legs: the bash/pwsh/present/ralph mounting proofs from T-0048 become expected rows asserted by the existing E2E scenarios on android and harmony",
+    "Bilingual docs pair for the matrix (govrail pairing convention) + the gate wired into gates.json with verify-plane re-seal and repin loop CLEAN"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0207"
+}
