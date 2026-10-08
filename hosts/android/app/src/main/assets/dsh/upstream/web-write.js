@@ -57,6 +57,10 @@ import {
   makeSessionRenameHandlers, makeSessionQueueHandlers,
   makeSessionOpenerHandlers,
 } from 'upstream/web-write-session.js';
+// The subagent control-plane legs (forwarders onto the vendored
+// @deepseek-ai/dsh-subagent runtime boot.js mounts): upstream/
+// web-write-subagents.js.
+import { makeSubagentHandlers } from 'upstream/web-write-subagents.js';
 // The preset adapters (agentPresets forwarders + the endpointPresets
 // platform-fact adapter), split out at the code-size gate.
 import {
@@ -94,6 +98,9 @@ export const WRITE_ENDPOINTS = [
   'session/page', 'session/search', 'session/rename',
   'session/updateQueue', 'session/canOpenWorkspacePath',
   'permissionPresets/catalog',
+  // The subagent control plane: forwarders onto the vendored
+  // @deepseek-ai/dsh-subagent runtime (upstream/web-write-subagents.js).
+  'subagents/list', 'subagents/prompt', 'subagents/interruptByParent',
   'settings/describe', 'settings/update', 'settings/mutate',
   'agentPresets/list', 'agentPresets/read', 'agentPresets/copy',
   'agentPresets/deletePreset', 'agentPresets/select',
@@ -362,16 +369,17 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       // The composer dialog's Fork session leg: seeds the child from one
       // completed-turn prefix and attaches it to the profile's workspace.
       ...makeSessionForkHandlers(ctx, deps),
-      // The session deep-page legs (upstream/web-write-session.js): the
-      // transcript pager, the cross-session text search, the user rename,
-      // the pending-queue mutations, the desktop-opener gate, and the
-      // permission 预设 catalog (the honest empty configured table).
+      // The session deep-page legs + opener gate + preset catalog
+      // (upstream/web-write-session.js).
       ...makeSessionPageHandlers(ctx),
       ...makeSessionSearchHandlers(ctx),
       ...makeSessionRenameHandlers(ctx),
       ...makeSessionQueueHandlers(ctx),
       ...makeSessionOpenerHandlers(),
       'permissionPresets/catalog': async () => ({ options: [] }),
+      // The subagent control plane: forwarders onto the vendored runtime
+      // (upstream/web-write-subagents.js).
+      ...makeSubagentHandlers(ctx),
       'settings/describe': makeDescribeSettings(ctx, ensureNamespaces),
       'settings/update': makeSettingsWrite(ctx, ensureNamespaces,
         (settings, args) => settings.update(

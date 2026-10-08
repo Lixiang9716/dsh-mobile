@@ -10,7 +10,7 @@
   },
   "checklist": [
     "[x] session/page+search+fork+rename+cancel+updateQueue+attachment answered from the attached store where real",
-    "subagents/* via a mounted vendored dsh-subagent service",
+    "[x] subagents/* via a mounted vendored dsh-subagent service",
     "[x] sessionFeedback/record + permissionPresets/catalog + fileUploads/upload honest backing or pinned residue",
     "the four hand-maintained closure manifests consolidate into one generated list"
   ],

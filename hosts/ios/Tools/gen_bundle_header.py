@@ -49,12 +49,14 @@ TREES = [
 ] + [
     # present/ralph/bash/pwsh (the mobile preset's shell surface): pinned on
     # the NPM face (ensure-dsh.sh fetches the published tarballs; the mirror
-    # serves no vendor/dsh tree for them) but STAGED at the vendor/dsh/<pkg>
-    # @ver rel path — the dir the preset-health marker seeder walks.
+    # serves no vendor/dsh tree for them) but STAGED at the vendor/dsh/%s@ver
+    # rel path — the dir the preset-health marker seeder walks. session-query
+    # rides the same npm-face convention (T-0050 item 2: the subagent
+    # catalog's corpus source).
     *(("vendor/dsh/%s@0.1.6-alpha.2" % n,
        DSH / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
       for n in ("tool-present", "tool-ralph", "tool-bash", "tool-pwsh",
-                "plugin-manager", "tool-web")),
+                "plugin-manager", "tool-web", "session-query")),
     # The WEB plane's seam + HTML→markdown chain (#335 B5): boot.js mounts
     # the web plane unconditionally, so the embed carries the faces or the
     # mount dies loud at its first dynamic import. dsh-web stages at its own

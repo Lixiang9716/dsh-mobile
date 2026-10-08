@@ -639,6 +639,9 @@ stage_npm_face_at_dsh_path() {
 if [ "$MODE" != "check" ]; then
     stage_npm_face_at_dsh_path tool-web
     stage_npm_face_at_dsh_path plugin-manager
+    # The SUBAGENT row's listing service (T-0050 item 2): boot.js mounts the
+    # vendored sessionQuery engine (subagents/list's corpus source).
+    stage_npm_face_at_dsh_path session-query
     mkdir -p "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/lib"
     cp "runtime/dsh/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/package.json" \
        "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/package.json"

@@ -127,6 +127,33 @@ const gateLegs = async ({ api, demand }) => {
     `permissionPresets/catalog: ${JSON.stringify(catalog)}`);
 };
 
+/** The subagent legs (upstream/web-write-subagents.js), over the REAL
+ * vendored runtime boot.js mounts: the catalog answers the honest empty
+ * roster for a live parent, a prompt to an address with no live child
+ * refuses with the service's own structured code, and interruptByParent
+ * accepts absent targets as no-ops (the upstream contract). */
+const subagentLegs = async ({ ctx, api, demand, demandRefusal, SESSION_ID }) => {
+  const list = await api['subagents/list']({ parentSessionId: SESSION_ID });
+  demand(list !== null && typeof list === 'object'
+    && Array.isArray(list.entries) && list.entries.length === 0
+    && list.parentAvailable === true,
+    `subagents/list: ${JSON.stringify(list).slice(0, 200)}`);
+  await demandRefusal(api['subagents/prompt'],
+    { request: { requestId: 'probe-subagent-1', parentSessionId: SESSION_ID,
+      childSessionId: 'session-none', mode: 'continuable',
+      delivery: 'queue',
+      content: [{ type: 'text', text: 'anyone home?' }] } },
+    'subagent/not-resumable', 'prompt to a childless address');
+  const interrupted = await api['subagents/interruptByParent'](
+    { childSessionId: 'session-none', parentSessionId: SESSION_ID,
+      mode: 'continuable' });
+  demand(interrupted.accepted === true,
+    `subagents/interruptByParent: ${JSON.stringify(interrupted)}`);
+  const cold = await api['subagents/list']({ parentSessionId: 'session-none' });
+  demand(cold.parentAvailable === false,
+    `subagents/list cold parent: ${JSON.stringify(cold)}`);
+};
+
 /** The phase driver (the probe passes its helpers in as deps). */
 export const probeSessionLegs = async ({ ctx, api, demand, demandRefusal, log, SESSION_ID }) => {
   const agent = ctx.agents.get(SESSION_ID);
@@ -145,6 +172,7 @@ export const probeSessionLegs = async ({ ctx, api, demand, demandRefusal, log, S
   const found = await searchLegs({ api, demand, demandRefusal, SESSION_ID });
   const removed = await queueLegs({ api, demand, demandRefusal, agent, SESSION_ID,
     createUserMessage });
+  await subagentLegs({ ctx, api, demand, demandRefusal, SESSION_ID });
   gateLegs({ api, demand });
   log.info('session legs ok', {
     renamed: renamed.title, paged: full.records.length,

@@ -32,25 +32,22 @@ import { SystemPrompt } from '@deepseek-ai/dsh-system-prompt';
 import { ToolRuntime } from '@deepseek-ai/dsh-tools';
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection';
 import { SettingsMemory } from 'upstream/settings-memory.js';
+// The SUBAGENT row (T-0050 item 2; split out at the code-size gate).
+import { mountSubagentRows } from 'upstream/boot-subagent-rows.js';
 import { providerSettingsNs } from 'upstream/web-write-settings.js';
 import { mountWebPlane } from 'upstream/web-search-keyless.js';
 import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
 import { registerRouteDisposer, registerDirectoryHandle } from 'upstream/llm-route.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
-// The GOAL/COMMAND/FILE-REFERENCE/CREATION rows (split from this file at the
-// code-size gate, 2026-10-03 — same dynamic-import ordering constraints, see
-// the module header).
+// The GOAL/COMMAND/FILE-REFERENCE/CREATION rows (split at the code-size
+// gate, 2026-10-03; see the module header).
 import { mountCoverageRows } from 'upstream/boot-coverage-rows.js';
-// The FIRST ported tool package (D9). It exports `{Config, apply, inject,
-// name}` and no default, so the namespace object IS the cordis plugin (it
-// carries the apply/inject/name/Config the kernel reads).
+// The FIRST ported tool package (D9): its namespace object IS the plugin.
 import * as ToolTodo from '@deepseek-ai/dsh-tool-todo';
-// The per-tool-run deadline (issue #323, ring 1): arms a wall-clock budget
-// around every native tool dispatch through the registry's `tools/execute`
-// waterfall, using the vendored @deepseek-ai/dsh-timeout deadline — a tool
-// body that never settles now fails the call in-band instead of wedging the
-// serial runtime (the T-0167 hang).
+// The per-tool-run deadline (issue #323, ring 1): a wall-clock budget
+// around every native tool dispatch (the vendored dsh-timeout deadline) —
+// a tool that never settles fails in-band instead of wedging the runtime.
 import * as ToolDeadline from 'upstream/tool-deadline.js';
 // The turn-level watchdog (issue #323, ring 2): silence on a running agent
 // beyond the budget fails the turn in-band (agent cancel, watchdog cause) —
@@ -320,11 +317,11 @@ const mountSpine = async (ctx, identity) => {
   await ctx.plugin(AgentRegistry);
   await ctx.plugin(SystemPrompt, { personaPrefix: identity.personaPrefix ?? '' });
   await ctx.plugin(ToolRuntime);
-  // Ring 1 rides the registry's own waterfall extension point; mounted with
-  // the other tool-row plugins (its inject waits for `tools`).
-  await ctx.plugin(ToolDeadline, {});
+  await ctx.plugin(ToolDeadline, {}); // Ring 1 (inject waits for `tools`).
   await ctx.plugin(SessionProjectionRegistry);
   await ctx.plugin(SettingsMemory);
+  // The SUBAGENT row (T-0050 item 2; boot-subagent-rows.js).
+  await mountSubagentRows(ctx);
   // The ported tool packages (D9): mounted AFTER `tools`, because a tool
   // registers into that service at apply time. `allowParallelInProgress:
   // false` is the mobile profile's shape — one agent, sequential work.
@@ -334,8 +331,7 @@ const mountSpine = async (ctx, identity) => {
     await ctx.plugin(OpenDesign);
     await ctx.plugin(PluginManagerTools);
     await ctx.plugin(await import('system-plugins/dsh-office/index.js')); // the OFFICE row — dynamic: bare `fflate` needs the bridges body first
-    // The WEB row (#335 B5): the dsh-web seam + the keyless search provider +
-    // the search-only tool row. Dynamic import: the bridges must have
+    // The WEB row (#335 B5): dynamic import — the bridges must have
     // registered turndown/domino before tool-web's static graph links.
     await mountWebPlane(ctx);
   await mountFileTools(ctx, identity.cwd);
