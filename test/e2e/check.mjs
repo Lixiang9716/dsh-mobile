@@ -24,6 +24,16 @@
  * "exactly one such record exists in this log, matching these fields";
  * every other record must still match the ordered walk one-to-one.
  *
+ * An expectation with "optional": true is SKIPPED when the record at its
+ * ordered position does not match it (the position stays for the next
+ * expectation to try). It exists for records the PAGE may or may not
+ * produce on a given boot by construction — the official composer's catalog
+ * probe fires skills/list on one boot and commands/list on the next (the
+ * "/" palette's last-viewed state), one per run, never both pinned — and
+ * still asserts the record when it IS there. Which of a variable family
+ * fired is the manifest's own pinning choice: one optional row per family
+ * member, in position.
+ *
  * tools/ dev script (out of the logging gate's scope; console IS the product).
  *
  * usage: check.mjs --manifest <scenarios/foo.json> --log <captured-log>
@@ -145,10 +155,39 @@ const claimAnyOrder = (manifest, records, failures) => {
   for (const raw of manifest.expect) {
     if (raw.order !== 'any') { remaining.push(raw); continue; }
     const j = records.findIndex((r, i) => !consumed[i] && matchOne(raw, r) === null);
-    if (j === -1) failures.push(mismatch({ ...raw, index: -1 }, records[0] ?? null));
-    else consumed[j] = true;
+    if (j === -1) {
+      // "optional" composes with "any": a page-driven probe whose very
+      // PRESENCE varies by boot (the catalog pair) is tolerated absent —
+      // one-to-one still holds for everything that exists.
+      if (raw.optional) continue;
+      failures.push(mismatch({ ...raw, index: -1 }, records[0] ?? null));
+    } else consumed[j] = true;
   }
   return { remaining, orderedRecords: records.filter((_, i) => !consumed[i]) };
+};
+
+/** One ordered-walk expectation: consume records at `at`, return the
+ * advanced position, push a failure when the walk rejects. "repeat" greedily
+ * consumes one-or-more matching records (header docs); "optional" tolerates
+ * absence — the position stays so the next expectation tries the same
+ * record (rule-6 fixtures: order-optional.*). A present record consumes
+ * and pins either way. */
+const walkExpectation = (expect, orderedRecords, at, failures) => {
+  if (expect.repeat) {
+    let used = 0;
+    while (at < orderedRecords.length && matchOne(expect, orderedRecords[at]) === null) {
+      at += 1;
+      used += 1;
+    }
+    if (used === 0) failures.push(mismatch(expect, orderedRecords[at]));
+    return at;
+  }
+  const bad = matchOne(expect, orderedRecords[at]);
+  if (bad) {
+    if (expect.optional) return at;
+    failures.push(bad);
+  }
+  return at + 1;
 };
 
 const run = () => {
@@ -160,20 +199,7 @@ const run = () => {
   const { remaining, orderedRecords } = claimAnyOrder(manifest, records, failures);
   let at = 0;
   for (let i = 0; i < remaining.length; i++) {
-    const expect = { ...remaining[i], index: i };
-    if (expect.repeat) {
-      // Greedy run of one-or-more matching records (see header docs).
-      let used = 0;
-      while (at < orderedRecords.length && matchOne(expect, orderedRecords[at]) === null) {
-        at += 1;
-        used += 1;
-      }
-      if (used === 0) failures.push(mismatch(expect, orderedRecords[at]));
-    } else {
-      const bad = matchOne(expect, orderedRecords[at]);
-      if (bad) failures.push(bad);
-      at += 1;
-    }
+    at = walkExpectation({ ...remaining[i], index: i }, orderedRecords, at, failures);
   }
   if (orderedRecords.length > at) {
     failures.push({ extra: orderedRecords.slice(at).map((r) => r.payload) });

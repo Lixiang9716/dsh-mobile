@@ -189,6 +189,18 @@ const installRuntimeHalf = (ctx, cfg) => {
         entries: outcome.entries.length,
         source: 'vendored @deepseek-ai/dsh-client-modules composed in-runtime',
       });
+      // The session toolset's REAL visible names (T-0048's tail item,
+      // log-asserted): which tools this user-facing boot actually serves —
+      // the registry's own view, the same resolver the model-facing catalog
+      // reads. Names only: the specs would blow the ~1KB log-line budget
+      // (measured 2026-10-08: the spec-map variant truncated mid-JSON).
+      // Sync read, emitted inside the boot hop: order-deterministic.
+      const visible = ctx.tools?.view?.(undefined)?.visible;
+      emit('spine.tools.mounted', {
+        tools: visible ? [...visible.keys()].sort() : [],
+        count: visible ? visible.size : 0,
+        source: 'ctx.tools.view (the registry visibility view)',
+      });
       // endpointCount, not the full array: the on-device log line budget
       // (~1KB payload — MEASURED 2026-10-08: the 36-endpoint array truncated
       // at 1069 chars mid-JSON and the E2E capture lost the record) keeps

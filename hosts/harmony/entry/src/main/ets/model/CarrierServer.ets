@@ -58,6 +58,13 @@ interface ConnState {
   buffer: Uint8Array;
   /** The WS seat path once upgraded; null while the connection speaks HTTP. */
   seat: string | null;
+  /** Serialized outbound WS writes (the mux/journal frame pump). The
+   * platform's socket.send is async and unordered under concurrency: two
+   * rapid sends can hit the wire transposed, and the journal stream's frame
+   * order IS its contract (the b3 probe pins the frame-type sequence). Each
+   * send chains onto this promise, so wire order equals call order; the
+   * catch re-resolves so one failure never stalls the stream. */
+  writeChain: Promise<void>;
 }
 
 export function contentTypeOf(path: string): string {
@@ -230,11 +237,18 @@ export class CarrierServer {
     this.servers = [];
   }
 
-  /** Send one WS text frame to every seat on `path` (no-op while closed). */
+  /** Send one WS text frame to every seat on `path` (no-op while closed).
+   * The send chains onto the connection's writeChain: the platform's
+   * socket.send is async and unordered under concurrency (measured on the
+   * dsh_phone emulator, 2026-10-08: adjacent journal frames —
+   * agent/inbox/spliced vs step/start, request/header vs request/context —
+   * reached the page transposed and the b3 probe's frame-sequence pin
+   * failed), so wire order must be forced equal to call order. */
   sendToPath(path: string, text: string): void {
     this.conns.forEach((conn: ConnState): void => {
       if (conn.seat === path) {
-        conn.client.send({ data: wsTextFrame(text) })
+        conn.writeChain = conn.writeChain
+          .then((): Promise<void> => conn.client.send({ data: wsTextFrame(text) }))
           .catch((err: BusinessError): void => {
             hilog.error(0x0000, TAG, 'carrier: ws send failed: %{public}s',
               err.message ?? 'unknown');
@@ -357,7 +371,10 @@ export class CarrierServer {
   }
 
   private handleConnect(client: socket.TCPSocketConnection): void {
-    const conn: ConnState = { client: client, buffer: new Uint8Array(0), seat: null };
+    const conn: ConnState = {
+      client: client, buffer: new Uint8Array(0), seat: null,
+      writeChain: Promise.resolve(),
+    };
     this.conns.push(conn);
     client.on('message', (value: socket.SocketMessageInfo): void => {
       this.ingest(conn, new Uint8Array(value.message));

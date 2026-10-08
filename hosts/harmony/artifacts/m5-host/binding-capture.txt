@@ -1,128 +1,144 @@
-dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"carrier.listening","transport":"tcp","loopback":true,"port":17877}]}
-dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"webclient.mounted","client":"dsh-web-client","path":"/index.html"}]}
-dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"ws.connected","protocol":"session-projection@0"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"scenario main","data":[{"descriptor":"gateway@1"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"gateway.negotiated","version":"gateway@1"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"descriptor.declared","available":9,"unavailable":0}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"host.info"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.write.ok","written":17}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.read.ok","bytes":17,"matches":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:nowhere","path":"x"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"fsRead"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.denied","code":"denied"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"http leg","data":[{"base":"http://127.0.0.1:17877"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17877/gateway-e2e/bytes","method":"GET"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":84}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"http.status","status":200,"loopback":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":4}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"http.body","chunks":2,"totalBytes":64}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17877/gateway-e2e/slow","method":"GET"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":5,"buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch abort","data":[{"bodyId":5}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":5,"buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"cancelled","primitive":"httpFetch"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"http.aborted","code":"cancelled"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"picker leg","data":[{"dismiss":"file","grant":"file"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":5}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"picker.dismissed","null":true}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"host.seed"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"picker.granted","mode":"file","scopeOpaque":true,"pathOpaque":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:814e4dd7-387d-456e-a6f7-3884c9b0ed48","path":"dsh-e2e-seed-147457b8-7163-4892-ae8a-33f99e901320.txt"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.user.read","nonEmpty":true,"matches":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.persist"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.scope.persist","refOpaque":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:b159c0ed-92a5-4f75-91d1-6766c77c4d59","path":"dsh-e2e-seed-147457b8-7163-4892-ae8a-33f99e901320.txt"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"credential leg","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentApproval"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"approval.approved","approved":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"keychain.roundtrip","set":true,"match":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"keychain.deleted","gone":true}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"lifecycle leg","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"notify"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"notify.scheduled","idOpaque":true}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"app.state","state":"background"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"notify.response"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":38}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"notify.response","idMatches":true}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"app.state","state":"foreground"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"stream deltas","data":[{"count":5}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"session"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"agent"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"ws.token-delta","first":true,"index":0}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"complete"}]}
-dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"ws.token-delta","last":true,"index":4}]}
-dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"ws.session-complete","status":"pass"}]}
-dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"scenario.complete","status":"pass"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"carrier.listening","transport":"tcp","loopback":true,"port":17877}]}
+dsh.runtime.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"webclient.mounted","client":"dsh-web-client","path":"/index.html"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"ws.connected","protocol":"session-projection@0"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"scenario main","data":[{"descriptor":"gateway@1"}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"descriptor.declared","available":28,"unavailable":9}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"wait for event","data":[{"name":"host.info"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.write.ok","written":17}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.read.ok","bytes":17,"matches":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:nowhere","path":"x"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"fsRead"}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.denied","code":"denied"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"http leg","data":[{"base":"http://127.0.0.1:17877"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17877/gateway-e2e/bytes","method":"GET"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":84}]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:10:47.819Z","primitive":"fsRead","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"denied"}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"http.status","status":200,"loopback":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":4}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"http.body","chunks":2,"totalBytes":64}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17877/gateway-e2e/slow","method":"GET"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:10:47.907Z","primitive":"httpFetch","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":5,"buffered":0}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch abort","data":[{"bodyId":5}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":5,"buffered":0}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"cancelled","primitive":"httpFetch"}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"http.aborted","code":"cancelled"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"picker leg","data":[{"dismiss":"file","grant":"file"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:10:49.477Z","primitive":"httpFetch.abort","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":5}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:10:49.508Z","primitive":"httpFetch","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"picker.dismissed","null":true}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"wait for event","data":[{"name":"host.seed"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:05.875Z","primitive":"presentPicker","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"picker.granted","mode":"file","scopeOpaque":true,"pathOpaque":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:f18de8eb-a2dd-4c27-b7a0-e19ad2fb1acc","path":"dsh-e2e-seed-db5bc857-b823-4075-b74e-5f078c39bd45.txt"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.user.read","nonEmpty":true,"matches":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.persist"}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.scope.persist","refOpaque":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:a92aeb0f-fb04-444a-914e-18f94ace11eb","path":"dsh-e2e-seed-db5bc857-b823-4075-b74e-5f078c39bd45.txt"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"credential leg","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentApproval"}]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:19.197Z","primitive":"fsRead","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:19.197Z","primitive":"fsScope.resolve","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:19.197Z","primitive":"fsScope.persist","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:19.197Z","primitive":"fsRead","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:19.197Z","primitive":"presentPicker","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"approval.approved","approved":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:51.911Z","primitive":"presentApproval","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.host/cred"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:51.919Z","primitive":"keychainSet","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"keychain.roundtrip","set":true,"match":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.host/cred"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"keychain.deleted","gone":true}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"lifecycle leg","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"notify"}]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:51.926Z","primitive":"keychainGet","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:51.927Z","primitive":"keychainSet","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:51.927Z","primitive":"keychainGet","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"notify.scheduled","idOpaque":true}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"wait for event","data":[{"name":"app.state"}]}
+dsh.gateway.audit: {"ts":"2026-10-08T08:11:51.965Z","primitive":"notify","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"app.state","state":"background"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"wait for event","data":[{"name":"notify.response"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":38}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"notify.response","idMatches":true}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"wait for event","data":[{"name":"app.state"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"app.state","state":"foreground"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"stream deltas","data":[{"count":5}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"projection push","data":[{"kind":"session"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"projection push","data":[{"kind":"agent"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"ws.token-delta","first":true,"index":0}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.runtime.log: {"level":"debug","module":"m5.dsh","message":"projection push","data":[{"kind":"complete"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"ws.token-delta","last":true,"index":4}]}
+dsh.runtime.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"ws.session-complete","status":"pass"}]}
+dsh.runtime.log: {"level":"info","module":"m5.dsh","message":"e2e","data":[{"scenario":"harmony.capability-binding","event":"scenario.complete","status":"pass"}]}

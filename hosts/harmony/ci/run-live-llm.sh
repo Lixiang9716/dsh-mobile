@@ -272,7 +272,7 @@ wait "$streamer" 2>/dev/null || true
 streamer=""
 trap cleanup EXIT INT TERM
 
-grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
+grep 'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
 grep "dsh.runtime.verdict: $LEG " "$STREAM" > "$OUT/results.txt" || true
 cat "$OUT/results.txt"
 

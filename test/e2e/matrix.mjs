@@ -141,6 +141,24 @@ const finding = (root, code, file, detail) => ({ code, file: posix(relative(root
 
 const FIELD_TYPES = { scenario: 'string', pass: 'boolean', expected: 'number', logged: 'number' };
 
+/** Manifest resolution: prefer the verdict file's own stem
+ * (verdict-<stem>.json → scenarios/<stem>.json — several manifests may
+ * share one scenario id, e.g. the llm.live-stream CLI vs device legs), falling
+ * back to the scenario-id convention for plain verdict.json files. Both
+ * legs route through LEGACY_STEMS so pre-rename evidence resolves the
+ * renamed manifests (frozen verdicts name the old vocabulary). */
+const resolveManifest = (file, scenario, manifestDir) => {
+  const stem = (/^verdict-(.+)\.json$/.exec(baseName(file)) ?? [])[1];
+  const idStem = LEGACY_STEMS.get(scenario.replace(/\./g, '-')) ??
+    scenario.replace(/\./g, '-');
+  const stemStem = stem ? (LEGACY_STEMS.get(stem) ?? stem) : null;
+  let manifest = join(manifestDir, `${idStem}.json`);
+  if (stemStem && statSafe(join(manifestDir, `${stemStem}.json`))) {
+    manifest = join(manifestDir, `${stemStem}.json`);
+  }
+  return manifest;
+};
+
 const checkVerdict = (root, file, manifestDir) => {
   let v;
   try {
@@ -156,36 +174,25 @@ const checkVerdict = (root, file, manifestDir) => {
   if (v.pass !== true) findings.push(finding(root, 'VERDICT_FAIL', file, v.scenario));
   const out = { file: posix(relative(root, file)), scenario: v.scenario, pass: v.pass,
     expected: v.expected, logged: v.logged };
-  // Manifest resolution: prefer the verdict file's own stem
-  // (verdict-<stem>.json → scenarios/<stem>.json — several manifests may
-  // share one scenario id, e.g. the llm.live-stream CLI vs device legs), falling
-  // back to the scenario-id convention for plain verdict.json files. Both
-  // legs route through LEGACY_STEMS so pre-rename evidence resolves the
-  // renamed manifests (frozen verdicts name the old vocabulary).
-  const stem = (/^verdict-(.+)\.json$/.exec(baseName(file)) ?? [])[1];
-  const idStem = LEGACY_STEMS.get(v.scenario.replace(/\./g, '-')) ??
-    v.scenario.replace(/\./g, '-');
-  const stemStem = stem ? (LEGACY_STEMS.get(stem) ?? stem) : null;
-  let manifest = join(manifestDir, `${idStem}.json`);
-  if (stemStem && statSafe(join(manifestDir, `${stemStem}.json`))) {
-    manifest = join(manifestDir, `${stemStem}.json`);
-  }
+  const manifest = resolveManifest(file, v.scenario, manifestDir);
   out.manifest = posix(relative(root, manifest));
-  let repeatAware = false;
+  // Count consistency is a rule about a PASSING record: `pass: false` with
+  // differing counts IS the failure, already reported above — a FAIL verdict
+  // must not also draw a notice that claims `pass=true`. Repeat
+  // expectations (one-to-many, e.g. the real-LLM legs' delta runs) make
+  // logged > expected legitimate for a passing verdict; optional ones (the
+  // page-driven catalog probe that fires on one boot and not the next) make
+  // logged < expected equally legitimate.
+  let countTolerant = false;
   if (!statSafe(manifest)) {
     findings.push(finding(root, 'SCENARIO_WITHOUT_MANIFEST', file, v.scenario));
   } else {
     const expect = JSON.parse(readFileSync(manifest, 'utf8')).expect;
     out.manifestExpect = expect.length;
     out.drift = out.manifestExpect !== v.expected;
-    // Repeat expectations (one-to-many, e.g. the real-LLM legs' delta runs)
-    // make logged > expected legitimate for a passing verdict.
-    repeatAware = expect.some((e) => e && e.repeat === true);
+    countTolerant = expect.some((e) => e && (e.repeat === true || e.optional === true));
   }
-  // Count consistency is a rule about a PASSING record: `pass: false` with
-  // differing counts IS the failure, already reported above — a FAIL verdict
-  // must not also draw a notice that claims `pass=true`.
-  if (v.pass === true && v.expected !== v.logged && !repeatAware) {
+  if (v.pass === true && v.expected !== v.logged && !countTolerant) {
     findings.push(finding(root, 'VERDICT_MALFORMED', file,
       `${v.scenario}: expected=${v.expected} logged=${v.logged} but pass=true`));
   }

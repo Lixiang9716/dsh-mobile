@@ -20,7 +20,17 @@
  *   dsh.runtime.verdict: harmony.session.live-read     → leg done
  *   dsh.runtime.verdict: harmony.composer.live-write       → done (exit 0 on PASS)
  *
+ * The terminal wait rides BOTH surfaces: the hilog stream AND the on-device
+ * capture files. hilog flow control can drop stream lines entirely even
+ * with `-Q pidoff/domainoff` applied (measured 2026-10-08: the write leg's
+ * markers and all three verdict lines never surfaced on the stream while
+ * every leg had completed on-device — the checkers' capture files carried
+ * the terminal verdicts), so when the stream has not delivered, the poll
+ * greps the same capture files the checkers judge. Screenshots stay
+ * stream-only: they are evidence, never a pass condition.
+ *
  * usage: drive-official.mjs --hdc <path> [--overall-deadline S]
+ *                            [--capture-base DIR]
  *                            [--shot-boot PNG] [--shot-final PNG]
  *                            [--shot-session-boot PNG] [--shot-session PNG]
  *                            [--shot-write-boot PNG] [--shot-write-composer PNG]
@@ -49,6 +59,16 @@ if (!args.hdc) usage();
 const OVERALL = Number(args['overall-deadline'] ?? 420) * 1000;
 const startedAt = Date.now();
 const work = mkdtempSync(join(tmpdir(), 'dsh-drive-official-'));
+// The on-device capture files (run-host-e2e.sh pulls exactly these): the
+// stream-independent surface the terminal wait falls back to.
+const CAPTURE_BASE = args['capture-base'] ??
+  '/data/app/el2/100/base/com.dshmobile.host/haps/entry/cache';
+const CAPTURE_FILES = {
+  official: `${CAPTURE_BASE}/dsh-official-capture.log`,
+  httpfetch: `${CAPTURE_BASE}/dsh-httpfetch-capture.log`,
+  session: `${CAPTURE_BASE}/dsh-session-capture.log`,
+  write: `${CAPTURE_BASE}/dsh-write-capture.log`,
+};
 
 const die = (msg) => {
   console.error(`drive-official: FAIL ${msg}`);
@@ -170,7 +190,53 @@ stream.stdout.on('data', (chunk) => {
 });
 stream.on('exit', () => die('hilog stream ended early'));
 
+/** One capture-file grep over hdc shell: the matching line's text, or ''.
+ * `hdc shell` reports rc=0 whatever the remote command returns, so the
+ * OUTPUT is the answer (the runner's own rule). */
+const grepCapture = (file, needle) => new Promise((resolve) => {
+  const child = spawn(args.hdc,
+    ['shell', `grep -s ${JSON.stringify(needle)} ${file}`],
+    { stdio: ['ignore', 'pipe', 'ignore'] });
+  let out = '';
+  child.stdout.on('data', (chunk) => { out += chunk.toString('utf8'); });
+  child.on('error', () => resolve(''));
+  child.on('close', () => resolve(out.trim()));
+});
+
+// The capture-file fallback, probed at most every 4s (each probe is a fresh
+// hdc shell round-trip; the drive's own poll paces at 500ms).
+let captureProbedAt = 0;
+const captureFallback = async () => {
+  if (Date.now() - captureProbedAt < 4000) {
+    return;
+  }
+  captureProbedAt = Date.now();
+  const [mount, httpfetch, session, write] = await Promise.all([
+    grepCapture(CAPTURE_FILES.official, '"event":"mount.complete"'),
+    grepCapture(CAPTURE_FILES.httpfetch,
+      'dsh.runtime.verdict: harmony.httpfetch-streaming'),
+    grepCapture(CAPTURE_FILES.session,
+      'dsh.runtime.verdict: harmony.session.live-read'),
+    grepCapture(CAPTURE_FILES.write,
+      'dsh.runtime.verdict: harmony.composer.live-write'),
+  ]);
+  if (mount && !state.mountDone) state.mountDone = true;
+  if (httpfetch && state.verdict === null) {
+    state.verdict = httpfetch.includes(' PASS ') ? 'pass' : 'fail';
+  }
+  if (session && state.sessionVerdict === null) {
+    state.sessionVerdict = session.includes(' PASS') ? 'pass' : 'fail';
+  }
+  if (write && state.writeVerdict === null) {
+    state.writeVerdict = write.includes(' PASS') ? 'pass' : 'fail';
+  }
+};
+
 pollUntil('b-harmony verdicts', async () => {
+  if (!(state.mountDone && state.verdict !== null &&
+      state.sessionVerdict !== null && state.writeVerdict !== null)) {
+    await captureFallback();
+  }
   return state.mountDone && state.verdict !== null && state.sessionVerdict !== null &&
       state.writeVerdict !== null
     ? [state.verdict, state.sessionVerdict, state.writeVerdict]

@@ -1,0 +1,3 @@
+dsh.runtime.log: {"level": "info", "module": "fix", "message": "e2e", "data": [{"scenario": "order-optional.fixture", "event": "burst.start","n": 1}]}
+dsh.runtime.log: {"level": "info", "module": "fix", "message": "e2e", "data": [{"scenario": "order-optional.fixture", "event": "catalog.rpc","endpoint": "mystery/list", "answered": "unavailable"}]}
+dsh.runtime.log: {"level": "info", "module": "fix", "message": "e2e", "data": [{"scenario": "order-optional.fixture", "event": "burst.done","n": 1}]}

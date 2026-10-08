@@ -83,6 +83,14 @@
       }
     },
     {
+      "event": "spine.tools.mounted",
+      "match": {
+        "count": 16,
+        "source": "ctx.tools.view (the registry visibility view)"
+      },
+      "note": "T-0048 tail item, log-asserted: the session toolset this user-facing boot serves. The 16 mounted tools are the spine/system-plugin face (fs/edit/shell/web_search/plugin_manager/office plane/todo); the bash/pwsh/present/ralph preset rows are NOT in the set — they are preset-document rows, and the boot agent joins no preset (upstream/boot.js staged gap) until the preset-join work lands. Staged + preset-resolvable is the state; mounted-in-boot is not, and this record keeps that truth on the log."
+    },
+    {
       "event": "write.surface.claimed",
       "match": {
         "streams": [
@@ -126,42 +134,40 @@
       "match": {
         "endpoint": "settings/describe",
         "answered": "forwarded"
-      }
+      },
+      "order": "any"
     },
     {
       "event": "rpc.observed",
       "match": {
         "endpoint": "dynamicCordisRunner/syncInspectManifest",
         "answered": "forwarded"
-      }
+      },
+      "order": "any"
     },
     {
       "event": "rpc.observed",
       "match": {
         "endpoint": "dynamicCordisRunner/inventory",
         "answered": "forwarded"
-      }
+      },
+      "order": "any"
     },
     {
       "event": "rpc.observed",
       "match": {
         "endpoint": "credentials/describe",
         "answered": "forwarded"
-      }
+      },
+      "order": "any"
     },
     {
       "event": "rpc.observed",
       "match": {
         "endpoint": "session/modelCatalog",
         "answered": "forwarded"
-      }
-    },
-    {
-      "event": "rpc.observed",
-      "match": {
-        "endpoint": "agentPresets/list",
-        "answered": "forwarded"
-      }
+      },
+      "order": "any"
     },
     {
       "event": "session.attached",
@@ -182,16 +188,45 @@
     {
       "event": "rpc.observed",
       "match": {
+        "endpoint": "agentPresets/list",
+        "answered": "forwarded"
+      },
+      "order": "any"
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
         "endpoint": "session/create",
         "answered": "forwarded"
-      }
+      },
+      "order": "any"
     },
     {
       "event": "rpc.observed",
       "match": {
         "endpoint": "subagents/list",
         "answered": "forwarded"
-      }
+      },
+      "order": "any"
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "skills/list",
+        "answered": "unavailable"
+      },
+      "note": "the catalog probe fires ONE of {skills/list, commands/list} per boot (the \"/\" palette's last-viewed state) — optional rows in position pin whichever fired; the structured unavailable IS the honest answer (the write leg's runtime.config carries no skills option, so the catalog plane does not join)",
+      "optional": true,
+      "order": "any"
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "commands/list",
+        "answered": "unavailable"
+      },
+      "optional": true,
+      "order": "any"
     },
     {
       "event": "workspace.picked",
