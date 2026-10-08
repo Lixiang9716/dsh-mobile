@@ -19,6 +19,10 @@
     "en": "The Open Design daemon's REST surface: projects, BYOK generate, artifact save/lint; its tools appear only when a daemon is configured.",
     "zh": "Open Design 守护进程的 REST 面:项目、BYOK 生成、产物保存与 lint;仅当配置了守护进程时提供工具。"
   },
+  "dsh-plugin-manager-tools": {
+    "en": "The session toolset's plugin pipeline: the plugin_manager tool over the workspace dsh.plugins/1 registry — list, enable/disable, install workspace-authored trees, remove; every leg answers in band.",
+    "zh": "会话工具集的插件管线:plugin_manager 工具操作工作区 dsh.plugins/1 注册表——列举、启停、安装工作区创作树、移除;每条腿都带内应答。"
+  },
   "dsh-shell-ish": {
     "en": "A shell seam over contract ishRun: a real Linux userland emulated inside the host process; the workspace is the PATH.",
     "zh": "基于契约 ishRun 的 shell 面:宿主进程内模拟的真实 Linux 用户态;工作区即 PATH。"
