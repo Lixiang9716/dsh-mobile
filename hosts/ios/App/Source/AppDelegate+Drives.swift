@@ -42,4 +42,42 @@ extension AppDelegate {
         }
     }
 
+    /// The WEB-seat launch modes' table (one line each in the dispatch
+    /// switch): banner + canonical stdout line + the drive. The serve and
+    /// card-player comments explain the seat's contract — see
+    /// runServingBoot and CardPlayerDrive for the machinery.
+    func launchWebDrive(_ mode: String) {
+        switch mode {
+        case "official-web":
+            announce("DSH official web — officialweb.mount, the upstream app on the contract carrier…",
+                     line: "rt: app launched in official-web mode", web: true)
+            runOfficialWeb()
+        case "session-live":
+            announce("DSH session live — session.live-read, the upstream spine on-device answering the official app…",
+                     line: "rt: app launched in session-live mode", web: true)
+            runSessionLive()
+        case "session-write":
+            announce("DSH session write — composer.live-write, the official composer driving the upstream spine…",
+                     line: "rt: app launched in session-write mode", web: true)
+            runSessionWrite()
+        case "next-web":
+            announce("DSH next web — v2web.mount, the self-hosted client on the serving seat…",
+                     line: "rt: app launched in next-web mode", web: true)
+            runV2Web()
+        case "serve":
+            // The USER-FACING serving seat with the harness's logging intact
+            // (a release build drops every debug/info record by design) —
+            // the mode to reproduce a user-visible failure in.
+            announce("DSH serve — the user-facing seat, driven by hand (harness logging on)…",
+                     line: "rt: app launched in serve mode", web: true)
+            runServingBoot()
+        case "card-player":
+            // PR-1 of the create-approve-hotmount-native loop: a plugin card
+            // rendered by the app's OWN chrome (not an HTML page).
+            CardPlayerDrive.launch(self)
+        default:
+            break
+        }
+    }
+
 }
