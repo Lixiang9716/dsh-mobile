@@ -1,70 +1,74 @@
 {
-  "host": "harmonyos emulator dsh_phone (127.0.0.1:5557, HarmonyOS 7.0.0/26.0.0)",
+  "host": "HarmonyOS emulator (127.0.0.1:5557, HarmonyOS emulator 7.0.0.107(SP8DEVC00E999R4P11) )",
   "engine": "quickjs-ng",
-  "engineVersion": "0.17.0",
-  "quickjsTag": "v0.17.0",
-  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
-  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.2",
-  "bundleName": "com.dshmobile.spike",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "phase": "host-e2e (regression trio + binding + D9 official phases)",
+  "launchConfiguration": "aa start -b com.dshmobile.host -a EntryAbility",
+  "tree": "origin/main 06ccea6fa7a9 (dirty working tree at receipt time)",
   "scenarios": [
-    "m1.spike.boot",
-    "m2.bridge.smoke",
-    "m2.session",
-    "m5.host-binding"
-  ],
-  "exitStatus": 0,
-  "exitStatusDetail": "ONE launch drives the regression trio synchronously on the NAPI caller thread ('m1.spike.boot PASS ... logLines=7', 'm2.bridge.smoke PASS ... logLines=17', 'm2.session PASS ... logLines=179' — the 23-event manifest), then the EVENT-DRIVEN binding phase runs scenario m5.host-binding (20/20) over the loopback carrier with ArkWeb mounting the Web Client",
-  "carrier": "hosts/harmony CarrierServer.ets: loopback HTTP/1.1 static serving of the materialized presentation/web-client files plus a minimal RFC 6455 WS text-frame endpoint at /ws on ONE 127.0.0.1 port (first free from 17877, fail loud after ten); Sec-WebSocket-Accept = base64(sha1(key+GUID)) via the hand-rolled SHA-1 in model/Sha1.ets (documented there; the on-device handshake itself is the proof). HostPhase.ets shuttles session-projection@0 JSON lines between the page and the runtime through the shared bus seam (dsh_spike_set_bus_sink / dsh_spike_bus_deliver); every NAPI call runs on the ArkTS main thread — the ONE serial JS runtime thread (ARCHITECTURE.md §6)",
-  "gatewayBinding": "binding smoke backend (gateway_smoke.cpp binding mode + forward hook): fsRead/fsWrite/fsScope REAL over the app files scope (fsScope v1: persist = resolve to the app files scope, ref bkm:app), notify REAL (@ohos.notification publish with a wantAgent; the notification tap routes onNewWant -> notify.response), presentApproval REAL (custom ArkUI dialog, driver taps Approve); presentPicker/keychainGet/keychainSet/httpFetch honestly 'unavailable' per the RuntimeDescriptor (5 available / 4 unavailable) — the v2 paths (user-scope fs + persist, HUKS keychain, streaming body bridge) are documented in the agent note; app.state edges ride the UIAbility lifecycle",
-  "checker": [
     {
-      "tool": "tools/e2e/check.mjs",
-      "manifest": "tools/e2e/scenarios/m1-spike-boot.json",
-      "log": "hosts/harmony/artifacts/m5-host/sink-capture.txt",
-      "pass": true,
-      "expected": 7,
-      "logged": 7
+      "id": "boot.verification",
+      "checker": "test/e2e/scenarios/boot-verification.json",
+      "events": 8,
+      "result": "pass"
     },
     {
-      "tool": "tools/e2e/check.mjs",
-      "manifest": "tools/e2e/scenarios/m2-bridge-smoke.json",
-      "log": "hosts/harmony/artifacts/m5-host/sink-capture.txt",
-      "pass": true,
-      "expected": 6,
-      "logged": 6
+      "id": "gateway.bridge-smoke",
+      "checker": "test/e2e/scenarios/gateway-bridge-smoke.json",
+      "events": 7,
+      "result": "pass"
     },
     {
-      "tool": "tools/e2e/check.mjs",
-      "manifest": "tools/e2e/scenarios/m2-session.json",
-      "log": "hosts/harmony/artifacts/m5-host/sink-capture.txt",
-      "pass": true,
-      "expected": 23,
-      "logged": 23
+      "id": "session.mock-llm",
+      "checker": "test/e2e/scenarios/session-mock-llm.json",
+      "events": 23,
+      "result": "pass"
     },
     {
-      "tool": "tools/e2e/check.mjs",
-      "manifest": "tools/e2e/scenarios/m5-host-binding.json",
-      "log": "hosts/harmony/artifacts/m5-host/binding-capture.txt",
-      "pass": true,
-      "expected": 20,
-      "logged": 20
+      "id": "harmony.capability-binding",
+      "checker": "test/e2e/scenarios/harmony-capability-binding.json",
+      "events": 27,
+      "result": "pass"
+    },
+    {
+      "id": "harmony.officialweb.mount",
+      "checker": "test/e2e/scenarios/harmony-officialweb-mount.json",
+      "events": 17,
+      "result": "pass"
+    },
+    {
+      "id": "harmony.httpfetch-streaming",
+      "checker": "test/e2e/scenarios/harmony-httpfetch-streaming.json",
+      "events": 6,
+      "result": "pass"
+    },
+    {
+      "id": "harmony.session.live-read",
+      "checker": "test/e2e/scenarios/harmony-session-live-read.json",
+      "events": 43,
+      "result": "pass"
+    },
+    {
+      "id": "harmony.composer.live-write",
+      "checker": "test/e2e/scenarios/harmony-composer-live-write.json",
+      "events": 40,
+      "result": "pass"
     }
   ],
-  "captures": {
-    "primary": "sink-capture.txt + binding-capture.txt (app-side capture files pulled via hdc file recv from haps/entry/cache/dsh-{spike,host}-capture.log; named .txt because the repo ignores *.log; the binding capture carries the carrier's own canonical lines — module dsh.carrier — alongside the scenario's)",
-    "second": "logs.txt (continuous `hdc shell hilog` stream filtered to dsh.spike lines; the union of the two capture files is byte-identical to it after stripping the hilog prefix — verified by sorted diff during the evidence run)",
-    "scenarioJsonl": "scenario.jsonl = grep -h '^dsh.spike.log:' sink-capture.txt binding-capture.txt — the canonical lines of THIS run, extracted by ci/run-host-e2e.sh from the run's own capture files (never synthesized)",
-    "screenshots": "m5-live-deltas.png (first token delta streaming through the WS into the mounted page) and m5-binding-complete.png (session complete rendered in ArkWeb) — captured via snapshot_display (JPEG), converted in place to real PNG by the runner's documented sips step; human evidence only, never the assertion"
-  },
-  "uiAutomation": "hosts/harmony/ci/run-host-e2e.sh (build -> install -> launch -> drive -> capture -> 4 checkers) with hosts/harmony/ci/drive-binding.mjs tailing the hilog stream and driving the native surfaces over uitest with polled deadlines: the approval dialog's Approve button, the notification-consent dialog's Allow (exact-text match; soft-skip when already granted), Home for the background edge, the notification shade + DSH notification tap for notify.response + foreground",
-  "note": "Binding run (PR-A): the M5 host is now ISOMORPHIC — one launch proves the regression trio (including the 23-event m2.session with notes.installed) headlessly AND the live carrier topology (listening/mounted/connected/token-deltas/session-complete) plus the real binding primitives on-device. All embedded spike/plugin/web-client files are byte-identical to runtime/spike/, system-plugins/, and presentation/web-client canonicals.",
-  "evidenceGapClosure": "Full re-run on post-#53 main (fix/evidence-gaps): closes the audit's gaps 2 and 3 — ci/run-host-e2e.sh now extracts scenario.jsonl from the run's own capture files and converts snapshot_display's JPEG to real PNG via a documented sips step (both screenshots re-verified by magic bytes); requires the one-line Index.ets BUNDLE_FILES fix (util-crypto@0.1.6-alpha.1 -> 0.1.6-alpha.2, the rawfile copy #53 shipped), without which the fresh launch died at GetRawfileContent. Verdicts re-matched the committed manifests exactly (7/7, 6/6, 23/23, 20/20).",
-  "toolchain": {
-    "clt": "HarmonyOS Command Line Tools 26.0.0.821 (mac-arm64)",
-    "hvigor": "6.26.4",
-    "ohpm": "26.0.0.630",
-    "sdk": "HarmonyOS 26.0.0 Release (Ohos_sdk_public 26.0.0.105, API Version 26)",
-    "signing": "none — the emulator accepts the unsigned debug HAP via hdc install (entry-default-unsigned.hap)"
-  },
-  "timestamp": "2026-09-20T17:58:00+08:00"
+  "runner": "hosts/harmony/ci/run-host-e2e.sh",
+  "screens": [
+    "composer-reply-rendered.png",
+    "composer-typed.png",
+    "composer-write-boot-screen.png",
+    "harmony-capability-binding-complete.png",
+    "harmony-capability-live-deltas.png",
+    "m5-binding-complete.png",
+    "m5-live-deltas.png",
+    "officialweb-boot-screen.png",
+    "officialweb-final-state.png",
+    "session-live-boot-screen.png",
+    "session-live-read-final.png"
+  ],
+  "timestamp": "2026-10-08T16:12:43+08:00",
+  "exitCode": 0
 }

@@ -120,3 +120,21 @@ if [ "$FAILURES" -gt 0 ]; then
   echo "selftest: $FAILURES failure(s)"; exit 1
 fi
 echo "selftest: all checker assertions hold"
+
+# "optional": true expectations (records the PAGE may or may not produce per
+# boot — the official composer's catalog probe fires skills/list on one boot
+# and commands/list on the next): either family member in position passes;
+# a foreign record at the position still fails (optional is not a wildcard).
+OPT=test/e2e/testdata/order-optional.json
+expect_pass "$OPT" "$TD/order-optional.positive-skills.txt"
+expect_pass "$OPT" "$TD/order-optional.positive-commands.txt"
+# a foreign record at the optional position surfaces at the NEXT pinned row
+# (optional skips, the position stays): the rejection is index 3, not 1.
+expect_fail_at "$OPT" "$TD/order-optional.negative-foreign.txt" 3
+
+# "optional" composes with "any" (the catalog probe's position AND presence
+# both vary by boot): absent passes silently; present-anywhere (even after
+# the last ordered row) is claimed.
+AO=test/e2e/testdata/order-any-optional.json
+expect_pass "$AO" "$TD/order-any-optional.absent.txt"
+expect_pass "$AO" "$TD/order-any-optional.present-late.txt"

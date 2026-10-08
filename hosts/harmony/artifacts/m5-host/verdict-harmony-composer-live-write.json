@@ -1,8 +1,8 @@
 {
   "scenario": "harmony.composer.live-write",
   "pass": true,
-  "expected": 36,
-  "logged": 36,
+  "expected": 41,
+  "logged": 40,
   "failures": [],
   "parseErrors": []
 }

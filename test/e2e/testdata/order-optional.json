@@ -1,0 +1,37 @@
+{
+ "scenario": "order-optional.fixture",
+ "extract": {
+  "prefix": "dsh.runtime.log:"
+ },
+ "expect": [
+  {
+   "event": "burst.start",
+   "match": {
+    "n": 1
+   }
+  },
+  {
+   "event": "catalog.rpc",
+   "match": {
+    "endpoint": "skills/list",
+    "answered": "unavailable"
+   },
+   "optional": true,
+   "note": "the page fires ONE of {skills,commands} per boot by construction"
+  },
+  {
+   "event": "catalog.rpc",
+   "match": {
+    "endpoint": "commands/list",
+    "answered": "unavailable"
+   },
+   "optional": true
+  },
+  {
+   "event": "burst.done",
+   "match": {
+    "n": 1
+   }
+  }
+ ]
+}

@@ -1,0 +1,29 @@
+{
+ "scenario": "order-any-optional.fixture",
+ "extract": {
+  "prefix": "dsh.runtime.log:"
+ },
+ "expect": [
+  {
+   "event": "burst.start",
+   "match": {
+    "n": 1
+   }
+  },
+  {
+   "event": "catalog.rpc",
+   "match": {
+    "endpoint": "skills/list",
+    "answered": "unavailable"
+   },
+   "order": "any",
+   "optional": true
+  },
+  {
+   "event": "burst.done",
+   "match": {
+    "n": 1
+   }
+  }
+ ]
+}

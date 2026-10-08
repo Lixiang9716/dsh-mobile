@@ -776,7 +776,11 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
    * leg's verdict unfolds into canonical lines; a failing leg finishes the
    * leg loud (rule 5). */
   private runWriteProbe(runJs: (script: string) => Promise<string>): void {
-    runJs(SessionWriteProbe.probeScript()).then((): void => {
+    // The workspace row's title is the profile container's basename —
+    // single-sourced from THIS seat's webRoot (the staged rt bundle dir):
+    // a pinned constant drifted from it in the #402 rename and the pick leg
+    // lost its row (issue: the 2026-10-08 harmony verification round).
+    runJs(SessionWriteProbe.probeScript(this.webRoot)).then((): void => {
       this.runWriteStep(runJs, 0);
     }).catch((err: Error): void => {
       this.finishSessionLeg(false,

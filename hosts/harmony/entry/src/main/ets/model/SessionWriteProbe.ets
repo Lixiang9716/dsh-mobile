@@ -12,12 +12,13 @@
  * stage a hang sits in.
  *
  * The typed message and the scripted reply it must render. The seeded
- * workspace's title is the profile container's basename (the staged rt
- * bundle directory).
+ * workspace's title is the profile container's basename — derived from the
+ * caller's webRoot inside probeScript(webRoot), never pinned here: the #402
+ * rename pinned 'dsh' while the directory's basename became 'rt' and the
+ * pick leg silently lost its row.
  */
 export const WRITE_MESSAGE: string = 'Say hello from the composer';
 export const WRITE_REPLY: string = 'Hello from upstream';
-const WORKSPACE_TITLE: string = 'dsh';
 
 /** One (event, fields) pair the verdict unfolds into canonical lines. */
 export interface WriteLegEvent {
@@ -68,9 +69,15 @@ interface SendResult {
 export class SessionWriteProbe {
   /** Defines the `__b4w` helpers and the three leg functions. Every leg is
    * its own parked-promise constant so each stays small; the one script
-   * installs all of them. */
-  static probeScript(): string {
+   * installs all of them. The workspace row's title is SINGLE-SOURCED from
+   * the caller: the profile container's basename (the staged rt bundle
+   * directory, `materializeBundle`'s `cacheDir + '/rt'`) — a pinned string
+   * constant drifted from that basename in the #402 rename (probe went
+   * 'spike'→'dsh' while the directory went 'spike'→'rt') and the write leg
+   * could never find its row again until this derived it. */
+  static probeScript(webRoot: string): string {
     return `
+const WORKSPACE_TITLE = ${JSON.stringify(webRoot.substring(webRoot.lastIndexOf('/') + 1))};
 window.__b4w = {};
 window.__b4wOut = {pick: null, type: null, send: null};
 window.__b4wStage = 'defined';
@@ -147,7 +154,7 @@ window.__b4w.pick = async () => {
     while (Date.now() < deadline && !window.__b4w.composer()) {
       const rows = [...document.querySelectorAll('div,button,li,a')].filter((el) => {
         const t = (el.innerText || '').trim();
-        return t === '${WORKSPACE_TITLE}' && el.getClientRects().length > 0;
+        return t === WORKSPACE_TITLE && el.getClientRects().length > 0;
       });
       const row = rows[rows.length - 1];
       if (row) { window.__b4w.press(row); break; }

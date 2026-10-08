@@ -1,0 +1,21 @@
+{
+  "title": "the harmony round: mux frame order, write-leg title, runner renames, optional rows",
+  "created": "2026-10-08T08:27:01+00:00",
+  "rules": {
+    "hash": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "c195c538562be1aecd34d90ea5299839e5fc2c3a4c7197965f7baaebd342815d"
+    }
+  },
+  "checklist": [
+    "[x] CarrierServer serializes per-connection WS writes (frame order contract)",
+    "[x] SessionWriteProbe derives the workspace title from webRoot; pick leg green",
+    "[x] run-host-e2e: rt capture rename, grep typo, capture cleanup, magic-byte PNG gate, drive-official capture fallback",
+    "[x] checker optional rows + matrix optional-aware + composer manifest re-freeze (41 expects)",
+    "[x] host E2E green 8/8 (run 14) + T3 real turn + T6 soak 5/5; T-0048 tail honest finding logged"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0206"
+}

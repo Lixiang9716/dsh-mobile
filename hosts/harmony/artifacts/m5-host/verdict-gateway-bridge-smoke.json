@@ -1,8 +1,8 @@
 {
   "scenario": "gateway.bridge-smoke",
   "pass": true,
-  "expected": 6,
-  "logged": 6,
+  "expected": 7,
+  "logged": 7,
   "failures": [],
   "parseErrors": []
 }

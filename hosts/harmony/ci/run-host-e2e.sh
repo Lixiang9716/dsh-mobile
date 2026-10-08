@@ -81,6 +81,18 @@ if [ -n "$("$HDC" shell pidof $BUNDLE 2>/dev/null | tr -d '[:space:]')" ]; then
 fi
 "$HDC" shell hilog -r >/dev/null
 
+# The D9 legs' capture files persist across runs in the app's cache dir, and
+# drive-official's terminal wait greps them (the hilog stream starves under
+# flow control — the -Q knobs below are best-effort). A previous run's
+# verdict lines must not be readable as this run's: measured 2026-10-08, the
+# leftover `harmony.session.live-read FAIL` from a starved run 1 answered the
+# run-2 probe while the fresh leg was still mid-flight. Each leg recreates
+# its own file on start, so deleting here loses nothing.
+for cap in dsh-official-capture.log dsh-httpfetch-capture.log \
+    dsh-session-capture.log dsh-write-capture.log; do
+    "$HDC" shell "rm -f $BASE/$cap" >/dev/null 2>&1 || true
+done
+
 # hilog FLOW CONTROL drops the canonical record stream under burst, and the
 # drives below wait on specific lines in it: the committed d9-* artifacts
 # carry 6 of the httpfetch leg's 368 records, and one 2026-09-21 run delivered
@@ -94,7 +106,10 @@ fi
 for knob in pidoff domainoff; do
     out=$("$HDC" shell hilog -Q "$knob" 2>&1 || true)
     case "$out" in
-        *successfully*) ;;
+        # This hilog build answers "Set flow control by process to disabled,
+        # result: Success [CODE: 0]" — the older "successfully" spelling is
+        # kept for the CLT versions that print it.
+        *successfully*|*"Success [CODE: 0]"*) ;;
         *) echo "::warning::hilog -Q $knob failed ($out) — the record stream may be dropped and a drive may starve its deadline" >&2 ;;
     esac
 done
@@ -146,22 +161,44 @@ node hosts/harmony/ci/drive-official.mjs --hdc "$HDC" \
     --shot-write-reply "$OUT/composer-reply-rendered.png"
 
 # snapshot_display emits JPEG; evidence screenshots must be real PNGs for
-# their .png names — documented one-line conversion (macOS sips), applied
-# in place right after the capture (audit gap: JPEG bytes under .png).
+# their .png names — applied in place right after the capture (audit gap:
+# JPEG bytes under .png). Magic-byte-gated: some emulator image modes emit
+# PNG directly (ffmpeg refuses an in-place no-op — measured 2026-10-08),
+# macOS has sips, other hosts fall back to ffmpeg via a temp file, and a
+# host with neither warns loud but never kills an otherwise green run.
 for shot in "$OUT/harmony-capability-live-deltas.png" "$OUT/harmony-capability-binding-complete.png" \
             "$OUT/officialweb-boot-screen.png" "$OUT/officialweb-final-state.png" \
             "$OUT/session-live-boot-screen.png" "$OUT/session-live-read-final.png" \
             "$OUT/composer-write-boot-screen.png" "$OUT/composer-typed.png" \
             "$OUT/composer-reply-rendered.png"; do
-    sips -s format png "$shot" --out "$shot" >/dev/null
+    magic=$(head -c 3 "$shot" | od -An -tx1 | tr -d ' \n')
+    [ "$magic" = "89504e" ] && continue
+    if command -v sips >/dev/null 2>&1 &&
+        sips -s format png "$shot" --out "$shot" >/dev/null 2>&1; then
+        :
+    elif command -v ffmpeg >/dev/null 2>&1; then
+        tmp="$shot.tmp.png"
+        if ffmpeg -y -v error -i "$shot" "$tmp" >/dev/null 2>&1; then
+            mv "$tmp" "$shot"
+        else
+            rm -f "$tmp"
+            echo "::warning::ffmpeg could not convert $shot to PNG — JPEG bytes stay under the .png name" >&2
+        fi
+    else
+        echo "::warning::no sips/ffmpeg on PATH — $shot keeps JPEG bytes under the .png name (the audit gap)" >&2
+    fi
 done
 
 kill "$streamer" 2>/dev/null || true
 wait "$streamer" 2>/dev/null || true
 trap - EXIT
-grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
+grep 'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
 
-"$HDC" file recv "$BASE/dsh-dsh-capture.log" "$OUT/sink-capture.txt" >/dev/null
+# The trio's sink capture: the #402 semantic-names rename took the capture
+# file from dsh-dsh-capture.log to dsh-rt-capture.log (Index.ets
+# materializeBundle's capturePath) — the old name here pulled a missing file
+# and the trio checkers judged an empty stream (logged 0).
+"$HDC" file recv "$BASE/dsh-rt-capture.log" "$OUT/sink-capture.txt" >/dev/null
 "$HDC" file recv "$BASE/dsh-host-capture.log" "$OUT/binding-capture.txt" >/dev/null
 "$HDC" file recv "$BASE/dsh-official-capture.log" "$OUT/official-capture.txt" >/dev/null
 "$HDC" file recv "$BASE/dsh-httpfetch-capture.log" "$OUT/httpfetch-capture.txt" >/dev/null
