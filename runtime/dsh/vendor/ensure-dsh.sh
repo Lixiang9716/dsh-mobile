@@ -267,6 +267,11 @@ jpeg-js@0.4.4|jpeg-js/-/jpeg-js-0.4.4.tgz|269f988267bc71efe58baf97e8b2da064b5bbb
 pngjs@5.0.0|pngjs/-/pngjs-5.0.0.tgz|4d960bbbe078022d7a36822e2874f884c7410ead111f3603d69d70fc7af36f20
 @deepseek-ai/dsh-web@0.1.6-alpha.2|@deepseek-ai/dsh-web/-/dsh-web-0.1.6-alpha.2.tgz|a9caf68f424d3c622dc10327c7a39f28139dbf59cb9588355aa75628aeeeac79
 @deepseek-ai/dsh-tool-web@0.1.6-alpha.2|@deepseek-ai/dsh-tool-web/-/dsh-tool-web-0.1.6-alpha.2.tgz|96032606273af1d4179db1e675a4b07304b3f9deaa43fb68ab56d284fef99ab0
+@deepseek-ai/dsh-jobs-local@0.1.6-alpha.2|@deepseek-ai/dsh-jobs-local/-/dsh-jobs-local-0.1.6-alpha.2.tgz|f6a5b4513498ab6f001730b641e84cbfb3fd807da9bf113254eb5b08a333825f
+@deepseek-ai/dsh-shell@0.1.6-alpha.2|@deepseek-ai/dsh-shell/-/dsh-shell-0.1.6-alpha.2.tgz|fd991527fa7e7b25701c56989b74c3760584c1ddd758af4c0f27999c8036db7a
+@deepseek-ai/dsh-shell-env@0.1.6-alpha.2|@deepseek-ai/dsh-shell-env/-/dsh-shell-env-0.1.6-alpha.2.tgz|f7cbf0c5f90dac210c7978ba291ff9a08992808c2306d402d1a08a358ec45280
+@deepseek-ai/dsh-subprocess@0.1.6-alpha.2|@deepseek-ai/dsh-subprocess/-/dsh-subprocess-0.1.6-alpha.2.tgz|52df0b82f8dd7ca41b7958f92990cf3af8697c3427a44a2968bf08c2605a701f
+@deepseek-ai/dsh-http-proxy@0.1.6-alpha.2|@deepseek-ai/dsh-http-proxy/-/dsh-http-proxy-0.1.6-alpha.2.tgz|4e14dbd852837968f7f05409526665d058198167135e29a5d05b37a5d2c993ae
 turndown@7.2.4|turndown/-/turndown-7.2.4.tgz|05f61bc3f0aeca5e5cd7f1b5492e26b9040bb00708cd41fb1b0f7b216e296fa0
 @mixmark-io/domino@2.2.0|@mixmark-io/domino/-/domino-2.2.0.tgz|b829bcca09544649f6432020dd6915b6fb054154d7a77eb6f8b3fb1f4165afec
 @joplin/turndown-plugin-gfm@1.0.67|@joplin/turndown-plugin-gfm/-/turndown-plugin-gfm-1.0.67.tgz|59f5c59b28bb690bc1cb2d00c67b5e798ce5b29032989892b27a491093e6cde5
