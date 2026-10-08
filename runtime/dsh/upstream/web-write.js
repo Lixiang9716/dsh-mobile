@@ -235,6 +235,25 @@ const makeListSessions = (ctx) => async () => {
   return { items: summaries };
 };
 
+/** The seat's preset-join opt-in: a fresh session's agent joins the
+ * deployment default preset ("changing the default takes effect on the next
+ * session created" — the vendored selection policy's own semantics; the
+ * session is blank here, so no agent-preset/locked). Fail loud (rule 5): a
+ * seat asking for the join staged no working roster, and a session that
+ * silently joined nothing would answer the empty layer again (the exact
+ * defect the flag exists to close). The agent resolves through the registry
+ * lookup — the same live handle path the boot agent's join reads (the
+ * create return carried no scoped ctx on the harmony seat, 2026-10-08). */
+const joinCreatedSessionToDefault = async (ctx, sessionId) => {
+  const service = ctx.get('agentPresets');
+  if (service === undefined) {
+    throw remoteError('gateway/unavailable',
+      'session.create presetJoin: the agentPresets service is not mounted', {});
+  }
+  const agent = ctx.agents.get(sessionId);
+  await service.mount(agent.ctx, undefined);
+};
+
 /** The REAL create path: mint → agents.create (meta.cwd) → workspace
  * attach. Adoption mirrors upstream createOrAdopt: a live agent wins; a
  * cwd conflict rejects with `session/conflict`. */
@@ -261,6 +280,8 @@ const makeCreateSession = (ctx, deps) => async (args) => {
       agentOptions: { provider: llmRoute.provider, model: llmRoute.model },
       meta: { cwd },
     });
+    // The seat's preset-join opt-in (joinCreatedSessionToDefault).
+    if (deps.presetJoin === true) await joinCreatedSessionToDefault(ctx, sessionId);
   } else if (live.session?.header?.cwd !== cwd) {
     throw remoteError('session/conflict',
       `session "${sessionId}" already exists at another directory`,
@@ -426,6 +447,11 @@ const writeDeps = (options, streams, workspaces, seeded, archived) => ({
   // validated {indexUrl} (publicKey optional — the resolver's declared
   // gap without it). Absent → the marketplace legs stay unclaimed.
   marketplace: marketplaceOf(options),
+  // The seat's preset-join opt-in (T-0048's tail item): sessions the page
+  // creates join the deployment default preset (the Agent 预设 policy's
+  // own default), so the turn serves the joined composition instead of
+  // the empty global layer. Absent → the historical shape (no join).
+  presetJoin: options.presetJoin === true,
   // The workspace registry's gateway path (#346): the boot-derived
   // `<containerRoot minus fsScopeRoot>/plugins/registry.json` spelling
   // the LIST provider and the plugin_manager tool read — the write legs'

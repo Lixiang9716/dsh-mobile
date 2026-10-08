@@ -27,7 +27,7 @@
  *                    mux.item | mux.error | mux.end
  */
 import { createLogger } from 'logger.js';
-import { bootUpstream, spineInventory } from 'upstream/boot.js';
+import { bootUpstream, joinDefaultPreset, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
 import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
@@ -100,12 +100,24 @@ const bootPhase = async (cfg) => {
   const root = cfg.containerRoot;
   demand(typeof root === 'string' && root.startsWith('/'),
     `profile container not granted by the host: ${JSON.stringify(root)}`);
+  // The preset-join seat (T-0048's tail item): the deployment default
+  // composition's rows inject commands/goals/skills plus the composition
+  // host plane (tokenMeter/jobs/userQuestions — boot.js's presetJoin).
+  // Workspace-rooted paths, the same shape the interactive seat's config
+  // delivers. Flagless boots keep the historical spine byte-identical.
+  const presetJoin = cfg.presetJoin === true;
   const { ctx } = await bootUpstream({
     scenario: SCENARIO,
     agentId: AGENT_ID,
     sessionId: SESSION_ID,
     cwd: root, // absolute POSIX: the profile container root (upstream validates)
     onEvent: emit,
+    commands: presetJoin,
+    goals: presetJoin,
+    skills: presetJoin
+      ? { dshHome: `${root}/home`, agentsHome: `${root}/home/agents`, customSkillDirs: [] }
+      : undefined,
+    presetJoin,
     container: {
       cwd: root,
       tmpdir: `${root}/tmp`,
@@ -164,6 +176,52 @@ const installTurnEvidence = (ctx) => {
   });
 };
 
+/** The booted hop's T-0048 face: join the boot agent to the deployment
+ * default preset, then log the joined composition and the REAL session
+ * toolset. The join WAITS FOR THE PAGE'S FIRST DELIVERY, not a timer: the
+ * runtime's serial queue runs on the host's UI thread, and the origin open
+ * the booted hop triggers lands its ArkWeb nweb creation on that SAME
+ * thread — a join composing immediately starves the creation and the page
+ * never loads (measured 2026-10-08: two runs wedged at the write leg's
+ * remount); a quickjs timer is no better (this embed never pumps it — the
+ * +3s callback never ran across three runs). The page's FIRST api delivery
+ * is the proof the webview is up: the join composes then, blocking a thread
+ * whose only waiter is a page that already rendered. The page's own session
+ * joins at create regardless (the write surface's presetJoin). Names only
+ * in the tools record (the ~1KB log-line budget); `preset.rows` carries the
+ * four roster rows' honest per-row state from the LIVE composition. */
+const makeBootedEvidence = (ctx, cfg) => async () => {
+  const agent = ctx.agents.get(SESSION_ID);
+  let joinedId = null;
+  if (cfg.presetJoin === true) {
+    const preset = await joinDefaultPreset(ctx, agent);
+    joinedId = preset.id;
+    const inventory = await ctx.get('agentPresets').compositionInventory();
+    const composed = inventory.find((p) => p.id === preset.id);
+    const names = ['@deepseek-ai/dsh-tool-bash', '@deepseek-ai/dsh-tool-present',
+      '@deepseek-ai/dsh-tool-ralph', '@deepseek-ai/dsh-tool-pwsh'];
+    emit('spine.preset.joined', {
+      preset: preset.id,
+      agent: SESSION_ID,
+      rows: (composed?.rows ?? [])
+        .filter((row) => names.includes(row.moduleName))
+        .map((row) => ({ module: row.moduleName, enabled: row.enabled === true,
+          ...(row.condition === undefined ? {} : { condition: row.condition }) })),
+      source: 'AgentPresets.mount (the deployment default; the seat presetJoin flag)',
+    });
+  }
+  // The registry's own view — the same resolver the model-facing catalog
+  // reads — through the agent's scope (the global layer when no join).
+  const visible = ctx.tools?.view?.(joinedId !== null ? agent : undefined)?.visible;
+  emit('spine.tools.mounted', {
+    tools: visible ? [...visible.keys()].sort() : [],
+    count: visible ? visible.size : 0,
+    source: joinedId !== null
+      ? `ctx.tools.view(agent) — the ${joinedId}-joined session toolset (the registry visibility view)`
+      : 'ctx.tools.view (the registry visibility view)',
+  });
+};
+
 /** The resident runtime half: claims + api.request + the follow streams all
  * answer from the spine, WITH the write surface composed. Evidence is
  * fail-loud: an UNSTRUCTURED claimed-endpoint failure is a defect and kills
@@ -172,6 +230,7 @@ const installTurnEvidence = (ctx) => {
  * in-band error, never the 30s RESPOND_TIMEOUT black-hole. */
 const installRuntimeHalf = (ctx, cfg) => {
   const onHandler = makeApiHandlerRespond({ post, fail, errorOf });
+  const bootedEvidence = makeBootedEvidence(ctx, cfg);
   const runtime = createWebBootRuntime({
     ctx, post,
     write: {
@@ -180,26 +239,21 @@ const installRuntimeHalf = (ctx, cfg) => {
       model: 'mock-1',
       // The 插件 inventory's spine plane: the REAL mounts, read from ctx.
       spine: () => spineInventory(ctx),
+      // The seat's preset-join choice (T-0048's tail item): page-created
+      // sessions join the deployment default preset too, so the turn the
+      // page drives serves the joined composition, not the empty layer.
+      presetJoin: cfg.presetJoin === true,
     },
   });
+  // The join defers to the page's first delivery — the WHY lives on
+  // makeBootedEvidence (the UI-thread/nweb starvation the timer cannot fix).
+  let joinPending = cfg.presetJoin === true;
   const busHandler = (msg) => {
     const outcome = runtime.deliver(msg);
     if (outcome.kind === 'booted') {
       emit('runtime.booted', {
         entries: outcome.entries.length,
         source: 'vendored @deepseek-ai/dsh-client-modules composed in-runtime',
-      });
-      // The session toolset's REAL visible names (T-0048's tail item,
-      // log-asserted): which tools this user-facing boot actually serves —
-      // the registry's own view, the same resolver the model-facing catalog
-      // reads. Names only: the specs would blow the ~1KB log-line budget
-      // (measured 2026-10-08: the spec-map variant truncated mid-JSON).
-      // Sync read, emitted inside the boot hop: order-deterministic.
-      const visible = ctx.tools?.view?.(undefined)?.visible;
-      emit('spine.tools.mounted', {
-        tools: visible ? [...visible.keys()].sort() : [],
-        count: visible ? visible.size : 0,
-        source: 'ctx.tools.view (the registry visibility view)',
       });
       // endpointCount, not the full array: the on-device log line budget
       // (~1KB payload — MEASURED 2026-10-08: the 36-endpoint array truncated
@@ -209,9 +263,14 @@ const installRuntimeHalf = (ctx, cfg) => {
         endpointCount: WRITE_ENDPOINTS.length, streams: WRITE_STREAMS,
         source: 'the on-device spine (ctx.sessions/agents/settings)',
       });
-    } else if (outcome.kind === 'handler') {
-      onHandler(msg, outcome);
+      return;
     }
+    if (outcome.kind !== 'handler') return;
+    if (joinPending) {
+      joinPending = false;
+      bootedEvidence().catch(fail);
+    }
+    onHandler(msg, outcome);
   };
   // `dispatch` installs BEFORE the buffer drains: a delivery racing the swap
   // goes direct or is still in the queue — never stranded, never doubled.

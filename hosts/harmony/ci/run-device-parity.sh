@@ -192,9 +192,15 @@ fi
 sleep 1   # let the terminal record flush into the stream
 stop_streamer
 
-hdc file recv "$BASE/dsh-parity-capture.log" "$PARITY_OUT/capture.txt" >/dev/null 2>&1 \
+# `hdc file recv` exits 0 even when the transfer fails, and a repo-relative
+# destination lands nowhere on the Windows seat (MSYS) — remove first, recv
+# FROM $PARITY_OUT with a bare name, then demand the bytes (rule 5).
+rm -f "$PARITY_OUT/capture.txt"
+(cd "$PARITY_OUT" && MSYS_NO_PATHCONV=1 "$HDC_BIN" file recv "$BASE/dsh-parity-capture.log" capture.txt >/dev/null 2>&1) \
     || die "parity capture pull failed — no $BASE/dsh-parity-capture.log on $DSH_HDC_TARGET"
-grep'dsh.runtime' "$STREAM" > "$PARITY_OUT/logs.txt" || true
+[ -s "$PARITY_OUT/capture.txt" ] \
+    || die "parity capture pull wrote nothing — no $BASE/dsh-parity-capture.log on $DSH_HDC_TARGET"
+grep 'dsh.runtime' "$STREAM" > "$PARITY_OUT/logs.txt" || true
 grep -h '^dsh.runtime.log:' "$PARITY_OUT/capture.txt" > "$PARITY_OUT/scenario.jsonl" || true
 
 if [ "$status" != "done" ]; then
@@ -270,9 +276,14 @@ done
 sleep 1
 stop_streamer
 
-hdc file recv "$BASE/dsh-v2web-capture.log" "$TOOLROWS_OUT/capture.txt" >/dev/null 2>&1 \
+# The same recv discipline: remove first, recv from $TOOLROWS_OUT with a
+# bare name, demand the bytes (the lying exit code, measured 2026-10-08).
+rm -f "$TOOLROWS_OUT/capture.txt"
+(cd "$TOOLROWS_OUT" && MSYS_NO_PATHCONV=1 "$HDC_BIN" file recv "$BASE/dsh-v2web-capture.log" capture.txt >/dev/null 2>&1) \
     || die "tool-rows capture pull failed — no $BASE/dsh-v2web-capture.log on $DSH_HDC_TARGET"
-grep'dsh.runtime' "$STREAM" > "$TOOLROWS_OUT/logs.txt" || true
+[ -s "$TOOLROWS_OUT/capture.txt" ] \
+    || die "tool-rows capture pull wrote nothing — no $BASE/dsh-v2web-capture.log on $DSH_HDC_TARGET"
+grep 'dsh.runtime' "$STREAM" > "$TOOLROWS_OUT/logs.txt" || true
 grep -h '^dsh.runtime.log:' "$TOOLROWS_OUT/capture.txt" > "$TOOLROWS_OUT/scenario.jsonl" || true
 
 # The assertion: the roster all-healthy + the four tool rows NAMED in the
@@ -303,10 +314,18 @@ if (roster === null || inventory === null) {
 const healthy = roster.healthy, presets = (roster.presets ?? []).length;
 const toolRows = (inventory.toolRows ?? []).slice().sort();
 const missing = wanted.filter((n) => !toolRows.includes(n));
-console.log(`roster: ${JSON.stringify(roster.presets)} healthy=${healthy}/${presets}`);
+console.log(`roster: ${JSON.stringify(roster.presets)} default=${JSON.stringify(roster.default ?? null)} healthy=${healthy}/${presets}`);
 console.log(`toolRows: ${JSON.stringify(toolRows)}`);
-if (presets !== 4 || healthy !== 4) {
-  console.error(`the preset roster is not all-healthy (${healthy}/${presets}) — a composition broke`);
+// 5 = the four vendored presets + the MOBILE preset (the deployment default
+// the T-0048 tail item joins): the outboard composition doc staged into the
+// vendored presets copy by vendor-official.sh. healthy 5/5 still breaks
+// loud when any row's package is missing from the closure/markers.
+if (presets !== 5 || healthy !== 5) {
+  console.error(`the preset roster is not all-healthy (${healthy}/${presets}, want 5 with the staged mobile doc) — a composition broke`);
+  process.exit(1);
+}
+if (roster.default !== 'mobile') {
+  console.error(`the deployment default is not the mobile preset: ${JSON.stringify(roster.default ?? null)}`);
   process.exit(1);
 }
 if (missing.length > 0) {
@@ -325,7 +344,7 @@ cat > "$TOOLROWS_OUT/receipt.json" <<EOF
   "tree": "$TREE_LINE",
   "scenario": "composer.live-write",
   "proves": [
-    "the preset roster composes all-healthy on-device (healthy 4/4) — a composition breaks loud when a row's package is missing",
+    "the preset roster composes all-healthy on-device (healthy 5/5, the staged mobile doc among them, default=mobile) — a composition breaks loud when a row's package is missing",
     "the bash/pwsh/present/ralph tool rows are NAMED in the composed inventory: each resolves through its agentPresets.seed node_modules marker onto the staged vendored package"
   ],
   "checker": "run-device-parity.sh ASSERT block vs the pulled capture (settings.preset.roster + settings.plugin.inventory.toolRows)",

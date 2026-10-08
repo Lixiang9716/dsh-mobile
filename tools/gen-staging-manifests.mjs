@@ -45,7 +45,7 @@ import { join } from 'node:path';
 import { REPO, DSH, walkGraph, inScope } from './check-staging-graph.mjs';
 import { buildHosts } from './check-staging-hosts.mjs';
 import {
-  dirPinRows, zodClosureRows, webclientRows, dshRosterRows,
+  dirPinRows, zodClosureRows, webclientRows, dshRosterRows, harmonyOnlyRows,
 } from './gen-staging-legs.mjs';
 
 const fail = (msg) => { throw new Error(`gen-staging-manifests: ${msg}`); };
@@ -164,9 +164,9 @@ function findSpanPinDirs(src, face) {
 }
 
 /** vendor-official.sh's own declarations: SPINE_PKG_DSH (the find-segment pin
- * roster), the NOBLE/PIAI staged dirs, and the goal-trio faces its generated
- * find segment names. Every pin version this tool derives comes from these
- * declarations (or android's VER=) — never a local copy. */
+ * roster), NOBLE/PIAI, the goal-trio find pins, the npm-face verify loop and
+ * the MOBILE preset cp block. Every pin version this tool derives comes from
+ * these declarations (or android's VER=) — never a local copy. */
 function closureScriptFacts() {
   const file = join(REPO, 'hosts/harmony/ci/vendor-official.sh');
   const src = readFileSync(file, 'utf8');
@@ -176,11 +176,22 @@ function closureScriptFacts() {
   if (!pkg || !noble || !piai) fail('SPINE_PKG_DSH/NOBLE_DIR/PIAI_DIR not found in vendor-official.sh');
   const goalTrio = findSpanPinDirs(src, 'vendor/npm');
   if (!goalTrio.length) fail('no vendor/npm pin dirs in the find segments of vendor-official.sh (goal trio)');
+  // The harmony-only declarations: the verify loop's `for face in ...` line
+  // names every npm face the script stages at the dsh rel path; the cp
+  // block's presets-mobile source paths name the MOBILE preset docs.
+  const faceLine = src.match(/for face in ([^;]+); do/);
+  if (!faceLine) fail('no `for face in` verify loop in vendor-official.sh');
+  const faceStages = faceLine[1].trim().split(/\s+/).sort();
+  const mobileDocs = [...src.matchAll(/cp "runtime\/dsh\/(presets-mobile\/mobile\/\S+)"/g)]
+    .map((m) => m[1]);
+  if (!mobileDocs.length) fail('no presets-mobile/mobile staging block in vendor-official.sh');
   return {
     file,
     spinePkgs: pkg[1].trim().split(/\s+/).sort(),
     noble: noble[1], piai: piai[1],
     goalTrio,
+    faceStages,
+    mobileDocs,
   };
 }
 
@@ -226,7 +237,9 @@ function deriveBundleFiles(host, closureRows, roster, facts, closure) {
   legs.set('graph', [...walkGraph(host.roots(host.surfaces)).reached.keys()].sort());
   const dsh = dshRosterRows(DSH, roster, facts.ver);
   if (dsh.absent.length) fail(`dsh roster pins absent from the materialized tree: ${dsh.absent.join(', ')}`);
-  legs.set('dshpins', dsh.rows);
+  // The harmony-only faces + the MOBILE preset docs (gen-staging-legs).
+  const harmonyOnly = harmonyOnlyRows(DSH, facts);
+  legs.set('dshpins', [...dsh.rows, ...harmonyOnly].sort());
   legs.set('pinfiles', [
     ...pinRowsOrFail(closure.noble, { exts: ['.js'] }),
     ...pinRowsOrFail(closure.piai, { exts: ['.js', '.json'] }),
@@ -252,8 +265,7 @@ const setDelta = (name, derivedRows, committedRows) => {
   };
 };
 
-/** Why a committed row is not derivable from today's legs — the honest
- * classification the delta report exists to carry. */
+/** Why a committed row is not derivable from today's legs. */
 function classifyExtra(row) {
   if (row.startsWith('upstream/shims/')) return 'host-loader-namespace: bare-map/runtime-module reach the JS walk cannot see';
   if (row.endsWith('manifest.json')) return 'runtime-data: plugin loader reads manifests, no import edge exists';
@@ -447,9 +459,8 @@ function parseArgs(argv) {
   return only;
 }
 
-/** The generated content + the machine-readable delta, for the round-trip
- * runner: harmony-BUNDLE_FILES.rows is what Phase 3 would commit in place of
- * the hand list. */
+/** The generated content + the machine-readable delta (harmony-BUNDLE_FILES.rows
+ * is what Phase 3 would commit in place of the hand list). */
 function emitArtifacts(out, reports, fatal) {
   mkdirSync(out, { recursive: true });
   for (const r of reports) {

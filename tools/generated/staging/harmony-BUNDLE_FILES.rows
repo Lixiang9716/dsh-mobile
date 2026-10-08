@@ -219,6 +219,8 @@ vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/skills/cordis-plugin-devel
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/skills/editing-cordis-compositions/SKILL.md
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/minimal/agent.cordis.yml
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/minimal/preset.yml
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/agent.cordis.yml
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/preset.yml
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/ptc/agent.cordis.yml
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/ptc/preset.yml
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/standard/agent.cordis.yml
@@ -327,6 +329,12 @@ vendor/dsh/goal@0.1.6-alpha.2/lib/types/types.js
 vendor/dsh/goal@0.1.6-alpha.2/package.json
 vendor/dsh/home-paths@0.1.6-alpha.2/lib/index.js
 vendor/dsh/home-paths@0.1.6-alpha.2/package.json
+vendor/dsh/http-proxy@0.1.6-alpha.2/LICENSE
+vendor/dsh/http-proxy@0.1.6-alpha.2/lib/index.js
+vendor/dsh/http-proxy@0.1.6-alpha.2/package.json
+vendor/dsh/jobs-local@0.1.6-alpha.2/LICENSE
+vendor/dsh/jobs-local@0.1.6-alpha.2/lib/index.js
+vendor/dsh/jobs-local@0.1.6-alpha.2/package.json
 vendor/dsh/jobs@0.1.6-alpha.2/lib/index.js
 vendor/dsh/jobs@0.1.6-alpha.2/lib/invariant.js
 vendor/dsh/jobs@0.1.6-alpha.2/lib/types/brand.js
@@ -427,6 +435,12 @@ vendor/dsh/settings@0.1.6-alpha.2/lib/types/invariant.js
 vendor/dsh/settings@0.1.6-alpha.2/lib/types/redact.js
 vendor/dsh/settings@0.1.6-alpha.2/lib/types/types.js
 vendor/dsh/settings@0.1.6-alpha.2/package.json
+vendor/dsh/shell-env@0.1.6-alpha.2/LICENSE
+vendor/dsh/shell-env@0.1.6-alpha.2/lib/index.js
+vendor/dsh/shell-env@0.1.6-alpha.2/package.json
+vendor/dsh/shell@0.1.6-alpha.2/LICENSE
+vendor/dsh/shell@0.1.6-alpha.2/lib/index.js
+vendor/dsh/shell@0.1.6-alpha.2/package.json
 vendor/dsh/skill-filesystem@0.1.6-alpha.2/lib/index.js
 vendor/dsh/skill-filesystem@0.1.6-alpha.2/package.json
 vendor/dsh/skill@0.1.6-alpha.2/lib/index.js
@@ -459,6 +473,10 @@ vendor/dsh/subagent@0.1.6-alpha.2/lib/types/projection.js
 vendor/dsh/subagent@0.1.6-alpha.2/lib/types/run-settlement.js
 vendor/dsh/subagent@0.1.6-alpha.2/lib/types/types.js
 vendor/dsh/subagent@0.1.6-alpha.2/package.json
+vendor/dsh/subprocess@0.1.6-alpha.2/LICENSE
+vendor/dsh/subprocess@0.1.6-alpha.2/lib/control.js
+vendor/dsh/subprocess@0.1.6-alpha.2/lib/index.js
+vendor/dsh/subprocess@0.1.6-alpha.2/package.json
 vendor/dsh/system-prompt@0.1.6-alpha.2/lib/index.js
 vendor/dsh/system-prompt@0.1.6-alpha.2/lib/invariant.js
 vendor/dsh/system-prompt@0.1.6-alpha.2/package.json

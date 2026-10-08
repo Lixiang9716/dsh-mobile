@@ -85,10 +85,73 @@
     {
       "event": "spine.tools.mounted",
       "match": {
-        "count": 16,
-        "source": "ctx.tools.view (the registry visibility view)"
+        "tools": [
+          "ask_user_question",
+          "bash",
+          "create_goal",
+          "edit",
+          "excel_create",
+          "excel_read",
+          "excel_update",
+          "exit_plan_mode",
+          "get_goal",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "plugin_manager",
+          "ppt_create",
+          "ppt_read",
+          "present",
+          "read",
+          "send_message",
+          "shell",
+          "skill",
+          "str_replace_editor",
+          "todo_write",
+          "update_goal",
+          "web_search",
+          "word_create",
+          "word_read",
+          "word_update",
+          "write"
+        ],
+        "count": 30,
+        "source": "ctx.tools.view(agent) — the mobile-joined session toolset (the registry visibility view)"
       },
-      "note": "T-0048 tail item, log-asserted: the session toolset this user-facing boot serves. The 16 mounted tools are the spine/system-plugin face (fs/edit/shell/web_search/plugin_manager/office plane/todo); the bash/pwsh/present/ralph preset rows are NOT in the set — they are preset-document rows, and the boot agent joins no preset (upstream/boot.js staged gap) until the preset-join work lands. Staged + preset-resolvable is the state; mounted-in-boot is not, and this record keeps that truth on the log."
+      "order": "any",
+      "note": "T-0048 tail item, log-asserted: the session toolset the joined user-facing boot serves. The boot agent joins the deployment default preset (mobile — AgentPresets.mount at the seat's presetJoin flag, deferred to the page's first delivery: the join's compose runs on the host's UI thread and would starve the origin open's nweb creation), so the view resolves through the agent's scope: the 16 spine/system-plugin tools PLUS the composition's rows — bash and present mount visible; ask_user_question/goal/plan-mode/jobs/skill join from their composition rows. pwsh and ralph are NOT in the set: pwsh is platform-gated (win32-only — no PowerShell exists on the device) and ralph is upstream default-off; both ride the LIVE composition with their gates (spine.preset.joined carries the per-row truth), and tool-workflow is seed-disabled (its engine rides the walled PTC host runner). The subagent pair registers when the spawn provider lands (post-join), so they are not in this snapshot."
+    },
+    {
+      "event": "spine.preset.joined",
+      "match": {
+        "preset": "mobile",
+        "agent": "s-harmony-write-0001",
+        "rows": [
+          {
+            "module": "@deepseek-ai/dsh-tool-bash",
+            "enabled": true,
+            "condition": "process.platform === 'win32'"
+          },
+          {
+            "module": "@deepseek-ai/dsh-tool-pwsh",
+            "enabled": false,
+            "condition": "process.platform !== 'win32'"
+          },
+          {
+            "module": "@deepseek-ai/dsh-tool-present",
+            "enabled": true
+          },
+          {
+            "module": "@deepseek-ai/dsh-tool-ralph",
+            "enabled": false
+          }
+        ],
+        "source": "AgentPresets.mount (the deployment default; the seat presetJoin flag)"
+      },
+      "order": "any",
+      "note": "T-0048 tail item: the standing mount composed LIVE on-device — each of the four roster rows carries its honest state out of the joined composition (bash/present enabled, pwsh's platform gate and ralph's default-off gate), each package resolving through its agentPresets.seed node_modules marker onto the staged vendored face."
     },
     {
       "event": "write.surface.claimed",
@@ -256,12 +319,13 @@
         "provider": "mock",
         "model": "mock-1",
         "messages": 2,
-        "tools": 16,
+        "tools": 30,
         "path": "/chat/completions",
         "method": "POST",
         "agentLoopMarked": true,
         "stream": true
-      }
+      },
+      "note": "the page session joins the deployment default at create (the write surface presetJoin) — the turn serves the joined composition"
     },
     {
       "event": "rpc.observed",

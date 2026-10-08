@@ -133,6 +133,29 @@ export const stageWebPlugins = (delivery) => {
 };
 
 /**
+ * The v1 `internal` resolver face over the staged descriptors. On the
+ * full-spine shape `import` delegates to the runtime's own importer (the
+ * preset standing mount composes loader rows there); the bare compose-only
+ * shape refuses loudly — client bundles are served, never executed.
+ */
+const makeStagedResolverFace = (spineShape, byLoader) => ({
+  version: 'v1',
+  resolveSync: (specifier) => {
+    const plugin = byLoader.get(specifier);
+    if (plugin === undefined) {
+      throw new Error(`web-boot: resolveSync cannot map specifier '${specifier}'`);
+    }
+    return { url: plugin.entryFileURL };
+  },
+  import: spineShape
+    ? (specifier) => import(specifier)
+    : (specifier) => {
+      throw new Error(`web-boot: the staged web-plugin resolver does not import modules`
+        + ` ('${specifier}') — client bundles are served, never executed, in the runtime`);
+    },
+});
+
+/**
  * Mount the VENDORED ClientModuleRegistry on `ctx` over the staged plugins.
  *
  * The loader face is the REAL cordis Loader service (boot.js mounts it on the
@@ -148,8 +171,11 @@ export const stageWebPlugins = (delivery) => {
  *     Staged web plugins are bus-delivered bundle views, not loader entries:
  *     no fiber is created and no module is imported for them.
  *   - `internal` is the v1 resolver over the staged descriptors
- *     (`resolveSync(specifier) → {url}`); `import` refuses loudly — the web
- *     runtime SERVES client bundles, it never executes loader rows.
+ *     (`resolveSync(specifier) → {url}`); `import` delegates to the
+ *     runtime's own importer on the full-spine shape (the preset standing
+ *     mount composes loader rows there) and refuses loudly on the bare
+ *     compose-only shape — that runtime SERVES client bundles, it never
+ *     executes loader rows.
  *
  * Returns { registry, graph, rows, manifest } — the composed wire and the
  * client-face cross-parse (a graph the vendored parser rejects can never be
@@ -158,6 +184,13 @@ export const stageWebPlugins = (delivery) => {
 export const mountClientModules = (ctx, plugins) => {
   if (plugins.length === 0) throw new Error('web-boot: no staged web plugins to compose');
   const byLoader = new Map(plugins.map((p) => [p.loaderName, p]));
+  // The full-spine shape (boot.js mounted the Loader) CAN execute loader
+  // rows — the runtime's own importer resolves the vendored packages (the
+  // host's bare map onto the staged vendor/dsh faces); the Agent 预设
+  // standing mount composes through exactly this seam (T-0048's preset
+  // join). The bare compose-only shape constructs its own Loader below and
+  // keeps the serve-don't-execute contract.
+  const spineShape = ctx.get('loader') !== undefined;
   let loader = ctx.get('loader');
   if (loader === undefined) {
     // The bare compose-only shape (no spine mounted): the Loader constructor
@@ -168,20 +201,7 @@ export const mountClientModules = (ctx, plugins) => {
     throw new Error('web-boot: the loader service already carries an internal resolver'
       + ` (${typeof loader.internal}) — refusing to shadow it`);
   }
-  loader.internal = {
-    version: 'v1',
-    resolveSync: (specifier) => {
-      const plugin = byLoader.get(specifier);
-      if (plugin === undefined) {
-        throw new Error(`web-boot: resolveSync cannot map specifier '${specifier}'`);
-      }
-      return { url: plugin.entryFileURL };
-    },
-    import: (specifier) => {
-      throw new Error(`web-boot: the staged web-plugin resolver does not import modules`
-        + ` ('${specifier}') — client bundles are served, never executed, in the runtime`);
-    },
-  };
+  loader.internal = makeStagedResolverFace(spineShape, byLoader);
   const baseEntries = loader.entries.bind(loader);
   const stagedRows = plugins.map((p) => ({
     options: { name: p.loaderName },

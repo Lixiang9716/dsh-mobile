@@ -765,9 +765,14 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     // reads the staged tree (measured: without the seed the claimed-
     // endpoint probe fails 'cannot read preset root').
     this.serve.deliverAgentPresetsSeed();
+    // `presetJoin` (T-0048's tail item): the user-facing boot joins the
+    // deployment default preset — the boot agent at the booted hop, and
+    // every session the page creates. The seed ahead of the config is what
+    // makes the join resolvable (the roster must see the staged tree).
     this.serve.deliverBus('{"type":"runtime.config","mockLlmUrl":"http://127.0.0.1:' +
       this.serve.loopbackPort() + '/mock-llm","apiKey":"' + MOCK_LLM_KEY +
-      '","containerRoot":' + JSON.stringify(this.webRoot) + '}');
+      '","containerRoot":' + JSON.stringify(this.webRoot) +
+      ',"presetJoin":true}');
     this.serve.deliverWebPlugins(ctx);
   }
 
