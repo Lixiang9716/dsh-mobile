@@ -162,7 +162,7 @@ cp "$DSH/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs" \
    "$ASSETS/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs"
 # The SUBAGENT row's listing service (T-0050 item 2): boot.js mounts the
 # vendored sessionQuery engine (subagents/list's corpus source).
-for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry dsh-session-query; do
+for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry dsh-session-query dsh-session-title dsh-session-format-catalog dsh-compaction-image-offload; do
     say "staging vendor/npm/@deepseek-ai/$pkg@$VER (lib)"
     (cd "$DSH/vendor/npm/@deepseek-ai/$pkg@$VER" && find lib -type f ! -name '*.d.ts') |
         while IFS= read -r rel; do
@@ -493,7 +493,7 @@ fi
     done
 # The SUBAGENT row's listing service (T-0050 item 2): boot.js mounts the
 # vendored sessionQuery engine (subagents/list's corpus source).
-for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry dsh-session-query; do
+for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry dsh-session-query dsh-session-title dsh-session-format-catalog dsh-compaction-image-offload; do
     (cd "$DSH/vendor/npm/@deepseek-ai/$pkg@$VER" && find lib -type f ! -name '*.d.ts') |
         while IFS= read -r rel; do
             path="vendor/npm/@deepseek-ai/$pkg@$VER/$rel"

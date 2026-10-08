@@ -56,7 +56,9 @@ TREES = [
     *(("vendor/dsh/%s@0.1.6-alpha.2" % n,
        DSH / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
       for n in ("tool-present", "tool-ralph", "tool-bash", "tool-pwsh",
-                "plugin-manager", "tool-web", "session-query")),
+                "plugin-manager", "tool-web", "session-query",
+                "session-title", "session-format-catalog",
+                "compaction-image-offload")),
     # The WEB plane's seam + HTML→markdown chain (#335 B5): boot.js mounts
     # the web plane unconditionally, so the embed carries the faces or the
     # mount dies loud at its first dynamic import. dsh-web stages at its own
