@@ -1,0 +1,5 @@
+completed	success	chore(gov): close the device-verified cards — T-0177, T-0172, T-0202 with receipts	ci-verdict	chore/gov-close-after-device-verification	pull_request	37760405335	2m8s	2026-10-08T09:59:03Z
+completed	success	fix(harmony): the mux frame order serializes, the write leg derives its workspace title, and the host E2E judge grows optional rows	ci-verdict	fix/device-harmony-mux-frame-order	pull_request	37757040504	10m53s	2026-10-08T09:29:47Z
+completed	failure	fix(harmony): the mux frame order serializes, the write leg derives its workspace title, and the host E2E judge grows optional rows	ci-verdict	fix/device-harmony-mux-frame-order	pull_request	37755559393	2m4s	2026-10-08T09:16:55Z
+completed	cancelled	fix(harmony): the mux frame order serializes, the write leg derives its workspace title, and the host E2E judge grows optional rows	ci-verdict	fix/device-harmony-mux-frame-order	pull_request	37755492409	1m33s	2026-10-08T09:16:20Z
+completed	success	fix(android-host): the bottom system-bar inset lands — the Settings gear leaves the nav bar's dead region	ci-verdict	fix/device-bottom-inset-occlusion	pull_request	37732474214	6m13s	2026-10-08T05:27:35Z

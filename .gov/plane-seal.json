@@ -10,13 +10,13 @@
       "sha256": "230fa8a429212578cd16658c5ac824476164da72e56dca61e4edda64f8e0ec3a"
     },
     ".gov/rejections/case-asset-mirrors.sh": {
-      "sha256": "de7e8faf1bfc869a7cd8203c3aa5ed47d5c8a5419cc6a021d2737ca3d8939672"
+      "sha256": "fb06e6306322274dd332e71135fe4eb89ad2edd1f6a22a59336c6f48afbe2fc9"
     },
     ".gov/rejections/case-bundle-files-dotfile.sh": {
-      "sha256": "a28028afe5b46af009a15e9e31d7804fff74e8fef0ea4ad94fcecf3f4311096e"
+      "sha256": "4ed0cbd16d1badb6a0377e160876371ad6bdc3750ddbf9e46123ed217726ca0d"
     },
     ".gov/rejections/case-bundle-files.sh": {
-      "sha256": "fcc89ba400f249dcf5160be177c4655f3019bed11f75ed94d0179558843c3035"
+      "sha256": "3f54b16e5e786cd2c4ac59ba8b9d8a301a69d7842bb9b153f4d2c00cb39241cc"
     },
     ".gov/rejections/case-code-size.sh": {
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
@@ -43,7 +43,7 @@
       "sha256": "229080a05f57561a9eef151c7fae29dcbc0e01127523accc6d8359093156d364"
     },
     ".gov/rejections/case-staging-check.sh": {
-      "sha256": "1ef2139800ea4fdf4800c5750e4119f5159cb5f81dc183754a3b4b295cf2a1ed"
+      "sha256": "3fe8c3053b3cc22766a022d6828d664eeb10c341a7c78911800a6a1a9b82b47b"
     },
     ".gov/rejections/case-transport-tokens.sh": {
       "sha256": "6741cbfd8225ddd0451e85b33ee311c4eb8482c1c3a08e0b9f7bb3b4cd0dd6b1"
@@ -59,9 +59,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-08T02:38:10+00:00",
+    "ts": "2026-10-08T11:01:58+00:00",
     "caller": "13957@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "PR3 lands the staging manifest consolidation: a new staging-generated gate (gen-staging-emit --check over the committed generated manifest) joins the default DAG after staging-check"
+    "reason": "the four live-tree rejection cases' per-worktree lock home gains the win32 drive-letter absolute branch: git rev-parse --git-dir prints D:/... on Windows linked worktrees, the /* case-pattern misclassified it as relative, the lock dir resolved to <repo>/D:/... and mkdir could never succeed \u2014 asset-mirrors burned its 5s deadline, the other three were SIGKILLed at the 10s case budget (surprise sig gov-task-close-runs)"
   }
 }
