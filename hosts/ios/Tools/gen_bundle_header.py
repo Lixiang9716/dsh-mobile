@@ -102,6 +102,13 @@ TREES = [
     ("vendor/npm/@noble/hashes@2.3.0", DSH / "vendor" / "npm" / "@noble" / "hashes@2.3.0"),
     ("vendor/npm/@earendil-works/pi-ai@0.85.1", DSH / "vendor" / "npm" / "@earendil-works" / "pi-ai@0.85.1"),
     ("system-plugins/dsh-office", DSH / "system-plugins" / "dsh-office"),
+    # The capability-plane + shell + manager plugin dirs ride WHOLE too (the
+    # office row's rule): per-file rows caught only index.js + manifest.json,
+    # and the serve boot died on dsh-shell-wasm/programs.js (2026-10-08).
+    ("system-plugins/dsh-ble", DSH / "system-plugins" / "dsh-ble"),
+    ("system-plugins/dsh-device-plane", DSH / "system-plugins" / "dsh-device-plane"),
+    ("system-plugins/dsh-plugin-manager-tools", DSH / "system-plugins" / "dsh-plugin-manager-tools"),
+    ("system-plugins/dsh-shell-wasm", DSH / "system-plugins" / "dsh-shell-wasm"),
     ("upstream/shims", DSH / "upstream" / "shims"),
     ("scenario", DSH / "scenario"),
     ("web-live", DSH / "web-live"),
@@ -109,6 +116,9 @@ TREES = [
     ("vendor/npm/cosmokit@1.8.3/package.json", DSH / "vendor" / "npm" / "cosmokit@1.8.3" / "package.json"),
     ("vendor/npm/schemastery@3.18.2/package.json", DSH / "vendor" / "npm" / "schemastery@3.18.2" / "package.json"),
     ("vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/package.json", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-client-modules@0.1.6-alpha.2" / "package.json"),
+    # domino's manifest rides as an explicit file: the cjs bare-table's entry
+    # load reads it for `main` (a lib/-only tree fell the entry back to './.').
+    ("vendor/npm/@mixmark-io/domino@2.2.0/package.json", DSH / "vendor" / "npm" / "@mixmark-io" / "domino@2.2.0" / "package.json"),
 ]
 
 # The pinned zod's runtime closure: `zod` → index.js → the classic build's
