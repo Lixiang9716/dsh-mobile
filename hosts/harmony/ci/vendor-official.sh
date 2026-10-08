@@ -649,11 +649,37 @@ if [ "$MODE" != "check" ]; then
     stage_npm_face_at_dsh_path session-title
     stage_npm_face_at_dsh_path session-format-catalog
     stage_npm_face_at_dsh_path compaction-image-offload
+    # The preset-join seats' LOCAL jobs implementation (T-0048's tail item):
+    # the composition's tool-jobs row injects `jobs`, whose abstract registry
+    # seam refuses to load — the composition host plane mounts the LOCAL
+    # implementation (boot-coverage-rows.js), whose npm face stages here at
+    # the dsh rel path (the tool-web convention).
+    stage_npm_face_at_dsh_path jobs-local
+    # The tool-bash row's import chain (T-0048's tail item): dsh-shell →
+    # dsh-subprocess → dsh-http-proxy — three npm faces the bare map probes
+    # at the vendor/dsh rel paths, staged here for the standing mount's
+    # module link.
+    stage_npm_face_at_dsh_path shell
+    stage_npm_face_at_dsh_path shell-env
+    stage_npm_face_at_dsh_path subprocess
+    stage_npm_face_at_dsh_path http-proxy
     mkdir -p "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/lib"
     cp "runtime/dsh/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/package.json" \
        "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/package.json"
     cp "runtime/dsh/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/lib/index.js" \
        "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/lib/index.js"
+    # The MOBILE preset (the deployment default AGENT_PRESETS_DEFAULT joins;
+    # T-0048's tail item): our outboard composition doc staged INTO the
+    # vendored presets COPY at the presets/mobile/ rel — never the tracked
+    # vendor tree (the iOS embed's own rule, gen_bundle_resources.py). The
+    # presets seed enumerator (OfficialServe.deliverAgentPresetsSeed) walks
+    # this tree, so the staged doc makes the roster carry the default and
+    # the preset join resolvable on-device.
+    mkdir -p "$RAW/vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile"
+    cp "runtime/dsh/presets-mobile/mobile/preset.yml" \
+       "$RAW/vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/preset.yml"
+    cp "runtime/dsh/presets-mobile/mobile/agent.cordis.yml" \
+       "$RAW/vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/agent.cordis.yml"
 fi
 
 # The self-hosted web clients (presentation/web-client-{next,compact}):
@@ -816,7 +842,7 @@ for rel in $CLOSURE; do
 done
 # The WEB faces' block twin (the stage block above): the same tracked-check
 # rule — an untracked staged file SKIPs, a drifted tracked one fails the gate.
-for face in tool-web plugin-manager; do
+for face in tool-web plugin-manager jobs-local shell shell-env subprocess http-proxy; do
     src="runtime/dsh/vendor/npm/@deepseek-ai/dsh-$face@0.1.6-alpha.2"
     (cd "$src" && find lib -type f ! -name '*.d.ts'; echo LICENSE; echo package.json) |
     while IFS= read -r f; do
@@ -837,6 +863,17 @@ for f in package.json lib/index.js; do
     fi
     cmp -s "runtime/dsh/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/$f" "$RAW/$rel" ||
         echo "$rel" >> "$DRIFT"
+done
+# The MOBILE preset doc's block twin (the stage block above): the same
+# tracked-check rule — untracked staged files SKIP, a drifted tracked one
+# fails the gate.
+for f in preset.yml agent.cordis.yml; do
+    rel="vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/$f"
+    if [ -n "$TRACKED" ] && ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$rel"; then
+        echo skip >> "$SKIPS_FILE"
+        continue
+    fi
+    cmp -s "runtime/dsh/presets-mobile/mobile/$f" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
 done
 # The web-client trees byte-verify against their presentation/ source (the
 # tracked-check rule above applies: untracked staged files SKIP, never drift).

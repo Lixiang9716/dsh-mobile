@@ -1,9 +1,9 @@
 {
-  "host": "harmony (127.0.0.1:5555, emulator)",
+  "host": "harmony (127.0.0.1:5557, emulator)",
   "runner": "hosts/harmony/ci/run-device-parity.sh",
   "phase": "upstream.parity",
   "launch": "--ps dsh.e2e.leg upstream.parity (Debug, in-app ParityMockRoute)",
-  "tree": "1466763e63d1 (dirty working tree at receipt time)",
+  "tree": "e5dd4c182886 (dirty working tree at receipt time)",
   "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "upstream": "@deepseek-ai/dsh-* (vendored verbatim, sha256-pinned; the SAME closure the Node reference ran)",
   "scenario": "upstream.parity",
@@ -11,7 +11,7 @@
     "the vendored upstream spine produces the SAME projected session log on the HarmonyOS device as under plain Node: record-for-record identity against the committed 25-record golden, the scripted route replaying success → todo_write tool round → success → 401",
     "the 401 transport-error leg surfaces as the same upstream error-finish"
   ],
-  "checker": "runtime/spike/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
+  "checker": "runtime/dsh/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
   "referenceRecords": 25,
   "exitCode": 0
 }

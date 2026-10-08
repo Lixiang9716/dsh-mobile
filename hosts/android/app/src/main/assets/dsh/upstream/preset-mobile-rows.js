@@ -45,6 +45,7 @@ const MOBILE_ABSENT_ROW_IDS = new Set([
   'workflow-ptc', // the PTC workflow engine needs the desktop host runner
   'tool-presentation', // the registry presenter rides the PTC host runner
   'tool-cordis', // needs the cordis-host-runner inspect service, not just the two B3 legs
+  'tool-workflow', // tool-workflow injects `workflowEngine` — its only engine (workflow-ptc) rides the same walled PTC host runner; no stub would be honest (measured 2026-10-08: the mobile standing mount parks the row without it)
 ]);
 
 /** The one YAML row block carrying `- id: <id>` at any indent, as an array

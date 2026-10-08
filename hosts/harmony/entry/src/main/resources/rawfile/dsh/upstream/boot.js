@@ -42,7 +42,8 @@ import { registerRouteDisposer, registerDirectoryHandle } from 'upstream/llm-rou
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
 // The GOAL/COMMAND/FILE-REFERENCE/CREATION rows (split at the code-size
 // gate, 2026-10-03; see the module header).
-import { mountCoverageRows } from 'upstream/boot-coverage-rows.js';
+import { mountCompositionHostPlane, mountCoverageRows } from 'upstream/boot-coverage-rows.js';
+export { joinDefaultPreset } from 'upstream/boot-coverage-rows.js';
 // The FIRST ported tool package (D9): its namespace object IS the plugin.
 import * as ToolTodo from '@deepseek-ai/dsh-tool-todo';
 // The per-tool-run deadline (issue #323, ring 1): a wall-clock budget
@@ -54,10 +55,8 @@ import * as ToolDeadline from 'upstream/tool-deadline.js';
 // covers stalls outside tool dispatch (LLM stream, loop awaits).
 import * as TurnWatchdog from 'upstream/turn-watchdog.js';
 // The upstream request-retry policy answer (loop-u): a transient LLM stream
-// death retries the REQUEST in-turn under the provider's retry policy (the
-// defaults ride the llm service's prepareCall) instead of erroring the turn.
-// Exports {Config, apply, inject, name} and no default — the namespace object
-// IS the cordis plugin (the tool-todo import's rule).
+// death retries in-turn under the provider's policy. Exports {Config, apply,
+// inject, name} and no default — the namespace object IS the plugin.
 import * as LlmRetry from '@deepseek-ai/dsh-llm-retry';
 import * as RetryTelemetry from 'upstream/retry-telemetry.js';
 // The turn-failure supervisor (loop-u): what a retry budget cannot cover —
@@ -107,7 +106,7 @@ import { mountWorkspace } from 'upstream/shims/fs.js';
 // over the bus seam). The Loader ALSO serves the web-boot client composition's
 // `entries()`/`internal` face — one loader service, no second claim (the
 // conflict that kept this mount off is resolved in upstream/web-boot.js).
-import { Loader } from '@deepseek-ai/cordis-plugin-loader';
+import { Group, Loader } from '@deepseek-ai/cordis-plugin-loader';
 import { AgentPresets } from '@deepseek-ai/dsh-agent-presets';
 // The cordis logger bridge (split from this file at the file-size gate,
 // 2026-10-01 — unchanged behavior; see wire-logger.js for the strip policy).
@@ -266,9 +265,8 @@ const mountSkillPlane = async (ctx, skills) => {
   await ctx.plugin(ToolSkill, {});
 };
 
-/** The GOAL/COMMAND/FILE-REFERENCE/CREATION rows: split from this file at
- * the code-size gate (2026-10-03) — behavior carried verbatim in
- * upstream/boot-coverage-rows.js (mountCoverageRows). */
+/** The GOAL/COMMAND/FILE-REFERENCE/CREATION rows: split at the code-size
+ * gate (2026-10-03) — carried verbatim in boot-coverage-rows.js. */
 
 /** Mount the dsh-base bundle's spine rows over the vendored packages, in
  * base-patch order (activation is service-availability driven upstream; here
@@ -296,6 +294,11 @@ const mountPresetPlane = async (ctx) => {
   if (ctx.get('loader') === undefined) {
     throw new Error('boot: the cordis Loader failed to mount under "loader"');
   }
+  // The `cordis:group` builtin: the preset documents' grouped rows
+  // (planning / compaction / delegation) import it by name — the deployment
+  // registers the loader's own Group plugin. Without it every group row
+  // fails the standing mount ("invalid plugin ... received undefined").
+  ctx.get('loader').builtins.group = Group;
   await ctx.plugin(AgentPresets, {
     default: AGENT_PRESETS_DEFAULT,
     includeUserRoot: false,
@@ -340,8 +343,9 @@ const mountSpine = async (ctx, identity) => {
   // tool-skill catalog registers its `agent/pre-step` listeners on the
   // context, so every later step sees them). Only when configured.
   if (identity.skills) await mountSkillPlane(ctx, identity.skills);
-  // The COMMAND/GOAL/FILE-REFERENCE/CREATION rows (gated, see
-  // boot-coverage-rows.js) in their historical order, before the agent loop.
+  // The COMMAND/GOAL/FILE-REFERENCE/CREATION rows (gated) in historical
+  // order; presetJoin boots the composition host plane first (same module).
+  if (identity.presetJoin) await mountCompositionHostPlane(ctx, identity);
   await mountCoverageRows(ctx, identity);
   // dsh-base row `agent-loop` with ONE configured agent (config.agents create
   // path — no persistence backend is mounted, matching the base default).
@@ -374,21 +378,18 @@ const mountSpine = async (ctx, identity) => {
  * @param options.systemPrompt - optional override seam: {personaPrefix} —
  *   the vendored SystemPrompt's own config (the prompt's persona section),
  *   mounted verbatim; default '' (the historical boot shape).
- * @param options.commands - optional COMMAND-row flag (true mounts the upstream
- * commands registry + the command-defining plugins vendored so far).
- * @param options.goals - optional GOAL-row flag (true mounts the vendored
- * dsh-goal GoalService under `goals`; the api-full-coverage work stream's
- * wire claims ride it). Absent = the historical spine.
+ * @param options.commands, options.goals - optional COMMAND/GOAL-row flags
+ * (the interactive seat's rows; absent = the historical spine).
  * @param options.fileReferences - optional FILE-REFERENCE-row flag (true mounts
  * the vendored dsh-file-reference-local service under `fileReferences`, the
  * composer's @-mention lexicon). Absent = the historical spine.
- * @param options.creation - optional CREATION-row flag (true mounts the
- * present tool — workspace files as on-screen deliverables, journaled as
- * deliverables/presented). Absent = the historical spine.
+ * @param options.creation - optional CREATION-row flag (the present tool).
  * @param options.skills - optional SKILL-row configuration: {dshHome,
- *   agentsHome, customSkillDirs?} — the vendored skill family (registry +
- *   filesystem provider + the `skill` tool). Absent = the historical spine
- *   (the parity/session manifests pin that shape).
+ *   agentsHome, customSkillDirs?} — the vendored skill family. Absent = the
+ *   historical spine (the parity/session manifests pin that shape).
+ * @param options.presetJoin - optional COMPOSITION flag (true boots the
+ *   composition host plane the default preset's rows inject). Absent = the
+ *   historical spine.
  * @param options.onEvent - observability hook: (event, fields) => void; boot
  *   emits `upstream.profile`, `llm/runtime`, `upstream.services`.
  */
@@ -483,6 +484,9 @@ export async function bootUpstream(options) {
     goals: options.goals,
     fileReferences: options.fileReferences,
     creation: options.creation,
+    // presetJoin boots the composition host plane; the join itself is the
+    // seat's runtime half, after the presets seed has landed.
+    presetJoin: options.presetJoin,
   });
   await mountModelSelectionPlane(ctx, agentRoute, sessionId);
 

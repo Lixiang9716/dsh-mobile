@@ -198,12 +198,32 @@ grep 'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
 # file from dsh-dsh-capture.log to dsh-rt-capture.log (Index.ets
 # materializeBundle's capturePath) — the old name here pulled a missing file
 # and the trio checkers judged an empty stream (logged 0).
-"$HDC" file recv "$BASE/dsh-rt-capture.log" "$OUT/sink-capture.txt" >/dev/null
-"$HDC" file recv "$BASE/dsh-host-capture.log" "$OUT/binding-capture.txt" >/dev/null
-"$HDC" file recv "$BASE/dsh-official-capture.log" "$OUT/official-capture.txt" >/dev/null
-"$HDC" file recv "$BASE/dsh-httpfetch-capture.log" "$OUT/httpfetch-capture.txt" >/dev/null
-"$HDC" file recv "$BASE/dsh-session-capture.log" "$OUT/session-capture.txt" >/dev/null
-"$HDC" file recv "$BASE/dsh-write-capture.log" "$OUT/write-capture.txt" >/dev/null
+#
+# Each destination is REMOVED first and its existence demanded after: `hdc
+# file recv` exits 0 even when the transfer fails (measured 2026-10-08 on
+# the Windows seat — the MSYS-mangled relative destination left the previous
+# run's file in place and the checkers judged a stale capture green), so the
+# exit code is not evidence (rule 5: verify the world, not the self-report).
+# The recv runs FROM $OUT with a bare file name: hdc resolves the local path
+# against its own process cwd, and a repo-relative destination silently
+# lands nowhere on the Windows seat (MSYS_NO_PATHCONV keeps the device-side
+# /data absolute path unconverted; the env var is inert elsewhere).
+pull_capture() {
+    src=$1
+    dst=$2
+    rm -f "$dst"
+    (cd "$OUT" && MSYS_NO_PATHCONV=1 "$HDC" file recv "$BASE/$src" "${dst##*/}" >/dev/null)
+    if [ ! -s "$dst" ]; then
+        echo "::error::capture pull failed: $BASE/$src -> $dst (hdc file recv reported success but wrote nothing)" >&2
+        exit 1
+    fi
+}
+pull_capture dsh-rt-capture.log "$OUT/sink-capture.txt"
+pull_capture dsh-host-capture.log "$OUT/binding-capture.txt"
+pull_capture dsh-official-capture.log "$OUT/official-capture.txt"
+pull_capture dsh-httpfetch-capture.log "$OUT/httpfetch-capture.txt"
+pull_capture dsh-session-capture.log "$OUT/session-capture.txt"
+pull_capture dsh-write-capture.log "$OUT/write-capture.txt"
 
 # scenario.jsonl: the canonical dsh.runtime.log lines of THIS run, extracted
 # from the run's own capture files (trio + binding + official phases, in run

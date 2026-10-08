@@ -163,3 +163,28 @@ export function webclientRows(repoAbs, trees) {
   }
   return { rows, missing };
 }
+
+/** The harmony-only staging rows: the npm faces vendor-official.sh stages at
+ * the dsh rel path (its `for face in` verify loop is the declaration) expand
+ * from their npm pins at the vendor/dsh/<face>@ spelling — dshRosterRows'
+ * npm branch, scoped to the faces the HARMONY script names (the joint
+ * roster's android-side names must not grow harmony rows) — plus the MOBILE
+ * preset docs staged into the vendored presets copy. */
+export function harmonyOnlyRows(spikeAbs, closure, ver) {
+  const faceRows = closure.faceStages.flatMap((face) => {
+    const pin = `vendor/npm/@deepseek-ai/dsh-${face}@${ver}`;
+    const abs = join(spikeAbs, pin);
+    if (!existsSync(abs)) throw new Error(`face stage pin absent: ${pin}`);
+    const rows = [];
+    if (existsSync(join(abs, 'LICENSE'))) rows.push(`vendor/dsh/${face}@${ver}/LICENSE`);
+    rows.push(`vendor/dsh/${face}@${ver}/package.json`);
+    for (const f of walkDiskDir(join(abs, 'lib'))) {
+      const rel = f.slice(join(abs, 'lib').length + 1).split(sep).join('/');
+      if (!rel.endsWith('.d.ts')) rows.push(`vendor/dsh/${face}@${ver}/lib/${rel}`);
+    }
+    return rows;
+  });
+  const mobileRows = closure.mobileDocs.map(
+    (rel) => `vendor/dsh/agent-presets@${ver}/presets/mobile/${rel.split('/').pop()}`);
+  return [...faceRows, ...mobileRows].sort();
+}

@@ -4,7 +4,7 @@
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "phase": "host-e2e (regression trio + binding + D9 official phases)",
   "launchConfiguration": "aa start -b com.dshmobile.host -a EntryAbility",
-  "tree": "origin/main 06ccea6fa7a9 (dirty working tree at receipt time)",
+  "tree": "origin/main e5dd4c182886 (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "boot.verification",
@@ -51,7 +51,7 @@
     {
       "id": "harmony.composer.live-write",
       "checker": "test/e2e/scenarios/harmony-composer-live-write.json",
-      "events": 40,
+      "events": 41,
       "result": "pass"
     }
   ],
@@ -69,6 +69,6 @@
     "session-live-boot-screen.png",
     "session-live-read-final.png"
   ],
-  "timestamp": "2026-10-08T16:12:43+08:00",
+  "timestamp": "2026-10-08T23:54:08+08:00",
   "exitCode": 0
 }

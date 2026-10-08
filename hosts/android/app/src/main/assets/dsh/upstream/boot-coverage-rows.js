@@ -45,6 +45,96 @@ const mountGoalCommand = async (ctx) => {
   await ctx.plugin(CommandGoal.default ?? CommandGoal, {});
 };
 
+/** Join ONE live agent to the deployment default preset (the Agent 预设
+ * policy's own default — `config.default`, `mobile` here). The staged gap
+ * this closes: mountPresetPlane mounts the roster AFTER agent-loop, so the
+ * configured boot agent publishes into the empty global layer — the vendored
+ * service's own `agent/created` warning, and T-0048's tail item: the preset
+ * rows (bash/pwsh/present/ralph) never joined the session toolset. The join
+ * is the service's OWN mount primitive (resolve → standing mount → scope
+ * bind), called at the point the caller knows the presets tree is seeded:
+ * hosts that deliver the tree after the boot (the write leg's
+ * agentPresets.seed ride) call this from their runtime half, not at mount
+ * time. Fail loud (rule 5): an unresolvable or broken default preset names
+ * itself — a seat that asks for the join staged no working roster.
+ * @param ctx - the booted spine context.
+ * @param agent - the live agent handle (ctx.agents.get).
+ * @returns the composed preset.
+ */
+export const joinDefaultPreset = async (ctx, agent) => {
+  const service = ctx.get('agentPresets');
+  if (service === undefined) {
+    throw new Error('boot: joinDefaultPreset needs the agentPresets service (mountPresetPlane)');
+  }
+  if (agent === undefined) {
+    throw new Error('boot: joinDefaultPreset needs a live agent (ctx.agents.get)');
+  }
+  if (service.composedPreset(agent.ctx) !== undefined) {
+    throw new Error(`boot: agent "${agent.id}" already joined preset "${service.composedPreset(agent.ctx)}"`);
+  }
+  return service.mount(agent.ctx, undefined);
+};
+
+/** The COMPOSITION host plane (the presetJoin seats, T-0048's tail item):
+ * the services the deployment default composition's rows inject that neither
+ * the spine nor the interactive flags mount — compaction-tool-result-pruner
+ * parks without `tokenMeter`, tool-jobs without `jobs`, tool-ask-user
+ * without `userQuestions`, the delegation group's tool-subagent refuses its
+ * `modelSelectionSettings: true` row without `subagentModelSelection`, and
+ * tool-bash parks without `shell` + `shellEnv`. A seat joining the default
+ * preset boots this plane beside the interactive rows it already passes
+ * (commands/goals/skills); every flagless leg stays byte-identical.
+ *
+ * `jobs` is the ABSTRACT registry seam (its constructor refuses) — the LOCAL
+ * implementation backs it (the npm face staged at the dsh rel path, the
+ * tool-web convention). `shell` is likewise the abstract executor seam: the
+ * wasm executor (dsh-shell-wasm's exported `shellExecutor` — the backend the
+ * ported dsh-shell subclass was always meant to wrap) backs the vendored
+ * ShellExecutor here, background `start` refusing honestly (wasm runs are
+ * foreground; background jobs still work through job-less direct calls).
+ * `shellEnv` resolves its DSH_HOME onto the profile container the skills
+ * plane already pins. The tool-workflow row is NOT backed: its engine rides
+ * the PTC host runner (the mobile wall preset-mobile-rows.js disables the
+ * row for) — no stub here would be honest. */
+export const mountCompositionHostPlane = async (ctx, identity) => {
+  const [TokenMeter, JobsLocal, UserQuestions, SubagentModelSelection,
+    DshShell, DshShellEnv, ShellWasmPlugin] = await Promise.all([
+    import('@deepseek-ai/dsh-token-meter'),
+    import('@deepseek-ai/dsh-jobs-local'),
+    import('@deepseek-ai/dsh-user-questions'),
+    import('@deepseek-ai/dsh-tool-subagent/model-selection-settings'),
+    import('@deepseek-ai/dsh-shell'),
+    import('@deepseek-ai/dsh-shell-env'),
+    import('system-plugins/dsh-shell-wasm/index.js'),
+  ]);
+  const WasmShellExecutor = class extends (DshShell.ShellExecutor ?? DshShell.default) {
+    get sandboxMode() { return ShellWasmPlugin.shellExecutor.sandboxMode; }
+    resolve(request) { return ShellWasmPlugin.shellExecutor.resolve(request); }
+    run(request) { return ShellWasmPlugin.shellExecutor.run(request); }
+    start() {
+      return Promise.reject(new Error(
+        'dsh-shell-wasm: background shell processes are not implemented on the wasm executor'));
+    }
+  };
+  await ctx.plugin(TokenMeter.default ?? TokenMeter.TokenMeter, {});
+  await ctx.plugin(JobsLocal.default ?? JobsLocal.LocalJobRegistry, {});
+  await ctx.plugin(UserQuestions.default ?? UserQuestions.UserQuestionService, {});
+  // The opt-in preference defaults OFF (enabled: false): the composition's
+  // subagent rows mount, no per-child model selection policy rides until a
+  // session enables it.
+  await ctx.plugin(SubagentModelSelection.default
+    ?? SubagentModelSelection.SubagentModelSelectionConfig, {});
+  await ctx.plugin(WasmShellExecutor, {});
+  const dshHome = identity.skills?.dshHome ?? globalThis.__dshProfileHome;
+  await ctx.plugin(DshShellEnv.default ?? DshShellEnv.ShellEnvRegistry, { dshHome });
+  const missing = ['tokenMeter', 'jobs', 'userQuestions', 'subagentModelSelection',
+    'shell', 'shellEnv']
+    .filter((name) => ctx.get(name) === undefined);
+  if (missing.length > 0) {
+    throw new Error(`boot: composition host plane failed to mount: ${missing.join(', ')}`);
+  }
+};
+
 /** The FILE-REFERENCE row (same work stream): the vendored local-filesystem
  * file-reference discovery service (`ctx.fileReferences`,
  * dsh-file-reference-local) — the @-mention lexicon the official composer
