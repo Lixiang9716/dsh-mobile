@@ -39,6 +39,7 @@ grep -q "^\s*'upstream/boot\.js',$" "$IDX" || {
 GITDIR="$(git -C "$REPO" rev-parse --git-dir 2>/dev/null || true)"
 case "$GITDIR" in
   /*) ;;                       # already absolute
+  [A-Za-z]:[/\\]*) ;;          # Windows drive-letter absolute (win32 worktree: git prints D:/...)
   "") GITDIR="$TMPDIR" ;;      # no git — fall back to the shared tmp lock
   *) GITDIR="$REPO/$GITDIR" ;;
 esac
