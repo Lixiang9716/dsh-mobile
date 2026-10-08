@@ -2,7 +2,7 @@
   "title": "Tool parity matrix: one source of truth for per-platform tool mounting + a parity gate",
   "created": "2026-10-08T13:55:51+00:00",
   "rules": {
-    "hash": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
+    "hash": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "c195c538562be1aecd34d90ea5299839e5fc2c3a4c7197965f7baaebd342815d"
@@ -17,5 +17,14 @@
   ],
   "status": "open",
   "receipt": null,
-  "id": "T-0207"
+  "id": "T-0207",
+  "repins": [
+    {
+      "ts": "2026-10-08T17:30:08+00:00",
+      "by": "13957@DESKTOP-AOFQD6F",
+      "from": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
+      "to": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
+      "reason": "constitution advanced by the staging consolidation (PR #420: staging-check/staging-generated path sets grew, gates.json re-sealed) \u2014 brief unchanged, re-pinned per the gate's remedy"
+    }
+  ]
 }

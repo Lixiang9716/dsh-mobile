@@ -1,0 +1,17 @@
+scenario/boot-verification.js
+scenario/gateway-bridge-smoke.js
+scenario/session-mock-llm.js
+scenario/android-capability-binding.js
+scenario/device-plane.js
+scenario/camera-plane.js
+scenario/ble-plane.js
+scenario/mic-plane.js
+scenario/upstream-suite-leg.js
+scenario/upstream-suite-flatmap.js
+scenario/upstream-suite-type-world.js
+scenario/upstream-test-harness.js
+scenario/upstream-harness-matchers.js
+scenario/upstream-harness-vi.js
+scenario/upstream-fake-timers.js
+scenario/agent-presets-probe-seed.js
+scenario/agent-flow.js

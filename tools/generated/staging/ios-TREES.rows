@@ -1,0 +1,118 @@
+# ios TREES — the embedder's whole-dir mirror roots, DECLARED here and
+# materialized into hosts/ios/Tools/gen_bundle_header.py by
+# tools/gen-staging-emit.mjs. `<bundle-rel>=<source-rel>` embeds the DSH-rooted
+# directory tree at the bundle-relative prefix (identity rows spell both
+# sides); the npm-face rows stage published-tarball bytes at the vendor/dsh/
+# rel path the preset-health marker seeders walk. Row order = block order (the
+# tree walk consumes it). A new pin is a hand row here; a new FILE inside an
+# existing tree needs no row (the embedder rglobs each root), and graph
+# coverage of everything no root covers stays with check-staging's ios
+# surface (blocking, earlier in the DAG).
+# The vendored spine pins: verbatim lib/ trees (the loader's
+# vendor/dsh/<pkg>@<ver>/lib/** map) — the D9 spine, the Agent 预设 closure,
+# the FILE-TOOLS rows, the SKILL family.
+vendor/dsh/agent@0.1.6-alpha.2=vendor/dsh/agent@0.1.6-alpha.2
+vendor/dsh/agent-loop@0.1.6-alpha.2=vendor/dsh/agent-loop@0.1.6-alpha.2
+vendor/dsh/brand@0.1.6-alpha.2=vendor/dsh/brand@0.1.6-alpha.2
+vendor/dsh/llm@0.1.6-alpha.2=vendor/dsh/llm@0.1.6-alpha.2
+vendor/dsh/sandbox@0.1.6-alpha.2=vendor/dsh/sandbox@0.1.6-alpha.2
+vendor/dsh/scope@0.1.6-alpha.2=vendor/dsh/scope@0.1.6-alpha.2
+vendor/dsh/agent-presets@0.1.6-alpha.2=vendor/dsh/agent-presets@0.1.6-alpha.2
+vendor/dsh/atomic-write@0.1.6-alpha.2=vendor/dsh/atomic-write@0.1.6-alpha.2
+vendor/dsh/home-paths@0.1.6-alpha.2=vendor/dsh/home-paths@0.1.6-alpha.2
+vendor/dsh/fs@0.1.6-alpha.2=vendor/dsh/fs@0.1.6-alpha.2
+vendor/dsh/attachment@0.1.6-alpha.2=vendor/dsh/attachment@0.1.6-alpha.2
+vendor/dsh/fs-local@0.1.6-alpha.2=vendor/dsh/fs-local@0.1.6-alpha.2
+vendor/dsh/tool-fs@0.1.6-alpha.2=vendor/dsh/tool-fs@0.1.6-alpha.2
+vendor/dsh/tool-str-replace-editor@0.1.6-alpha.2=vendor/dsh/tool-str-replace-editor@0.1.6-alpha.2
+vendor/dsh/session@0.1.6-alpha.2=vendor/dsh/session@0.1.6-alpha.2
+vendor/dsh/session-projection@0.1.6-alpha.2=vendor/dsh/session-projection@0.1.6-alpha.2
+vendor/dsh/settings@0.1.6-alpha.2=vendor/dsh/settings@0.1.6-alpha.2
+vendor/dsh/system-prompt@0.1.6-alpha.2=vendor/dsh/system-prompt@0.1.6-alpha.2
+vendor/dsh/session-persistence@0.1.6-alpha.2=vendor/dsh/session-persistence@0.1.6-alpha.2
+vendor/dsh/commands@0.1.6-alpha.2=vendor/dsh/commands@0.1.6-alpha.2
+vendor/dsh/command-feedback@0.1.6-alpha.2=vendor/dsh/command-feedback@0.1.6-alpha.2
+vendor/dsh/timeout@0.1.6-alpha.2=vendor/dsh/timeout@0.1.6-alpha.2
+vendor/dsh/tool-todo@0.1.6-alpha.2=vendor/dsh/tool-todo@0.1.6-alpha.2
+vendor/dsh/tools@0.1.6-alpha.2=vendor/dsh/tools@0.1.6-alpha.2
+vendor/dsh/typert-protocol@0.1.6-alpha.2=vendor/dsh/typert-protocol@0.1.6-alpha.2
+vendor/dsh/util-values@0.1.6-alpha.2=vendor/dsh/util-values@0.1.6-alpha.2
+vendor/dsh/persona@0.1.6-alpha.2=vendor/dsh/persona@0.1.6-alpha.2
+vendor/dsh/agent-instructions@0.1.6-alpha.2=vendor/dsh/agent-instructions@0.1.6-alpha.2
+vendor/dsh/plan-mode@0.1.6-alpha.2=vendor/dsh/plan-mode@0.1.6-alpha.2
+vendor/dsh/command-goal@0.1.6-alpha.2=vendor/dsh/command-goal@0.1.6-alpha.2
+vendor/dsh/tool-goal@0.1.6-alpha.2=vendor/dsh/tool-goal@0.1.6-alpha.2
+vendor/dsh/tool-jobs@0.1.6-alpha.2=vendor/dsh/tool-jobs@0.1.6-alpha.2
+vendor/dsh/tool-ask-user@0.1.6-alpha.2=vendor/dsh/tool-ask-user@0.1.6-alpha.2
+vendor/dsh/tool-subagent@0.1.6-alpha.2=vendor/dsh/tool-subagent@0.1.6-alpha.2
+vendor/dsh/tool-subagent-control@0.1.6-alpha.2=vendor/dsh/tool-subagent-control@0.1.6-alpha.2
+vendor/dsh/tool-workflow@0.1.6-alpha.2=vendor/dsh/tool-workflow@0.1.6-alpha.2
+vendor/dsh/compaction-basic@0.1.6-alpha.2=vendor/dsh/compaction-basic@0.1.6-alpha.2
+vendor/dsh/command-compact@0.1.6-alpha.2=vendor/dsh/command-compact@0.1.6-alpha.2
+vendor/dsh/compaction-tool-result-pruner@0.1.6-alpha.2=vendor/dsh/compaction-tool-result-pruner@0.1.6-alpha.2
+vendor/dsh/credentials@0.1.6-alpha.2=vendor/dsh/credentials@0.1.6-alpha.2
+vendor/dsh/terminal@0.1.6-alpha.2=vendor/dsh/terminal@0.1.6-alpha.2
+vendor/dsh/goal@0.1.6-alpha.2=vendor/dsh/goal@0.1.6-alpha.2
+vendor/dsh/jobs@0.1.6-alpha.2=vendor/dsh/jobs@0.1.6-alpha.2
+vendor/dsh/output-retention@0.1.6-alpha.2=vendor/dsh/output-retention@0.1.6-alpha.2
+vendor/dsh/user-questions@0.1.6-alpha.2=vendor/dsh/user-questions@0.1.6-alpha.2
+vendor/dsh/chunked-list@0.1.6-alpha.2=vendor/dsh/chunked-list@0.1.6-alpha.2
+vendor/dsh/util-time@0.1.6-alpha.2=vendor/dsh/util-time@0.1.6-alpha.2
+vendor/dsh/subagent@0.1.6-alpha.2=vendor/dsh/subagent@0.1.6-alpha.2
+vendor/dsh/workflow@0.1.6-alpha.2=vendor/dsh/workflow@0.1.6-alpha.2
+vendor/dsh/compaction@0.1.6-alpha.2=vendor/dsh/compaction@0.1.6-alpha.2
+vendor/dsh/token-meter@0.1.6-alpha.2=vendor/dsh/token-meter@0.1.6-alpha.2
+vendor/dsh/skill@0.1.6-alpha.2=vendor/dsh/skill@0.1.6-alpha.2
+vendor/dsh/skill-filesystem@0.1.6-alpha.2=vendor/dsh/skill-filesystem@0.1.6-alpha.2
+vendor/dsh/tool-skill@0.1.6-alpha.2=vendor/dsh/tool-skill@0.1.6-alpha.2
+# The mobile preset's shell surface + the workspace/plugin/web rows: pinned
+# on the NPM face only, staged at the vendor/dsh rel path (the dir the
+# marker seeders walk); session-query rides the same convention (T-0050
+# item 2).
+vendor/dsh/tool-present@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-tool-present@0.1.6-alpha.2
+vendor/dsh/tool-ralph@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-tool-ralph@0.1.6-alpha.2
+vendor/dsh/tool-bash@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-tool-bash@0.1.6-alpha.2
+vendor/dsh/tool-pwsh@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-tool-pwsh@0.1.6-alpha.2
+vendor/dsh/plugin-manager@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-plugin-manager@0.1.6-alpha.2
+vendor/dsh/tool-web@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-tool-web@0.1.6-alpha.2
+vendor/dsh/session-query@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-session-query@0.1.6-alpha.2
+vendor/dsh/session-title@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-session-title@0.1.6-alpha.2
+vendor/dsh/session-format-catalog@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-session-format-catalog@0.1.6-alpha.2
+vendor/dsh/compaction-image-offload@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-compaction-image-offload@0.1.6-alpha.2
+# The WEB plane's seam + HTML→markdown chain (#335 B5): dsh-web stages at its
+# own dir name (a stripped stage would mint the web@ mismatch-name).
+vendor/dsh/dsh-web@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2
+vendor/npm/turndown@7.2.4/lib=vendor/npm/turndown@7.2.4/lib
+vendor/npm/@mixmark-io/domino@2.2.0/lib=vendor/npm/@mixmark-io/domino@2.2.0/lib
+vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib=vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib
+# api-full-coverage (D9): the coverage rows' mounted services + loop-u's
+# llm-retry — boot.js imports these npm-face packages directly.
+vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2
+vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2
+vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2
+vendor/npm/@deepseek-ai/dsh-llm-retry@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-llm-retry@0.1.6-alpha.2
+# The bridge targets (npm-bridges re-exports these faces behind bare
+# specifiers), the sharp face's engines, the crypto shims' noble face and the
+# pi-ai bridge target: whole pins ride — the parity legs died on
+# bytes-absent-in-app.
+vendor/npm/diff@9.0.0/libesm=vendor/npm/diff@9.0.0/libesm
+vendor/npm/yaml@2.9.0/browser=vendor/npm/yaml@2.9.0/browser
+vendor/npm/fflate@0.8.2/esm=vendor/npm/fflate@0.8.2/esm
+vendor/npm/pngjs@5.0.0/lib=vendor/npm/pngjs@5.0.0/lib
+vendor/npm/jpeg-js@0.4.4=vendor/npm/jpeg-js@0.4.4
+vendor/npm/fflate@0.8.2/lib/index.cjs=vendor/npm/fflate@0.8.2/lib/index.cjs
+vendor/npm/@noble/hashes@2.3.0=vendor/npm/@noble/hashes@2.3.0
+vendor/npm/@earendil-works/pi-ai@0.85.1=vendor/npm/@earendil-works/pi-ai@0.85.1
+# The OFFICE row's whole plugin dir, the upstream shims (a shim joins the
+# embed by existing, not by list edit), and the scenario/web-live whole-dir
+# rows (same rule).
+system-plugins/dsh-office=system-plugins/dsh-office
+upstream/shims=upstream/shims
+scenario=scenario
+web-live=web-live
+# The pinned npm packages' package.json (the node-module shim serves the
+# upstream attribution reads); the lib/ bundles ride the RESOURCES rows.
+vendor/npm/cordis@4.0.2/package.json=vendor/npm/cordis@4.0.2/package.json
+vendor/npm/cosmokit@1.8.3/package.json=vendor/npm/cosmokit@1.8.3/package.json
+vendor/npm/schemastery@3.18.2/package.json=vendor/npm/schemastery@3.18.2/package.json
+vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/package.json=vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/package.json

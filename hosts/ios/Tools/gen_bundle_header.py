@@ -21,110 +21,94 @@ GUARD = "DSH_IOS_SPIKE_BUNDLE_H"
 from gen_bundle_resources import RESOURCES
 
 TREES = [
-    (f"vendor/dsh/{pkg}@0.1.6-alpha.2",
-     DSH / "vendor" / "dsh" / f"{pkg}@0.1.6-alpha.2")
-    for pkg in [
-        "agent", "agent-loop", "brand", "llm", "sandbox", "scope",
-        "agent-presets", "atomic-write", "home-paths",
-        "fs", "attachment", "fs-local", "tool-fs", "tool-str-replace-editor",
-        "session", "session-projection", "settings", "system-prompt",
-        "session-persistence",
-        "commands", "command-feedback",
-        "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
-        # The interactive circle (the "/" surface's session plugins): these
-        # ride the preset health check — every row of the mobile preset
-        # resolves against the seeded markers, so the packages must be
-        # embedded, not merely present in a dev tree.
-        "persona", "agent-instructions", "plan-mode", "command-goal",
-        "tool-goal", "tool-jobs", "tool-ask-user", "tool-subagent",
-        "tool-subagent-control", "tool-workflow", "compaction-basic",
-        "command-compact", "compaction-tool-result-pruner", "credentials",
-        "terminal", "goal", "jobs", "output-retention", "user-questions",
-        "chunked-list", "util-time", "subagent", "workflow", "compaction",
-        "token-meter",
-        # the SKILL row (the agent-flow E2E): the ctx.skills registry, the
-        # filesystem discovery provider, and the model-facing `skill` tool.
-        "skill", "skill-filesystem", "tool-skill",
-    ]
-] + [
-    # present/ralph/bash/pwsh (the mobile preset's shell surface): pinned on
-    # the NPM face (ensure-dsh.sh fetches the published tarballs; the mirror
-    # serves no vendor/dsh tree for them) but STAGED at the vendor/dsh/%s@ver
-    # rel path — the dir the preset-health marker seeder walks. session-query
-    # rides the same npm-face convention (T-0050 item 2: the subagent
-    # catalog's corpus source).
-    *(("vendor/dsh/%s@0.1.6-alpha.2" % n,
-       DSH / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
-      for n in ("tool-present", "tool-ralph", "tool-bash", "tool-pwsh",
-                "plugin-manager", "tool-web", "session-query",
-                "session-title", "session-format-catalog",
-                "compaction-image-offload")),
-    # The WEB plane's seam + HTML→markdown chain (#335 B5): boot.js mounts
-    # the web plane unconditionally, so the embed carries the faces or the
-    # mount dies loud at its first dynamic import. dsh-web stages at its own
-    # dir name (a stripped stage would mint the web@ mismatch-name); the
-    # chain mirrors the android stager's staged set.
-    ("vendor/dsh/dsh-web@0.1.6-alpha.2",
-     DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-web@0.1.6-alpha.2"),
-    ("vendor/npm/turndown@7.2.4/lib",
-     DSH / "vendor" / "npm" / "turndown@7.2.4" / "lib"),
-    ("vendor/npm/@mixmark-io/domino@2.2.0/lib",
-     DSH / "vendor" / "npm" / "@mixmark-io" / "domino@2.2.0" / "lib"),
-    ("vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib",
-     DSH / "vendor" / "npm" / "@joplin" / "turndown-plugin-gfm@1.0.67" / "lib"),
-] + [
-    # api-full-coverage (D9): the vendored services the coverage rows mount
-    # (the goal service, the file-reference discovery) + loop-u's llm-retry —
-    # boot.js imports these npm-face packages directly (a missing tree fails
-    # the generator loud), and the loop's request-retry answer rides in-turn.
-    *(("vendor/npm/@deepseek-ai/dsh-%s@0.1.6-alpha.2",
-       DSH / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
-      for n in ("goal", "file-reference", "file-reference-local", "llm-retry")),
-] + [
-    # the npm `diff` bridge target: npm-bridges re-exports the libesm face
-    # behind the bare specifier vendored tool-fs imports (structuredPatch).
-    ("vendor/npm/diff@9.0.0/libesm",
-     DSH / "vendor" / "npm" / "diff@9.0.0" / "libesm"),
-    # the npm `yaml` bridge target (the SKILL row): the browser/ ESM face
-    # behind the bare specifier skill-filesystem imports for frontmatter
-    # (the "node" face is CJS, which the loader cannot serve).
-    ("vendor/npm/yaml@2.9.0/browser",
-     DSH / "vendor" / "npm" / "yaml@2.9.0" / "browser"),
-    # the npm `fflate` bridge target (the OFFICE row's zip engine).
-    ("vendor/npm/fflate@0.8.2/esm",
-     DSH / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
-    # D-c: the sharp face's engines (its adapter rides upstream/shims below).
-    *(("vendor/npm/%s" % n, DSH / "vendor" / "npm" / n) for n in ("pngjs@5.0.0/lib", "jpeg-js@0.4.4", "fflate@0.8.2/lib/index.cjs")),
-    # The crypto shims' npm face (crypto.js's static noble imports) and
-    # the pi-ai bridge target (the providers barrel + its data face):
-    # both whole pins ride — the parity legs died on bytes-absent-in-app.
-    ("vendor/npm/@noble/hashes@2.3.0",
-     DSH / "vendor" / "npm" / "@noble" / "hashes@2.3.0"),
-    ("vendor/npm/@earendil-works/pi-ai@0.85.1",
-     DSH / "vendor" / "npm" / "@earendil-works" / "pi-ai@0.85.1"),
-    # The OFFICE row (2026-09-27): the whole plugin dir rides the tree.
-    ("system-plugins/dsh-office",
-     DSH / "system-plugins" / "dsh-office"),
-    # The upstream shims ride the WHOLE DIRECTORY (the android stager's
-    # convention): a shim joins the embed by existing, not by list edit.
+    ("vendor/dsh/agent@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "agent@0.1.6-alpha.2"),
+    ("vendor/dsh/agent-loop@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "agent-loop@0.1.6-alpha.2"),
+    ("vendor/dsh/brand@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "brand@0.1.6-alpha.2"),
+    ("vendor/dsh/llm@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "llm@0.1.6-alpha.2"),
+    ("vendor/dsh/sandbox@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "sandbox@0.1.6-alpha.2"),
+    ("vendor/dsh/scope@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "scope@0.1.6-alpha.2"),
+    ("vendor/dsh/agent-presets@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "agent-presets@0.1.6-alpha.2"),
+    ("vendor/dsh/atomic-write@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "atomic-write@0.1.6-alpha.2"),
+    ("vendor/dsh/home-paths@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "home-paths@0.1.6-alpha.2"),
+    ("vendor/dsh/fs@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "fs@0.1.6-alpha.2"),
+    ("vendor/dsh/attachment@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "attachment@0.1.6-alpha.2"),
+    ("vendor/dsh/fs-local@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "fs-local@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-fs@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-fs@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-str-replace-editor@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-str-replace-editor@0.1.6-alpha.2"),
+    ("vendor/dsh/session@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "session@0.1.6-alpha.2"),
+    ("vendor/dsh/session-projection@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "session-projection@0.1.6-alpha.2"),
+    ("vendor/dsh/settings@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "settings@0.1.6-alpha.2"),
+    ("vendor/dsh/system-prompt@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "system-prompt@0.1.6-alpha.2"),
+    ("vendor/dsh/session-persistence@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "session-persistence@0.1.6-alpha.2"),
+    ("vendor/dsh/commands@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "commands@0.1.6-alpha.2"),
+    ("vendor/dsh/command-feedback@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "command-feedback@0.1.6-alpha.2"),
+    ("vendor/dsh/timeout@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "timeout@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-todo@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-todo@0.1.6-alpha.2"),
+    ("vendor/dsh/tools@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tools@0.1.6-alpha.2"),
+    ("vendor/dsh/typert-protocol@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "typert-protocol@0.1.6-alpha.2"),
+    ("vendor/dsh/util-values@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "util-values@0.1.6-alpha.2"),
+    ("vendor/dsh/persona@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "persona@0.1.6-alpha.2"),
+    ("vendor/dsh/agent-instructions@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "agent-instructions@0.1.6-alpha.2"),
+    ("vendor/dsh/plan-mode@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "plan-mode@0.1.6-alpha.2"),
+    ("vendor/dsh/command-goal@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "command-goal@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-goal@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-goal@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-jobs@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-jobs@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-ask-user@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-ask-user@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-subagent@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-subagent@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-subagent-control@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-subagent-control@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-workflow@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-workflow@0.1.6-alpha.2"),
+    ("vendor/dsh/compaction-basic@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "compaction-basic@0.1.6-alpha.2"),
+    ("vendor/dsh/command-compact@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "command-compact@0.1.6-alpha.2"),
+    ("vendor/dsh/compaction-tool-result-pruner@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "compaction-tool-result-pruner@0.1.6-alpha.2"),
+    ("vendor/dsh/credentials@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "credentials@0.1.6-alpha.2"),
+    ("vendor/dsh/terminal@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "terminal@0.1.6-alpha.2"),
+    ("vendor/dsh/goal@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "goal@0.1.6-alpha.2"),
+    ("vendor/dsh/jobs@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "jobs@0.1.6-alpha.2"),
+    ("vendor/dsh/output-retention@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "output-retention@0.1.6-alpha.2"),
+    ("vendor/dsh/user-questions@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "user-questions@0.1.6-alpha.2"),
+    ("vendor/dsh/chunked-list@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "chunked-list@0.1.6-alpha.2"),
+    ("vendor/dsh/util-time@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "util-time@0.1.6-alpha.2"),
+    ("vendor/dsh/subagent@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "subagent@0.1.6-alpha.2"),
+    ("vendor/dsh/workflow@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "workflow@0.1.6-alpha.2"),
+    ("vendor/dsh/compaction@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "compaction@0.1.6-alpha.2"),
+    ("vendor/dsh/token-meter@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "token-meter@0.1.6-alpha.2"),
+    ("vendor/dsh/skill@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "skill@0.1.6-alpha.2"),
+    ("vendor/dsh/skill-filesystem@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "skill-filesystem@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-skill@0.1.6-alpha.2", DSH / "vendor" / "dsh" / "tool-skill@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-present@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-tool-present@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-ralph@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-tool-ralph@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-bash@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-tool-bash@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-pwsh@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-tool-pwsh@0.1.6-alpha.2"),
+    ("vendor/dsh/plugin-manager@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-plugin-manager@0.1.6-alpha.2"),
+    ("vendor/dsh/tool-web@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-tool-web@0.1.6-alpha.2"),
+    ("vendor/dsh/session-query@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-session-query@0.1.6-alpha.2"),
+    ("vendor/dsh/session-title@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-session-title@0.1.6-alpha.2"),
+    ("vendor/dsh/session-format-catalog@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-session-format-catalog@0.1.6-alpha.2"),
+    ("vendor/dsh/compaction-image-offload@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-compaction-image-offload@0.1.6-alpha.2"),
+    ("vendor/dsh/dsh-web@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-web@0.1.6-alpha.2"),
+    ("vendor/npm/turndown@7.2.4/lib", DSH / "vendor" / "npm" / "turndown@7.2.4" / "lib"),
+    ("vendor/npm/@mixmark-io/domino@2.2.0/lib", DSH / "vendor" / "npm" / "@mixmark-io" / "domino@2.2.0" / "lib"),
+    ("vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib", DSH / "vendor" / "npm" / "@joplin" / "turndown-plugin-gfm@1.0.67" / "lib"),
+    ("vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-goal@0.1.6-alpha.2"),
+    ("vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference@0.1.6-alpha.2"),
+    ("vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference-local@0.1.6-alpha.2"),
+    ("vendor/npm/@deepseek-ai/dsh-llm-retry@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-llm-retry@0.1.6-alpha.2"),
+    ("vendor/npm/diff@9.0.0/libesm", DSH / "vendor" / "npm" / "diff@9.0.0" / "libesm"),
+    ("vendor/npm/yaml@2.9.0/browser", DSH / "vendor" / "npm" / "yaml@2.9.0" / "browser"),
+    ("vendor/npm/fflate@0.8.2/esm", DSH / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
+    ("vendor/npm/pngjs@5.0.0/lib", DSH / "vendor" / "npm" / "pngjs@5.0.0" / "lib"),
+    ("vendor/npm/jpeg-js@0.4.4", DSH / "vendor" / "npm" / "jpeg-js@0.4.4"),
+    ("vendor/npm/fflate@0.8.2/lib/index.cjs", DSH / "vendor" / "npm" / "fflate@0.8.2" / "lib" / "index.cjs"),
+    ("vendor/npm/@noble/hashes@2.3.0", DSH / "vendor" / "npm" / "@noble" / "hashes@2.3.0"),
+    ("vendor/npm/@earendil-works/pi-ai@0.85.1", DSH / "vendor" / "npm" / "@earendil-works" / "pi-ai@0.85.1"),
+    ("system-plugins/dsh-office", DSH / "system-plugins" / "dsh-office"),
     ("upstream/shims", DSH / "upstream" / "shims"),
-    # The scenarios ride the WHOLE DIRECTORY too (same rule as the shims).
     ("scenario", DSH / "scenario"),
-    # The web-live PRODUCT boot producers ride their own whole-dir row.
     ("web-live", DSH / "web-live"),
-] + [
-    # the pinned npm packages' package.json (the node-module shim serves the
-    # upstream attribution reads: `require('../package.json')`) — the lib/
-    # bundles themselves are embedded individually in RESOURCES above.
-    ("vendor/npm/cordis@4.0.2/package.json",
-     DSH / "vendor" / "npm" / "cordis@4.0.2" / "package.json"),
-    ("vendor/npm/cosmokit@1.8.3/package.json",
-     DSH / "vendor" / "npm" / "cosmokit@1.8.3" / "package.json"),
-    ("vendor/npm/schemastery@3.18.2/package.json",
-     DSH / "vendor" / "npm" / "schemastery@3.18.2" / "package.json"),
-    ("vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/package.json",
-     DSH / "vendor" / "npm"
-     / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "package.json"),
+    ("vendor/npm/cordis@4.0.2/package.json", DSH / "vendor" / "npm" / "cordis@4.0.2" / "package.json"),
+    ("vendor/npm/cosmokit@1.8.3/package.json", DSH / "vendor" / "npm" / "cosmokit@1.8.3" / "package.json"),
+    ("vendor/npm/schemastery@3.18.2/package.json", DSH / "vendor" / "npm" / "schemastery@3.18.2" / "package.json"),
+    ("vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/package.json", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-client-modules@0.1.6-alpha.2" / "package.json"),
 ]
 
 # The pinned zod's runtime closure: `zod` → index.js → the classic build's
