@@ -59,6 +59,14 @@ final class SessionServe {
     /// verdict to fail, but the page cannot function either, so the host is
     /// told rather than left with a silently dead UI.
     var onRuntimeFailure: ((String) -> Void)?
+    /// The drive's scenario entry override — the card-player leg selects
+    /// scenario/card-player.js in place of the composer product boot. The
+    /// default stays the composer: the seat the manifests prove and the
+    /// path a user runs cannot drift apart.
+    var scenarioEntry: (
+        accessor: (UnsafeMutablePointer<Int>?) -> UnsafePointer<CChar>?,
+        path: String
+    )?
     /// The runtime half reported its scenario settled (it stays resident: the
     /// b4 entry completes its boot, not its session).
     var onRuntimeSettled: ((_ passed: Bool, _ message: String) -> Void)?
@@ -235,8 +243,8 @@ final class SessionServe {
             bundleRoot: bundleRoot,
             plugins: WebBootRuntimeDrive.webPluginsDelivery(),
             config: runtimeConfig(port: server.port, bundleRoot: bundleRoot),
-            scenario: dsh_runtime_res_scenario_b4_web_live_js,
-            scenarioPath: "web-live/composer-web-live.js",
+            scenario: scenarioEntry?.accessor ?? dsh_runtime_res_scenario_b4_web_live_js,
+            scenarioPath: scenarioEntry?.path ?? "web-live/composer-web-live.js",
             gateway: true)
     }
 
@@ -386,12 +394,21 @@ final class SessionServe {
 
     // ---- bus seam (runtime → carrier claims + answers) ------------------------
 
+    /// A plugin's live card (PR-1 of the create-approve-hotmount-native
+    /// loop): `card.present`/`card.state`/`card.dismiss`/`card.complete` bus
+    /// lines flow runtime → host → the native CardPlayerSurface — a plugin
+    /// manifests in the APP's own chrome, not an HTML page. The drive wires
+    /// this; a seat with no surface attached drops the events silently.
+    var onCardEvent: (([String: Any]) -> Void)?
+
     /// One JS → host bus message: folds the runtime's claims and answers into
     /// the bridge. This is serving, not evidence — the page's calls are
     /// answered the same way whether or not a drive is attached.
     private func runtimeBusPosted(_ msg: [String: Any]) {
         guard !stopped else { return }
         switch msg["type"] as? String {
+        case "card.present", "card.state", "card.dismiss", "card.complete":
+            onCardEvent?(msg)
         case "web.boot":
             guard let rows = msg["rows"] as? [[String: Any]] else { return }
             webBootRows = rows

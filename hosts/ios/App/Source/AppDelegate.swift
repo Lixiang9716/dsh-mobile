@@ -5,7 +5,8 @@ import WebKit
 final class AppDelegate: UIResponder, UIApplicationDelegate {
     private var mainWindow: UIWindow?
     private var console: UITextView?
-    private var webView: WKWebView?
+    /// Internal: the drive family loads the serving seat's origin into it.
+    var webView: WKWebView?
     private var bootVerdict = "PENDING"
     private var carrierVerdict = "PENDING"
     var gatewayVerdict = "PENDING"
@@ -22,7 +23,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     private var official: OfficialWebRuntime?
     private var officialVerdict = "PENDING"
     /// The user-facing serving seat (release boot only; no hooks, no drive).
-    private var serve: SessionServe?
+    /// Internal: the card-player drive reuses the seat with its own entry.
+    var serve: SessionServe?
+    /// The native card surface (`-dsh-mode card-player`): the live card a
+    /// plugin's bus lines render into — held for the window's lifetime.
+    var cardSurface: CardPlayerSurface?
     /// The release boot's launch surface, held until the page renders.
     private var bootOverlay: UIView?
     private var bootOverlayLabel: UILabel?
@@ -131,6 +136,13 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             announce("DSH serve — the user-facing seat, driven by hand (harness logging on)…",
                      line: "rt: app launched in serve mode", web: true)
             runServingBoot()
+        case "card-player":
+            // PR-1 of the create-approve-hotmount-native loop: a plugin card
+            // rendered by the app's OWN chrome (not an HTML page) — the
+            // native surface the generated pomodoro plugin will speak to.
+            announce("DSH card player — card.player, a plugin card in the app's own chrome…",
+                     line: "rt: app launched in card-player mode", web: true)
+            CardPlayerDrive.run(self)
         default:
             runDefaultChain()
         }
