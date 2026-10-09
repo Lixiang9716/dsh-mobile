@@ -88,6 +88,7 @@ TREES = [
     ("vendor/dsh/dsh-web@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-web@0.1.6-alpha.2"),
     ("vendor/npm/turndown@7.2.4/lib", DSH / "vendor" / "npm" / "turndown@7.2.4" / "lib"),
     ("vendor/npm/@mixmark-io/domino@2.2.0/lib", DSH / "vendor" / "npm" / "@mixmark-io" / "domino@2.2.0" / "lib"),
+    ("vendor/npm/@mixmark-io/domino@2.2.0/package.json", DSH / "vendor" / "npm" / "@mixmark-io" / "domino@2.2.0" / "package.json"),
     ("vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib", DSH / "vendor" / "npm" / "@joplin" / "turndown-plugin-gfm@1.0.67" / "lib"),
     ("vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-goal@0.1.6-alpha.2"),
     ("vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference@0.1.6-alpha.2"),
@@ -102,15 +103,11 @@ TREES = [
     ("vendor/npm/@noble/hashes@2.3.0", DSH / "vendor" / "npm" / "@noble" / "hashes@2.3.0"),
     ("vendor/npm/@earendil-works/pi-ai@0.85.1", DSH / "vendor" / "npm" / "@earendil-works" / "pi-ai@0.85.1"),
     ("system-plugins/dsh-office", DSH / "system-plugins" / "dsh-office"),
-    # The capability-plane + shell + manager plugin dirs ride WHOLE too (the
-    # office row's rule): per-file rows caught only index.js + manifest.json,
-    # and the serve boot died on dsh-shell-wasm/programs.js (2026-10-08).
     ("system-plugins/dsh-ble", DSH / "system-plugins" / "dsh-ble"),
     ("system-plugins/dsh-device-plane", DSH / "system-plugins" / "dsh-device-plane"),
     ("system-plugins/dsh-plugin-manager-tools", DSH / "system-plugins" / "dsh-plugin-manager-tools"),
-    # The create-approve-hotmount loop's product face (PR-2/3).
-    ("system-plugins/dsh-create", DSH / "system-plugins" / "dsh-create"),
     ("system-plugins/dsh-shell-wasm", DSH / "system-plugins" / "dsh-shell-wasm"),
+    ("system-plugins/dsh-create", DSH / "system-plugins" / "dsh-create"),
     ("upstream/shims", DSH / "upstream" / "shims"),
     ("scenario", DSH / "scenario"),
     ("web-live", DSH / "web-live"),
@@ -118,9 +115,6 @@ TREES = [
     ("vendor/npm/cosmokit@1.8.3/package.json", DSH / "vendor" / "npm" / "cosmokit@1.8.3" / "package.json"),
     ("vendor/npm/schemastery@3.18.2/package.json", DSH / "vendor" / "npm" / "schemastery@3.18.2" / "package.json"),
     ("vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/package.json", DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-client-modules@0.1.6-alpha.2" / "package.json"),
-    # domino's manifest rides as an explicit file: the cjs bare-table's entry
-    # load reads it for `main` (a lib/-only tree fell the entry back to './.').
-    ("vendor/npm/@mixmark-io/domino@2.2.0/package.json", DSH / "vendor" / "npm" / "@mixmark-io" / "domino@2.2.0" / "package.json"),
 ]
 
 # The pinned zod's runtime closure: `zod` → index.js → the classic build's

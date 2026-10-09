@@ -31,8 +31,8 @@ import { SystemPrompt } from '@deepseek-ai/dsh-system-prompt';
 import { ToolRuntime } from '@deepseek-ai/dsh-tools';
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection';
 import { SettingsMemory } from 'upstream/settings-memory.js';
-// The SUBAGENT row (T-0050 item 2; split out at the code-size gate).
-import { mountSubagentRows } from 'upstream/boot-subagent-rows.js';
+  // The SUBAGENT row (T-0050 item 2).
+  await mountSubagentRows(ctx);
 import { providerSettingsNs } from 'upstream/web-write-settings.js';
 import { mountWebPlane } from 'upstream/web-search-keyless.js';
 import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
@@ -44,9 +44,8 @@ import { mountCompositionHostPlane, mountCoverageRows } from 'upstream/boot-cove
 export { joinDefaultPreset } from 'upstream/boot-coverage-rows.js';
 // The FIRST ported tool package (D9): its namespace object IS the plugin.
 import * as ToolTodo from '@deepseek-ai/dsh-tool-todo';
-// The per-tool-run deadline (issue #323, ring 1): a wall-clock budget
-// around every native tool dispatch (the vendored dsh-timeout deadline) —
-// a tool that never settles fails in-band instead of wedging the runtime.
+// The per-tool-run deadline (#323 ring 1): a wall-clock budget around
+// every dispatch — a tool that never settles fails in-band.
 import * as ToolDeadline from 'upstream/tool-deadline.js';
 // The turn-level watchdog (issue #323, ring 2): silence on a running agent
 // beyond the budget fails the turn in-band (agent cancel, watchdog cause) —
@@ -77,20 +76,16 @@ import * as ShellIsh from 'system-plugins/dsh-shell-ish/index.js';
 // httpFetch): projects, BYOK generate, artifact save/lint. A host with no
 // configured daemon mounts nothing — the same decline shape as shell-ish.
 import * as OpenDesign from 'system-plugins/dsh-open-design/index.js';
-// The PLUGIN-MANAGER row (#346 item 3): the session toolset's plugin
-// pipeline — the `plugin_manager` tool over the workspace dsh.plugins/1
-// registry (the LIST legs' manageable plane), in the same outboard
-// implementation-package shape (D6). The Creator composition's
-// `tool-plugin-manager` row names the vendored desktop tool whose host-face
-// (pluginManager/sandboxPolicy services, dsh-sandbox) this closure does not
-// carry; this row is what makes the composition's Enabled declaration TRUE
-// on the mobile seat. Mounted after `tools`, which its `inject` waits for.
+// The PLUGIN-MANAGER row (#346): the plugin_manager tool over the
+// workspace dsh.plugins/1 registry — outboard implementation (D6). The
+// composition's tool-plugin-manager row names the vendored desktop tool
+// whose host face this closure lacks; this row makes its Enabled TRUE.
+// Mounted after `tools` (inject waits for it).
 import * as PluginManagerTools from 'system-plugins/dsh-plugin-manager-tools/index.js';
 import * as DshCreate from 'system-plugins/dsh-create/index.js';
-// The FILE-TOOLS row (the dsh-desktop plugin surface): upstream's fs tool
-// family over the vendored fs-local backend, working in ONE in-memory
-// workspace world (upstream/shims/fs.js mountWorkspace). The npm bridge that
-// registers bare `diff` (tool-fs' structuredPatch dependency) is a STATIC
+// The FILE-TOOLS row: upstream's fs tool family over the vendored
+// fs-local backend in ONE in-memory workspace world. The npm bridge that
+// registers bare `diff` (tool-fs' structuredPatch dep) is a STATIC
 // import so its body runs at graph load; the tool packages themselves resolve
 // DYNAMICALLY inside mountSpine — quickjs links a static import graph before
 // any module body runs, so a static tool-fs import would demand `diff` before
@@ -327,23 +322,20 @@ const mountSpine = async (ctx, identity) => {
   await ctx.plugin(SettingsMemory);
   // The SUBAGENT row (T-0050 item 2; boot-subagent-rows.js).
   await mountSubagentRows(ctx);
-  // The ported tool packages (D9): mounted AFTER `tools`, because a tool
-  // registers into that service at apply time. `allowParallelInProgress:
-  // false` is the mobile profile's shape — one agent, sequential work.
+  // Ported tool packages (D9): after `tools` (apply registers into it);
+  // `allowParallelInProgress: false` is the mobile one-agent shape.
     await ctx.plugin(ToolTodo, { allowParallelInProgress: false });
     await ctx.plugin(ShellWasm);
     await ctx.plugin(ShellIsh);
     await ctx.plugin(OpenDesign);
     await ctx.plugin(PluginManagerTools);
-    // The create-approve-hotmount loop (PR-2/3): chat-authored plugin →
-    // native Approve → registry install → LIVE native card.
-    await ctx.plugin(DshCreate);
+    await ctx.plugin(DshCreate); // create-approve-hotmount (PR-2/3)
     await ctx.plugin(await import('system-plugins/dsh-office/index.js')); // the OFFICE row — dynamic: bare `fflate` needs the bridges body first
     // The WEB row (#335 B5): dynamic import — the bridges must have
     // registered turndown/domino before tool-web's static graph links.
     await mountWebPlane(ctx);
   await mountFileTools(ctx, identity.cwd);
-  // The SKILL row (the agent-flow E2E): mounted after the file tools (its
+  // The SKILL row (agent-flow E2E): after the file tools (its
   // discovery prefers the `fs` service) and before the agent loop (the
   // tool-skill catalog registers its `agent/pre-step` listeners on the
   // context, so every later step sees them). Only when configured.

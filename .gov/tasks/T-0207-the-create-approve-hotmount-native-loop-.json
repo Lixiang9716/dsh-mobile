@@ -2,7 +2,7 @@
   "title": "The create-approve-hotmount-native loop: chat generates a REAL cordis plugin, user approves, it live-loads, and a NATIVE pomodoro card appears in the app UI (not an HTML page)",
   "created": "2026-10-08T15:32:44+00:00",
   "rules": {
-    "hash": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
+    "hash": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "c195c538562be1aecd34d90ea5299839e5fc2c3a4c7197965f7baaebd342815d"
@@ -18,5 +18,14 @@
   ],
   "status": "open",
   "receipt": null,
-  "id": "T-0207"
+  "id": "T-0207",
+  "repins": [
+    {
+      "ts": "2026-10-09T16:28:31+00:00",
+      "by": "lixiang@192.168.21.4",
+      "from": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
+      "to": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
+      "reason": "the loop continues after the main rebase: PR-2/3 code landed on the branch, remaining is the dispatch hop + real-LLM demo"
+    }
+  ]
 }

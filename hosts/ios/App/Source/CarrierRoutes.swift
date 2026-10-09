@@ -142,51 +142,16 @@ extension CarrierServer {
             return respondError(405, "method not allowed", conn: conn)
         }
         guard request.header("authorization") == "Bearer \(Self.mockLlmKey)" else {
-            // The vendored mock's fixed 401 leg: JSON error body, provider shape.
-            let body: [String: Any] = ["error": [
-                "message": "mock authentication failed",
-                "type": "mock_error",
-                "code": "invalid_api_key",
-            ]]
-            let data = (try? JSONSerialization.data(withJSONObject: body)) ?? Data()
-            respond(status: 401, body: data, contentType: "application/json", conn: conn)
-            return
+            return respondError(401, "mock authentication failed", conn: conn)
         }
-        if request.body.contains(Data("GAME_TURN".utf8)) {
-            // The GAME leg's one-shot latch — the same posture as CREATE_TURN:
-            // the post-tool continuation call gets the plain success body.
-            if serveGameScriptDone {
-                return serveSuccess({ self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
-                    conn: conn)
-            }
-            serveGameScriptDone = true
-            return serveGameScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
-                conn: conn)
-        }
-        if request.body.contains(Data("PLUGIN_CREATE_TURN".utf8)) {
-            // The create-approve-hotmount full-chain leg: one plugin_create
-            // tool call (the dsh-create system plugin), same one-shot latch
-            // and continuation posture as CREATE_TURN.
-            if servePluginCreateScriptDone {
-                return serveSuccess({ self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
-                    conn: conn)
-            }
-            servePluginCreateScriptDone = true
-            return servePluginCreateScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
-                conn: conn)
-        }
-        if request.body.contains(Data("CREATE_TURN".utf8)) {
-            // ONE create round per launch: a follow-up model call (the agent
-            // loop's post-tool continuation) gets the plain success body, or
-            // the scripted tool calls would loop forever.
-            if serveCreateScriptDone {
-                return serveSuccess({ self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
-                    conn: conn)
-            }
-            serveCreateScriptDone = true
-            return serveCreateScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
-                conn: conn)
-        }
+        // The scripted-turn dispatch: MOST-SPECIFIC marker first —
+        // PLUGIN_CREATE_TURN contains the CREATE_TURN substring.
+        if dispatchScriptedTurn(request, "PLUGIN_CREATE_TURN",
+            done: \.servePluginCreateScriptDone, serve: servePluginCreateScript, conn: conn) { return }
+        if dispatchScriptedTurn(request, "CREATE_TURN",
+            done: \.serveCreateScriptDone, serve: serveCreateScript, conn: conn) { return }
+        if dispatchScriptedTurn(request, "GAME_TURN",
+            done: \.serveGameScriptDone, serve: serveGameScript, conn: conn) { return }
         let body = scriptedSuccessBody()
         if request.body.contains(Data("SLOW_TURN".utf8)) {
             Self.respondSlowDrip(
@@ -196,6 +161,30 @@ extension CarrierServer {
             respond(status: 200, body: body,
                 contentType: "text/event-stream; charset=utf-8", conn: conn)
         }
+    }
+
+    /// One scripted turn's marker check + one-shot latch + script handoff
+    /// (a follow-up model call gets the plain success body — the latch — or
+    /// the scripted tool calls would loop forever). Returns true when the
+    /// request was served.
+    @discardableResult
+    private func dispatchScriptedTurn(
+        _ request: CarrierRequest, _ marker: String,
+        done: ReferenceWritableKeyPath<CarrierServer, Bool>,
+        serve: @escaping ( @escaping (Int, Data, String, NWConnection) -> Void, NWConnection) -> Void,
+        conn: NWConnection
+    ) -> Bool {
+        guard request.body.contains(Data(marker.utf8)) else { return false }
+        let respond: (Int, Data, String, NWConnection) -> Void = {
+            self.respond(status: $0, body: $1, contentType: $2, conn: $3)
+        }
+        if self[keyPath: done] {
+            serveSuccess(respond, conn: conn)
+        } else {
+            self[keyPath: done] = true
+            serve(respond, conn)
+        }
+        return true
     }
 
     /// The success script's canned SSE body.

@@ -104,8 +104,11 @@ const runCardFace = async ({ id, kind, title, subtitle, durationMs }) => {
     id, ticks });
 };
 
-const execute = async (args) => {
-  const name = String(args.name ?? '');  if (!PKG_ID.test(name)) {
+/** Steps 1–2: write the package, ask the NATIVE approval. Returns
+ * { approved, name, kind, title, durationMs } or a refusal string. */
+const writeAndApprove = async (args, dir) => {
+  const name = String(args.name ?? '');
+  if (!PKG_ID.test(name)) {
     return `plugin_create: name must match ${PKG_ID} (got ${JSON.stringify(name)})`;
   }
   const kind = args.kind === undefined ? 'timer' : String(args.kind);
@@ -114,12 +117,6 @@ const execute = async (args) => {
   if (kind === 'timer' && !(durationMs > 0)) {
     return 'plugin_create: timer cards need a positive durationMs';
   }
-  const prefix = workspacePrefix();
-  const dir = joinScoped(prefix, `plugins/${name}`);
-
-  // 1. The package: pick up the model's authored index when given, else
-  //    generate the cordis shape; the manifest always carries the card
-  //    declaration (free-form fields are the workspace grammar's own).
   const indexSource = typeof args.indexSource === 'string' && args.indexSource.length > 0
     ? args.indexSource
     : generatedIndex({ id: name, title });
@@ -133,7 +130,7 @@ const execute = async (args) => {
   await fsWrite('app', `${dir}/index.js`, await encodeUtf8(indexSource));
   log.info('e2e', { scenario: 'create.card', event: 'package.written', name });
 
-  // 2. The native approval — the m2 primitive, the user's own finger.
+  // The native approval — the m2 primitive, the user's own finger.
   let approved = false;
   try {
     const verdict = await presentApproval({
@@ -151,30 +148,40 @@ const execute = async (args) => {
   if (!approved) {
     return `plugin_create: 用户取消了「${title}」的安装(包已留在 plugins/${name}/)。`;
   }
+  return { approved: true, name, kind, title, durationMs };
+};
 
-  // 3. The registry install (the #340 row, the plugin_manager semantics).
+const execute = async (args) => {
+  const name = String(args.name ?? '');
+  const dir = joinScoped(workspacePrefix(), `plugins/${name}`);
+  const approved = await writeAndApprove(args, dir);
+  if (typeof approved === 'string') return approved;
+
+  // The registry install (the #340 row, the plugin_manager semantics).
   try {
     const outcome = await upsertRegistryRow(
       { fsRead, fsWrite, path: workspaceRegistryPath() },
-      { id: name, name: title, version: '1.0.0', entry: 'index.js', enabled: true,
-        origin: 'creation', source: `plugins/${name}/` });
+      { id: approved.name, name: approved.title, version: '1.0.0', entry: 'index.js',
+        enabled: true, origin: 'creation', source: `plugins/${approved.name}/` });
     if (!outcome.ok) {
       return `plugin_create: 注册表写入失败 — ${JSON.stringify(outcome.error ?? outcome)}`;
     }
   } catch (error) {
     return `plugin_create: 注册表写入异常 — ${String(error?.message ?? error)}`;
   }
-  log.info('e2e', { scenario: 'create.card', event: 'registry.installed', name });
+  log.info('e2e', { scenario: 'create.card', event: 'registry.installed',
+    name: approved.name });
 
-  // 4. The live card face (fire-and-forget; the surface resnaps per patch).
-  if (kind === 'timer') {
-    void runCardFace({ id: `create-${name}`, kind, title,
-      subtitle: '创作模式 · 已安装', durationMs });
+  // The live card face (fire-and-forget; the surface resnaps per patch).
+  if (approved.kind === 'timer') {
+    void runCardFace({ id: `create-${approved.name}`, kind: approved.kind,
+      title: approved.title, subtitle: '创作模式 · 已安装',
+      durationMs: approved.durationMs });
   }
 
-  return `插件「${title}」已安装并激活:注册表行已提交(enabled),卡片已在原生界面启动`
-    + (kind === 'timer'
-      ? `,计时 ${Math.round(durationMs / 60000)} 分钟;插件代码将于下次会话挂载进 spine。`
+  return `插件「${approved.title}」已安装并激活:注册表行已提交(enabled),卡片已在原生界面启动`
+    + (approved.kind === 'timer'
+      ? `,计时 ${Math.round(approved.durationMs / 60000)} 分钟;插件代码将于下次会话挂载进 spine。`
       : '。');
 };
 

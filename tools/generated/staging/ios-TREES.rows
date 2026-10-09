@@ -84,6 +84,7 @@ vendor/dsh/compaction-image-offload@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-co
 vendor/dsh/dsh-web@0.1.6-alpha.2=vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2
 vendor/npm/turndown@7.2.4/lib=vendor/npm/turndown@7.2.4/lib
 vendor/npm/@mixmark-io/domino@2.2.0/lib=vendor/npm/@mixmark-io/domino@2.2.0/lib
+vendor/npm/@mixmark-io/domino@2.2.0/package.json=vendor/npm/@mixmark-io/domino@2.2.0/package.json
 vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib=vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib
 # api-full-coverage (D9): the coverage rows' mounted services + loop-u's
 # llm-retry — boot.js imports these npm-face packages directly.
@@ -107,6 +108,11 @@ vendor/npm/@earendil-works/pi-ai@0.85.1=vendor/npm/@earendil-works/pi-ai@0.85.1
 # embed by existing, not by list edit), and the scenario/web-live whole-dir
 # rows (same rule).
 system-plugins/dsh-office=system-plugins/dsh-office
+system-plugins/dsh-ble=system-plugins/dsh-ble
+system-plugins/dsh-device-plane=system-plugins/dsh-device-plane
+system-plugins/dsh-plugin-manager-tools=system-plugins/dsh-plugin-manager-tools
+system-plugins/dsh-shell-wasm=system-plugins/dsh-shell-wasm
+system-plugins/dsh-create=system-plugins/dsh-create
 upstream/shims=upstream/shims
 scenario=scenario
 web-live=web-live

@@ -17,6 +17,7 @@ sha256.js
 surface.js
 system-plugins/dsh-ble/index.js
 system-plugins/dsh-ble/manifest.json
+system-plugins/dsh-create/manifest.json
 system-plugins/dsh-device-plane/index.js
 system-plugins/dsh-device-plane/manifest.json
 system-plugins/dsh-fs/index.js
@@ -47,6 +48,7 @@ system-plugins/dsh-ui/index.js
 system-plugins/dsh-ui/manifest.json
 tar-mini.js
 transport-tokens.mjs
+upstream/boot-subagent-rows.js
 upstream/shims/cordis-loader-failure-face.js
 upstream/shims/crypto.js
 upstream/shims/dsh-client-ui-renderer-client.js
