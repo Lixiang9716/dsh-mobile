@@ -33,7 +33,8 @@ import { probeManagerLegs as probeManagerLegsShared } from 'web-live/manager-leg
 import { makeProbeAwaiter } from 'web-live/probe-respond-await.js';
 import { makeFailGate } from 'web-live/scenario-verdict.js';
 import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
-import { mountWorkspacePlugin } from 'plugin-mount.js';
+import { installCreationMount } from 'web-live/plugin-live-mount.js';
+import { makeComposerBus } from 'web-live/composer-bus.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
