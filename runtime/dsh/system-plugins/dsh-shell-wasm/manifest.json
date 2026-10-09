@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "dsh-shell-wasm",
+  "version": "0.1.0",
+  "type": "service",
+  "entry": "index.js",
+  "capabilities": {
+    "required": ["wasmRun", "fsRead", "fsWrite"],
+    "optional": []
+  },
+  "hooks": {
+    "activate": "activate"
+  }
+}
