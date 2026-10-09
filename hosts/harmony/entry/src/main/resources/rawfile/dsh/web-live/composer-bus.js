@@ -46,6 +46,6 @@ export const makeComposerBus = () => {
 
   const deliver = (msg) => {
     log.debug('bus deliver', { type: msg?.type ?? null }); if (dispatch !== null) dispatch(msg); else queue.push(msg); };
-  return { queue, post, take, deliver,
+  return { queue, posted, post, take, deliver,
     install: (fn) => { dispatch = fn; } };
 };

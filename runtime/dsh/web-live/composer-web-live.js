@@ -80,7 +80,7 @@ const fail = makeFailGate({
   complete: (ok, reason) => globalThis.__dshComplete(ok, reason),
 });
 const demand = (cond, reason) => { if (cond) return; fail(reason); throw new Error(reason); };
-const { queue, post, take, deliver, install: installBusDispatch } = makeComposerBus();
+const { queue, posted, post, take, deliver, install: installBusDispatch } = makeComposerBus();
 
 /** Wait (bounded, microtask-granular — no timers) for the configured agent
  * and its session to appear in the registries (async past the mount). */
