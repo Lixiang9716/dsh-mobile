@@ -1,0 +1,22 @@
+{
+  "title": "SD: session/delete lands on the write surface + probe-session cleanup",
+  "created": "2026-10-09T17:19:56+00:00",
+  "rules": {
+    "hash": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "6d186be6616493c3d8ae7d24174a4e1634711180ca5b3b760452d3c09d7cdb90"
+    }
+  },
+  "checklist": [
+    "[x] Design pinned: vendored dsh-session/agent has no delete/forget - the teardown semantic is AgentHandle.dispose (dsh-agent types/index.d.ts); running refuses (session/agent-busy); no persistence backend exists so no journal file deletes; page after delete answers session/not-found",
+    "[x] session/delete implemented on the write surface api map (web-write.js) with handle capture on create+fork, endpoint claimed in WRITE_ENDPOINTS",
+    "[x] spine suite leg: create -> prompt -> delete -> list excludes -> page session/not-found; running-refusal and no-capability shapes pinned",
+    "[x] Local gates: spine suite + check-size.py + check-logging.py + staging family + check-closures all green",
+    "Device: diagnostic HAP installed, 6 probe sessions deleted via session/delete, list clean, scratch create->prompt->delete E2E verified, user sessions untouched",
+    "build-profile.json5 local patch reverted; PR squash-merged with CI green; agent note filed"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0210"
+}

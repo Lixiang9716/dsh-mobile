@@ -13,7 +13,24 @@
  * registry staying in-memory is the documented mobile shape ("no durable
  * registry", upstream/web-write-streams.js).
  */
-import { remoteError } from 'upstream/web-write.js';
+import { remoteError, mintUUID } from 'upstream/web-write.js';
+
+/** Mobile workspace registry state: the seeded container-root workspace
+ * (web-write.js createWriteSurface's boot row; moved here at the code-size
+ * gate — the seed IS the workspace registry's origin row). */
+export const seedWorkspace = (root) => {
+  const base = root.replace(/\/+$/, '');
+  const title = base.slice(base.lastIndexOf('/') + 1) || base;
+  const now = new Date().toISOString();
+  return {
+    workspaceId: mintUUID(),
+    path: base,
+    title,
+    sessionIds: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+};
 
 /** The fresh wire view of one registry row (never the live object). */
 const viewOf = (workspace) => ({
