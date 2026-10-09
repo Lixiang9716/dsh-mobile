@@ -152,6 +152,7 @@ const BUNDLE_FILES: string[] = [
   'system-plugins/dsh-open-design/index.js',
   'system-plugins/dsh-open-design/manifest.json',
   'system-plugins/dsh-plugin-manager-tools/index.js',
+  'system-plugins/dsh-create/index.js',
   'system-plugins/dsh-create/manifest.json',
   'system-plugins/dsh-plugin-manager-tools/manifest.json',
   'system-plugins/dsh-shell-ish/index.js',

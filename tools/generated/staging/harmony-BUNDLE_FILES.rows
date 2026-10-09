@@ -41,6 +41,7 @@ sha256.js
 surface.js
 system-plugins/dsh-ble/index.js
 system-plugins/dsh-ble/manifest.json
+system-plugins/dsh-create/index.js
 system-plugins/dsh-create/manifest.json
 system-plugins/dsh-device-plane/index.js
 system-plugins/dsh-device-plane/manifest.json
