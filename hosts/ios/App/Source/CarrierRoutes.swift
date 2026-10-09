@@ -163,6 +163,18 @@ extension CarrierServer {
             return serveGameScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
                 conn: conn)
         }
+        if request.body.contains(Data("PLUGIN_CREATE_TURN".utf8)) {
+            // The create-approve-hotmount full-chain leg: one plugin_create
+            // tool call (the dsh-create system plugin), same one-shot latch
+            // and continuation posture as CREATE_TURN.
+            if servePluginCreateScriptDone {
+                return serveSuccess({ self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
+                    conn: conn)
+            }
+            servePluginCreateScriptDone = true
+            return servePluginCreateScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
+                conn: conn)
+        }
         if request.body.contains(Data("CREATE_TURN".utf8)) {
             // ONE create round per launch: a follow-up model call (the agent
             // loop's post-tool continuation) gets the plain success body, or
@@ -277,6 +289,39 @@ extension CarrierServer {
              "function": ["name": "write", "arguments": writeArgs]],
             ["index": 1, "id": "call-present-game", "type": "function",
              "function": ["name": "present", "arguments": presentArgs]],
+        ]], "finish_reason": NSNull()]]])
+        sse(["choices": [["index": 0, "delta": ["content": ""],
+            "finish_reason": "stop"]],
+            "usage": ["prompt_tokens": 3, "completion_tokens": 12]])
+        body.append(Data("data: [DONE]\n\n".utf8))
+        respond(200, body, "text/event-stream; charset=utf-8", conn)
+    }
+
+    /// The PLUGIN_CREATE script (the create-approve-hotmount full-chain
+    /// leg): the scripted model answers "生成番茄时钟插件" with ONE
+    /// plugin_create call — the dsh-create system plugin then writes the
+    /// package, presents the NATIVE approval, installs the registry row,
+    /// and starts the live card. The duration is deliberately short (the
+    /// leg's evidence window; the real chat passes 1500000 for 25 minutes).
+    private func servePluginCreateScript(
+        respond: @escaping (Int, Data, String, NWConnection) -> Void,
+        conn: NWConnection) {
+        var body = Data()
+        func sse(_ payload: @autoclosure () -> Any) {
+            guard let data = try? JSONSerialization.data(withJSONObject: payload()),
+                  let text = String(data: data, encoding: .utf8) else { return }
+            body.append(Data("data: \(text)\n\n".utf8))
+        }
+        let createArgs = String(data: try! JSONSerialization.data(
+            withJSONObject: [
+                "name": "pomodoro-create",
+                "title": "番茄时钟 · 创作",
+                "kind": "timer",
+                "durationMs": 20000,
+            ] as [String: Any]), encoding: .utf8) ?? "{}"
+        sse(["choices": [["index": 0, "delta": ["tool_calls": [
+            ["index": 0, "id": "call-plugin-create", "type": "function",
+             "function": ["name": "plugin_create", "arguments": createArgs]],
         ]], "finish_reason": NSNull()]]])
         sse(["choices": [["index": 0, "delta": ["content": ""],
             "finish_reason": "stop"]],

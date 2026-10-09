@@ -108,6 +108,8 @@ TREES = [
     ("system-plugins/dsh-ble", DSH / "system-plugins" / "dsh-ble"),
     ("system-plugins/dsh-device-plane", DSH / "system-plugins" / "dsh-device-plane"),
     ("system-plugins/dsh-plugin-manager-tools", DSH / "system-plugins" / "dsh-plugin-manager-tools"),
+    # The create-approve-hotmount loop's product face (PR-2/3).
+    ("system-plugins/dsh-create", DSH / "system-plugins" / "dsh-create"),
     ("system-plugins/dsh-shell-wasm", DSH / "system-plugins" / "dsh-shell-wasm"),
     ("upstream/shims", DSH / "upstream" / "shims"),
     ("scenario", DSH / "scenario"),

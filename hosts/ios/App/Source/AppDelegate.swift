@@ -105,6 +105,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             startBleMode()
         case "mic-plane":
             MicPlaneDrive.launch(self)
+        case "create-card":
+            // PR-2/3 of the create-approve-hotmount loop: the tool chain
+            // leg — package → NATIVE Approve → registry → LIVE native card.
+            announce("DSH create card — create.card, the create-approve-hotmount chain live…",
+                     line: "rt: app launched in create-card mode", web: false)
+            runCreateCardDrive()
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
@@ -287,6 +293,17 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         self.serve = serve
         serve.onOrigin = { [weak self] origin in
             self?.webView?.load(URLRequest(url: origin))
+        }
+        // A plugin's live card renders in the app's OWN chrome (PR-1): the
+        // serve/release seats surface the card.* bus lines natively — the
+        // chat-created pomodoro ticks beside the conversation.
+        let surface = CardPlayerSurface()
+        cardSurface = surface
+        serve.onCardEvent = { [weak surface] msg in
+            DispatchQueue.main.async { surface?.handle(msg) }
+        }
+        if let host = webView?.superview {
+            surface.attach(to: host)
         }
         // A failure here leaves an inert page, which is indistinguishable
         // from a working-but-idle one. Say so on BOTH channels: the screen

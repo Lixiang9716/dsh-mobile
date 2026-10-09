@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /// The E2E drive launchers that outgrew AppDelegate's file budget — the
 /// -dsh-mode case table calls these; the session lifecycle (the `gateway`
@@ -39,6 +40,34 @@ extension AppDelegate {
             self?.gateway = nil
             print("rt: ble-plane drive finished verdict=\(outcome.verdict)")
             fflush(stdout)
+        }
+    }
+
+    /// The create-approve-hotmount chain leg (the `-dsh-mode create-card`
+    /// seat): the create.card scenario invokes dsh-create's plugin_create
+    /// execute — package, NATIVE Approve (the drive taps), registry install,
+    /// and the LIVE native card. The card seam (PR-1) renders beside the
+    /// verdict panel.
+    func runCreateCardDrive() {
+        let surface = CardPlayerSurface()
+        cardSurface = surface
+        let session = GatewaySession(
+            entryModule: "scenario/create-card.js",
+            sourceProvider: { String(cString: dsh_runtime_res_scenario_create_card_js(nil)) })
+        session.onCardEvent = { [weak surface] msg in
+            DispatchQueue.main.async { surface?.handle(msg) }
+        }
+        gateway = session
+        session.run { [weak self] outcome in
+            self?.show(outcome, phase: "create.card") { self?.gatewayVerdict = $0 }
+            self?.gateway = nil
+            print("rt: create-card drive finished verdict=\(outcome.verdict)")
+            fflush(stdout)
+        }
+        if let window = UIApplication.shared.connectedScenes
+            .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first,
+           let host = window.rootViewController?.view {
+            surface.attach(to: host)
         }
     }
 

@@ -49,6 +49,9 @@ final class CarrierServer {
     /// same shape, one per scripted create turn, so the compact and game legs
     /// compose in one launch.
     var serveGameScriptDone = false
+    /// The PLUGIN_CREATE script's one-shot latch (CarrierRoutes
+    /// servePluginCreateScript) — the create-approve-hotmount full-chain leg.
+    var servePluginCreateScriptDone = false
     /// Open WebSocket seats keyed by connection; multiple seats compose (§3.3).
     private var wsSeats: [ObjectIdentifier: WSSeat] = [:]
     private var servedPaths: [String] = []
