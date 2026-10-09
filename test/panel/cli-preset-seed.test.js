@@ -1,10 +1,20 @@
 // dsh:logging-exempt (test: assertion failures ARE the diagnostic)
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import seedFiles from '../../runtime/dsh/scenario/agent-presets-probe-seed.js';
+
+// The REAL patch module loads under this shim face (it imports only the
+// runtime's node:buffer codec pair; the seed module itself never touches
+// node:buffer) — the byte-equality test below makes replica drift against
+// it impossible, the exact blind spot that shipped the 252:3 blocker.
+vi.mock('node:buffer', async (importOriginal) => ({
+  ...await importOriginal(),
+  encodeUtf8: (text) => new TextEncoder().encode(String(text ?? '')),
+  decodeUtf8: (bytes) => new TextDecoder().decode(bytes),
+}));
 
 // The settings-surfaces CLI leg's DEFAULT_PRESET demand, replicated as pure
 // functions over the GENERATED seed artifact
@@ -84,12 +94,19 @@ const rowEnabled = (row) => !Boolean(row.disabled);
 
 /** The seed patch, replicated line-for-line from
  * upstream/preset-mobile-rows.js (findRowBlock / rowHasDisabled /
- * disableMobileAbsentRows, lines 53-102): every absent-id row gains
+ * disableMobileAbsentRows + spliceCreateRow): every absent-id row gains
  * `disabled: true` right after its `- id:` line, same indent; already-disabled
- * rows pass; a drifted row shape (no name line) throws — rule 5. web-boot.js
- * applies this to every presets/**.yml row of every agentPresets.seed
- * delivery on every host BEFORE the VFS merge, so the delivered docs — and
- * every length/health verdict below — are the PATCHED text. */
+ * rows pass; a drifted row shape (no name line) throws — rule 5. THEN the
+ * composition gains the `tool-plugin-create` row at the tool-plugin-manager
+ * row block's END (next same-indent row / dedent / EOF). web-boot.js applies
+ * this to every presets/**.yml row of every agentPresets.seed delivery on
+ * every host BEFORE the VFS merge, so the delivered docs — and every
+ * length/health verdict below — are the PATCHED text. The splicer used to be
+ * missing from this replica: the id-adjacent insertion it really did severs
+ * the manager row's own keys onto the new row ("duplicated mapping key
+ * (252:3)", session/create dead on every preset with a plugin plane,
+ * measured 2026-10-10) and the blind spot let it ship — the mirror is the
+ * net, it must cover BOTH transforms. */
 const applySeedPatch = (text, absentIds, docName) => {
   const findRowBlock = (lines, rowId) => {
     for (let i = 0; i < lines.length; i++) {
@@ -117,6 +134,22 @@ const applySeedPatch = (text, absentIds, docName) => {
       && line.startsWith(`${block.indent}  name:`));
     if (nameAt < 0) throw new Error(`preset-mobile-rows: ${docName} row "${rowId}" has no name line`);
     lines.splice(block.start + 1, 0, `${block.indent}  disabled: true`);
+  }
+  if (!text.includes('id: tool-plugin-create')) {
+    const at = lines.findIndex((line) => line.includes('- id: tool-plugin-manager'));
+    if (at >= 0) {
+      const indent = lines[at].slice(0, lines[at].indexOf('-'));
+      let end = lines.length;
+      for (let i = at + 1; i < lines.length; i += 1) {
+        const line = lines[i];
+        if (line.startsWith(`${indent}-`)) { end = i; break; } // the next row
+        if (line.trim() === '') continue; // blank: still inside the block
+        if (!line.startsWith(`${indent} `)) { end = i; break; } // dedent: list ended
+      }
+      lines.splice(end, 0,
+        `${indent}- id: tool-plugin-create`,
+        `${indent}  name: 'system-plugins/dsh-create/index.js'`);
+    }
   }
   return lines.join('\n');
 };
@@ -277,5 +310,69 @@ describe('the settings-surfaces expected manifest agrees with the generated seed
     const canonical = readFileSync(join(REPO, 'test/e2e/scenarios/settings-surfaces.json'), 'utf8');
     const mirror = readFileSync(join(REPO, 'runtime/dsh/ci/settings-surfaces.manifest.json'), 'utf8');
     expect(mirror.trim()).toBe(canonical.trim());
+  });
+});
+
+// The 2026-10-10 blocker, pinned by name: the real splicer once inserted
+// tool-plugin-create right after the manager row's `- id:` line, severing
+// the manager row's own name/disabled keys onto the new row — js-yaml
+// answered "duplicated mapping key (252:3)" and session/create died on
+// every preset with a plugin plane (the replica then covered only the
+// disabler, so this suite stayed green over docs that never got the
+// create row). Both transforms now ride the replica; this test makes the
+// failure mode explicit: every patched preset doc parses, the create row
+// lands WHOLE after the manager block, and the patch is idempotent.
+describe('the seed patch delivers parseable documents (the 252:3 regression)', () => {
+  const files = seedMap();
+  const absentIds = mobileAbsentRowIds();
+
+  it('every patched preset composition parses and keeps both rows whole', () => {
+    for (const [path, file] of files) {
+      if (!path.includes('/presets/') || !path.endsWith('.yml')) continue;
+      const name = path.slice(path.lastIndexOf('/') + 1);
+      if (!name.endsWith(COMPOSITION_FILE)) continue;
+      const patched = applySeedPatch(
+        new TextDecoder().decode(file), absentIds, name);
+      const doc = yaml.load(patched.replaceAll('!!js ', '!!str '));
+      expect(doc, `${path} must parse`).toBeTruthy();
+      if (!patched.includes('id: tool-plugin-manager')) continue;
+      const rows = compositionRows(doc);
+      const manager = rows.find((row) => row.id === 'tool-plugin-manager');
+      const create = rows.find((row) => row.id === 'tool-plugin-create');
+      expect(manager, `${path} lost the manager row`).toBeTruthy();
+      expect(manager.name, `${path} lost the manager row's name to the splice`)
+        .toBe('@deepseek-ai/dsh-plugin-manager/tools');
+      expect(create, `${path} lost the create row`).toBeTruthy();
+      expect(create.name).toBe('system-plugins/dsh-create/index.js');
+    }
+  });
+
+  it('the patch is idempotent — a re-seed does not duplicate the create row', () => {
+    const path = [...files.keys()].find((p) => p.endsWith('mobile/agent.cordis.yml'));
+    expect(path, 'the seed carries the mobile composition').toBeTruthy();
+    const once = applySeedPatch(
+      new TextDecoder().decode(files.get(path)), absentIds, 'mobile/agent.cordis.yml');
+    const twice = applySeedPatch(once, absentIds, 'mobile/agent.cordis.yml');
+    expect(twice).toBe(once);
+  });
+});
+
+describe('the replica is the real transform (byte-equality, the 252:3 blind-spot net)', () => {
+  it('applySeedPatch matches patchPresetSeedFiles byte-for-byte on every seed doc', async () => {
+    const { patchPresetSeedFiles } = await import(
+      '../../runtime/dsh/upstream/preset-mobile-rows.js');
+    const files = seedMap();
+    const absentIds = mobileAbsentRowIds();
+    for (const [path, bytes] of files) {
+      if (!path.includes('/presets/') || !path.endsWith('.yml')) continue;
+      const text = new TextDecoder().decode(bytes);
+      const docName = path.slice(path.lastIndexOf('/') + 1);
+      const viaReplica = applySeedPatch(text, absentIds, docName);
+      // The delivery map is a PLAIN object (Object.entries walks it); a Map
+      // here would silently skip every file (viaReal === raw).
+      const viaReal = new TextDecoder().decode(
+        patchPresetSeedFiles({ [path]: { bytes: bytes.slice() } })[path].bytes);      expect(viaReplica, `${docName}: the replica drifted from the real transform`)
+        .toBe(viaReal);
+    }
   });
 });
