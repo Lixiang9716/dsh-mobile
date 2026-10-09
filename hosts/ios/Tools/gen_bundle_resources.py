@@ -96,6 +96,8 @@ RESOURCES = [
     ("scenario_b1_web_live_js", DSH / "web-live" / "officialweb-web-live.js"),
     ("scenario_b3_web_live_js", DSH / "web-live" / "session-web-live.js"),
     ("scenario_b4_web_live_js", DSH / "web-live" / "composer-web-live.js"),
+    ("web_live_plugin_mount_js", DSH / "plugin-mount.js"),
+    ("web_live_pomodoro_template_js", DSH / "web-live" / "pomodoro-plugin-template.js"),
     ("scenario_manager_legs_probe_js", DSH / "web-live" / "manager-legs-probe.js"),
     ("gateway_js", DSH / "gateway.js"),
     ("registry_js", DSH / "registry.js"),

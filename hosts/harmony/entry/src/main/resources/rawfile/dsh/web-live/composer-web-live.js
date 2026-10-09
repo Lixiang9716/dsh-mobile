@@ -33,6 +33,7 @@ import { probeManagerLegs as probeManagerLegsShared } from 'web-live/manager-leg
 import { makeProbeAwaiter } from 'web-live/probe-respond-await.js';
 import { makeFailGate } from 'web-live/scenario-verdict.js';
 import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
+import { mountWorkspacePlugin } from 'plugin-mount.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
@@ -146,6 +147,12 @@ const bootPhase = async (cfg, route) => {
     // The CREATION row (the creation-mode plugin): the present tool, under
     // the user-facing seat's interactive flag like the rows above.
     creation: cfg.creation === true,
+    // The deployment default preset join (T-0048's shape): the boot agent
+    // AND every session the page creates resolve tools/prompt/skills
+    // against the joined composition, not the empty global layer — without
+    // it a creation turn's write tool calls drop on the floor (measured
+    // 2026-10-09: the session agent published onto an empty toolset).
+    presetJoin: cfg.presetJoin === true,
     container: {
       cwd: root,
       tmpdir: `${root}/tmp`,
@@ -211,6 +218,57 @@ const installTurnEvidence = (ctx, route, cfg) => {
       emit('write.turn.settled', {
         sessionId: session.id, events: turn.events, text: turn.text,
       });
+    }
+  });
+};
+
+/** The creation-mode mount hook: when a turn settles and the session
+ * authored a plugin tree (plugins/pomodoro-clock/ — the pomodoro scripted
+ * round writes it; a REAL endpoint's turn may author any tree the manifest
+ * grammar accepts), the seat drives approve → live mount → the plugin's own
+ * native surface. The approval is the checkpoint boundary (plugin-mount.js
+ * asks presentApproval; the official seat dispatches it to the native
+ * dialog). One attempt per spec per boot — a declined mount never
+ * re-prompts on the next turn. */
+const installCreationMount = (ctx, cfg) => {
+  const attempted = new Set();
+  ctx.on('session/event', (session, event) => {
+    if (event?.type !== 'turn/end') return;
+    for (const spec of ['pomodoro-clock']) {
+      if (attempted.has(spec)) continue;
+      // The workspace prefix from the boot config (the pinned-globals
+      // derivation is absent here — this seat never chdirs): containerRoot
+      // minus the fs scope root, e.g. '<fsRoot>/workspace' → 'workspace'.
+      const prefixOf = (c) => {
+        if (typeof c?.containerRoot !== 'string' || typeof c?.fsScopeRoot !== 'string') {
+          return undefined;
+        }
+        if (!c.containerRoot.startsWith(c.fsScopeRoot)) return undefined;
+        return c.containerRoot.slice(c.fsScopeRoot.length)
+          .replace(/^\/+/g, '').replace(/\/+$/g, '');
+      };
+      mountWorkspacePlugin(ctx, spec, { prefix: prefixOf(cfg) })
+        .then((outcome) => {
+          if (outcome.mounted) {
+            attempted.add(spec); // mounted: never remount this boot
+            emit('write.plugin.mounted', {
+              sessionId: session?.id ?? null, spec, version: outcome.version });
+            return;
+          }
+          if (outcome.step === 'read') {
+            return; // an absent tree is not an attempt — the next turn may author it
+          }
+          attempted.add(spec); // a real refusal (declined, invalid, failed
+          // link) does not re-prompt on later turns
+          emit('write.plugin.refused', {
+            sessionId: session?.id ?? null, spec, step: outcome.step,
+            reason: outcome.reason });
+        })
+        .catch((error) => {
+          attempted.add(spec);
+          emit('write.plugin.mount-failed', {
+            spec, reason: error?.message ?? String(error) });
+        });
     }
   });
 };
@@ -488,6 +546,7 @@ const main = async () => {
   await probeIshRun();
   await awaitAgent(ctx);
   installTurnEvidence(ctx, route, cfg);
+  installCreationMount(ctx, cfg);
   installRuntimeHalf(ctx, cfg, route);
   await probeSettingsSurfaces();
   log.debug('b4 runtime resident (write surface live; awaiting the page)', {});

@@ -52,6 +52,8 @@ import { ParityMockRoute, PARITY_MOCK_KEY } from '../model/ParityMockRoute';
 import { CardPlayerRoute } from '../model/CardPlayer';
 import { PickerPrimitives } from '../model/PickerPrimitives';
 import { BuildFlavor } from '../model/BuildFlavor';
+import { display } from '@kit.ArkUI';
+import { SurfaceDims, SurfaceFrame } from '../model/SurfacePrimitives';
 
 const TAG: string = 'dsh.app';
 const CARRIER_BASE_PORT: number = 17877;
@@ -101,6 +103,7 @@ const BUNDLE_FILES: string[] = [
   'logger.js',
   'manifest.json',
   'marketplace-resolver.js',
+  'plugin-mount.js',
   'receipt-journal.js',
   'registry.js',
   'scenario/agent-presets-probe-seed.js',
@@ -1189,6 +1192,7 @@ const BUNDLE_FILES: string[] = [
   'vendor/npm/zod@4.4.3/v4/locales/zh-CN.js',
   'vendor/npm/zod@4.4.3/v4/locales/zh-TW.js',
   'web-live/api-handler-respond.js',
+  'web-live/pomodoro-plugin-template.js',
   'web-live/composer-web-live.js',
   'web-live/harmony-composer-live-write.js',
   'web-live/harmony-httpfetch-streaming.js',
@@ -1258,6 +1262,43 @@ struct Index {
   @State webUrl: string = '';
   private realCreatePort: number = CARRIER_BASE_PORT;
   @State approvalTitle: string = '';
+  // The render surface overlay (contract v1.10.0): one fullscreen Canvas
+  // above the seat, driven by the presenter registered into whichever
+  // phase is live (HostPhase for the drives, OfficialServe for the
+  // interactive/release seat).
+  @State @Watch('onSurfaceOps') surfaceOpsJson: string = '[]';
+  @State surfaceVisible: boolean = false;
+  @State surfaceTitle: string = '';
+  private surfaceDimsSink: ((dims: SurfaceDims | null) => void) | null = null;
+  private surfaceInput: (kind: string, x: number, y: number) => void =
+    (kind: string, x: number, y: number): void => {};
+  private surfaceCtx: CanvasRenderingContext2D =
+    new CanvasRenderingContext2D(new RenderingContextSettings(true));
+  /** The live OfficialServe instance: the release seat Index constructed,
+   * else the official drive phase's (whichever serves now). */
+  private liveServe(): OfficialServe | null {
+    if (this.releaseServe !== null) {
+      return this.releaseServe;
+    }
+    return OfficialPhase.getInstance().getServe();
+  }
+
+  private surfaceOpen(title: string,
+    onResult: (dims: SurfaceDims | null) => void): void {
+    this.surfaceTitle = title;
+    this.surfaceDimsSink = onResult;
+    this.surfaceOpsJson = '[]';
+    this.surfaceVisible = true;
+  }
+
+  private surfaceSubmit(frame: SurfaceFrame): void {
+    this.surfaceOpsJson = frame.ops;
+  }
+
+  private surfaceClose(): void {
+    this.surfaceVisible = false;
+    this.surfaceDimsSink = null;
+  }
   private approvalResolve: ((approved: boolean) => void) | null = null;
   private approvalController: CustomDialogController | null = null;
   private carrier: CarrierServer = new CarrierServer();
@@ -1267,6 +1308,41 @@ struct Index {
   private releaseServe: OfficialServe | null = null;
 
   aboutToAppear(): void {
+    // The render surface overlay + the official seat's approval dialog are
+    // registered BEFORE any leg picks a phase: whichever phase goes live
+    // (HostPhase for the drives, OfficialServe for the interactive seat)
+    // finds its presenter in place (contract v1.10.0).
+    HostPhase.getInstance().setSurfaceView(
+      (title: string, onResult: (dims: SurfaceDims | null) => void): void => {
+        this.surfaceOpen(title, onResult);
+      },
+      (frame: SurfaceFrame): void => {
+        this.surfaceSubmit(frame);
+      },
+      (): void => {
+        this.surfaceClose();
+      });
+    OfficialServe.setSurfaceView(
+      (title: string, onResult: (dims: SurfaceDims | null) => void): void => {
+        this.surfaceOpen(title, onResult);
+      },
+      (frame: SurfaceFrame): void => {
+        this.surfaceSubmit(frame);
+      },
+      (): void => {
+        this.surfaceClose();
+      });
+    OfficialServe.setApprovalPresenter(
+      (title: string, resolve: (approved: boolean) => void): void => {
+        this.showApproval(title, resolve);
+      });
+    this.surfaceInput = (kind: string, x: number, y: number): void => {
+      HostPhase.getInstance().onSurfaceTouch(kind, x, y);
+      const serve = this.liveServe();
+      if (serve !== null) {
+        serve.onSurfaceTouch(kind, x, y);
+      }
+    };
     // The launch parameter picks the leg (E2eLeg, set by EntryAbility.onCreate
     // from `--ps dsh.e2e.leg`); absent = the default chain. An unknown value
     // fails loud instead of silently running the default chain (rule 5).
@@ -2078,7 +2154,142 @@ struct Index {
     this.approvalController.open();
   }
 
+  /** The surface overlay's ops interpreter: surface.ops@1 onto the ArkTS
+   * Canvas (real native rendering — never a WebView). */
+  private renderSurfaceOps(): void {
+    const ctx = this.surfaceCtx;
+    let ops: Array<Record<string, Object>> = [];
+    try {
+      ops = JSON.parse(this.surfaceOpsJson) as Array<Record<string, Object>>;
+    } catch (e) {
+      return;
+    }
+    const w = ctx.width;
+    const h = ctx.height;
+    for (let i = 0; i < ops.length; i++) {
+      const op = ops[i];
+      const kind = op.op as string;
+      if (kind === 'clear') {
+        ctx.fillStyle = (op.color as string) ?? '#000000';
+        ctx.fillRect(0, 0, w, h);
+      } else if (kind === 'setStyle') {
+        if (op.fill !== undefined) ctx.fillStyle = op.fill as string;
+        if (op.stroke !== undefined) ctx.strokeStyle = op.stroke as string;
+        if (op.lineWidth !== undefined) ctx.lineWidth = op.lineWidth as number;
+        if (op.font !== undefined) ctx.font = op.font as string;
+      } else if (kind === 'fillRect') {
+        ctx.fillRect(op.x as number, op.y as number, op.w as number, op.h as number);
+      } else if (kind === 'strokePath' || kind === 'fillPath') {
+        ctx.beginPath();
+        const d = op.d as Array<Record<string, Object>>;
+        for (let j = 0; j < d.length; j++) {
+          const seg = d[j];
+          const c = seg.c as string;
+          if (c === 'move') ctx.moveTo(seg.x as number, seg.y as number);
+          else if (c === 'line') ctx.lineTo(seg.x as number, seg.y as number);
+          else if (c === 'quad') {
+            ctx.quadraticCurveTo(seg.cx as number, seg.cy as number,
+              seg.x as number, seg.y as number);
+          } else if (c === 'arc') {
+            ctx.arc(seg.x as number, seg.y as number, seg.r as number,
+              seg.start as number, seg.end as number, seg.ccw === true);
+          } else if (c === 'close') ctx.closePath();
+        }
+        if (kind === 'strokePath') {
+          ctx.stroke();
+        } else {
+          ctx.fill();
+        }
+      } else if (kind === 'text') {
+        ctx.textBaseline = ((op.baseline as string) ?? 'top') as CanvasTextBaseline;
+        ctx.fillText(op.text as string, op.x as number, op.y as number);
+      }
+      // drawImage never reaches the view: SurfacePrimitives rejects it loud
+    }
+  }
+
+  onSurfaceOps(): void {
+    if (this.surfaceVisible) {
+      this.renderSurfaceOps();
+    }
+  }
+
+  private onSurfaceCanvasReady(): void {
+    const sink = this.surfaceDimsSink;
+    if (sink !== null) {
+      let scale = 2;
+      try {
+        scale = display.getDefaultDisplaySync().densityPixels;
+      } catch (e) {
+        scale = 2;
+      }
+      sink({
+        width: this.surfaceCtx.width,
+        height: this.surfaceCtx.height,
+        scale,
+      });
+    }
+    this.renderSurfaceOps();
+  }
+
+  private closeSurfaceByUser(): void {
+    const sink = this.surfaceDimsSink;
+    this.surfaceDimsSink = null;
+    this.surfaceVisible = false;
+    if (sink !== null) {
+      sink(null); // dismissed while opening — "user dismissal is a value"
+    } else {
+      HostPhase.getInstance().onSurfaceUserClosed();
+      const serve = this.liveServe();
+      if (serve !== null) {
+        serve.onSurfaceUserClosed();
+      }
+    }
+  }
+
+  @Builder
+  SurfaceOverlay() {
+    Column() {
+      Row() {
+        Text(this.surfaceTitle)
+          .fontSize(16)
+          .fontColor('#f4f4f6')
+          .layoutWeight(1)
+          .maxLines(1)
+        Button('✕')
+          .fontSize(14)
+          .backgroundColor('#2c2c30')
+          .fontColor('#f4f4f6')
+          .onClick((): void => {
+            this.closeSurfaceByUser();
+          })
+      }
+      .width('100%')
+      .padding({ left: 16, right: 12, top: 8, bottom: 8 })
+      Canvas(this.surfaceCtx)
+        .width('100%')
+        .layoutWeight(1)
+        .onReady((): void => {
+          this.onSurfaceCanvasReady();
+        })
+        .onTouch((event: TouchEvent): void => {
+          const t = event.touches[0];
+          if (t === undefined) {
+            return;
+          }
+          const kind = event.type === TouchType.Down || event.type === TouchType.Move
+            ? (event.type === TouchType.Down ? 'begin' : 'move')
+            : 'end';
+          this.surfaceInput(kind, t.x, t.y);
+        })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#000000')
+  }
+
   build() {
+    Stack() {
     Column({ space: 8 }) {
       // The harness shows its verdict panel above the mounted page (the E2E
       // verdict is the checker over the captured records; the Text is the
@@ -2130,5 +2341,11 @@ struct Index {
     .width('100%')
     .height('100%')
     .padding(12)
+    if (this.surfaceVisible) {
+      this.SurfaceOverlay()
+    }
+    }
+    .width('100%')
+    .height('100%')
   }
 }

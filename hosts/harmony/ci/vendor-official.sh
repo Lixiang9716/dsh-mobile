@@ -180,10 +180,12 @@ fi
 # vendored npm libs the client-modules composition imports — the exact
 # bundle-root relative paths the C loader's bare map resolves.
 CLOSURE="gateway.js
+plugin-mount.js
 logger.js
 registry.js
 web-live/officialweb-web-live.js
 web-live/composer-web-live.js
+web-live/pomodoro-plugin-template.js
 web-live/api-handler-respond.js
 web-live/scenario-verdict.js
 vendor/npm/turndown@7.2.4/lib/turndown.es.js
