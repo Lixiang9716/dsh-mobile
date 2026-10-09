@@ -106,14 +106,31 @@ export const disableMobileAbsentRows = (text, docName) => {
  * tool for the model's tool_calls to dispatch (the spine's ctx.tools
  * registration alone serves the inventory, not the per-session list). Same
  * seam as the disabler: the STAGED copy is patched, the pinned documents
- * stay untouched (D6); idempotent on re-seed. */
+ * stay untouched (D6); idempotent on re-seed.
+ *
+ * The insertion point is the row block's END — the next same-indent row
+ * start, the first dedenting line (the list ended), or EOF — never right
+ * after the `- id:` line: a row block carries more keys after its id
+ * (name/disable/...), and splicing there severs them onto the new row.
+ * Measured 2026-10-10: the id-adjacent splice produced "duplicated
+ * mapping key (252:3)" on every preset with a plugin plane (mobile,
+ * standard, cordis, ptc — minimal survived) and session/create died
+ * everywhere; the panel replica mirrored only the disabler, so CI could
+ * not see it. */
 const spliceCreateRow = (text) => {
   if (text.includes('id: tool-plugin-create')) return text;
   const lines = text.split('\n');
   const at = lines.findIndex((line) => line.includes('- id: tool-plugin-manager'));
   if (at < 0) return text; // no plugin plane in this document; skip
   const indent = lines[at].slice(0, lines[at].indexOf('-'));
-  lines.splice(at + 1, 0,
+  let end = lines.length;
+  for (let i = at + 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (line.startsWith(`${indent}-`)) { end = i; break; } // the next row
+    if (line.trim() === '') continue; // blank: still inside the block
+    if (!line.startsWith(`${indent} `)) { end = i; break; } // dedent: list ended
+  }
+  lines.splice(end, 0,
     `${indent}- id: tool-plugin-create`,
     `${indent}  name: 'system-plugins/dsh-create/index.js'`);
   return lines.join('\n');
