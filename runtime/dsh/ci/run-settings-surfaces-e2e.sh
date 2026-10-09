@@ -71,7 +71,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
   "kernel": "@deepseek-ai/cordis@4.0.2",
   "scenario": "settings.surfaces",
   "proves": [
-    "the official client's Agent 预设 screen loads real data: the REAL vendored AgentPresets service (mounted on the mobile spine with the cordis Loader service) answers agentPresets/list with the shipped roster (cordis/minimal/ptc/standard), the deployment default marked, and honest per-preset health verdicts over the staged presets VFS",
+    "the official client's Agent 预设 screen loads real data: the REAL vendored AgentPresets service (mounted on the mobile spine with the cordis Loader service) answers agentPresets/list with the shipped roster plus the synthesized mobile preset (standard/mobile/ptc/minimal/cordis), the deployment default (mobile, upstream/boot.js AGENT_PRESETS_DEFAULT) marked, and honest per-preset health verdicts over the staged presets VFS",
     "agentPresets/read answers the default preset's composition document from the staged presets tree, and agentPresets/copy refuses with the upstream agent-preset/read-only RemoteError (the staged fs has no user root — authoring is refused, never faked)",
     "the official client's 插件 screen renders its list instead of the error state: pluginInventory/list answers the honest read-only snapshot — the mounted runtime spine (every row read from the live context) + the staged client bundles (the composed boot roster) + the 预设 compositions, with managementAvailable false",
     "the plugin-manager write machinery stays UNCLAIMED: pluginManager/listBundles answers the runtime's structured gateway/unimplemented — fail loud, never a fake",
