@@ -47,6 +47,7 @@ const workspacePrefix = () => prefixOf({
 });
 
 const utf8Decode = (bytes) => {
+  log.debug('latin-1 fallback decode', { length: bytes?.length ?? 0 });
   if (bytes === null || typeof bytes !== 'object') return '';
   let out = '';
   for (let i = 0; i < bytes.length; i += 1) out += String.fromCharCode(bytes[i]);
@@ -60,6 +61,7 @@ const utf8Decode = (bytes) => {
  * llm module's), falling back to latin-1 when absent — the sources the
  * creation flow writes are UTF-8 (the write tool encodes so). */
 const decodeUtf8 = async (bytes) => {
+  log.debug('decode utf8 face probe', { length: bytes?.length ?? 0 });
   try {
     const mod = await import('llm.js');
     if (typeof mod.utf8Decode === 'function') return mod.utf8Decode(bytes);
@@ -74,54 +76,34 @@ const refused = (step, spec, reason) => {
   return { mounted: false, step, spec, reason };
 };
 
-/**
- * `mountWorkspacePlugin(ctx, spec, opts?)` — adopt + live-mount the
- * workspace tree at plugins/<spec>/ (manifest grammar as above).
- *
- * Steps (each an E2E log line, one round trip each):
- *   plugin.mount.read      — the manifest bytes came off the fs
- *   plugin.mount.validated — the grammar passed
- *   plugin.mount.adopted   — the registry row upserted (installed=true to
- *                            every other consumer)
- *   plugin.mount.linked    — the entry bytes registered + imported as a
- *                            module (the loader seam)
- *   plugin.mount.mounted   — ctx.plugin(ns) returned; the plugin is live
- *
- * @param {object} ctx the cordis Context to mount on
- * @param {string} spec the bare plugin id (`plugins/<spec>/` under the
- *   workspace; the manifest's id must equal it)
- * @param {object} [opts] `{ approved?: boolean, askApproval?: boolean,
- *   pluginOpts?: object, prefix?: string }` — approval defaults to asking
- *   (the checkpoint posture); `approved: true` skips the dialog; `prefix`
- *   overrides the workspace-prefix derivation (the pinned-globals path is
- *   absent on seats that never chdir — the official seat passes its boot
- *   config's containerRoot/scopeRoot derivation instead).
- */
-export const mountWorkspacePlugin = async (ctx, spec, opts = {}) => {
-  log.debug('mount begin', { spec });
-  if (!ctx || typeof ctx.plugin !== 'function') {
-    return refused('context', spec, 'no cordis context to mount on');
-  }
-  if (typeof spec !== 'string' || !/^[a-z0-9][a-z0-9.-]*$/.test(spec)) {
-    return refused('spec', spec, 'a spec must be a bare plugin id');
-  }
-  const prefix = typeof opts.prefix === 'string' ? opts.prefix : workspacePrefix();
+/** Read + grammar-check the workspace manifest (step pair: read →
+ * validated). Returns the parsed manifest, or a refused outcome. */
+const readManifest = async (spec, prefix) => {
+  log.debug('manifest read begin', { spec, prefix });
   const manifestPath = `${prefix ? prefix + '/' : ''}plugins/${spec}/manifest.json`;
   let manifest;
   try {
     const { bytes } = await fsRead('app', manifestPath);
     manifest = JSON.parse(await decodeUtf8(bytes));
   } catch (error) {
-    return refused('read', spec, `no readable manifest at ${manifestPath}: ${error?.message ?? error}`);
+    return refused('read', spec,
+      `no readable manifest at ${manifestPath}: ${error?.message ?? error}`);
   }
-  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.read', spec, version: manifest.version ?? null });
+  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.read',
+    spec, version: manifest.version ?? null });
   const invalid = validateWorkspaceManifest(manifest);
   if (invalid) return refused('validated', spec, invalid);
   if (manifest.id !== spec) {
     return refused('validated', spec, `the manifest names id "${manifest.id}", not "${spec}"`);
   }
-  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.validated', spec, version: manifest.version });
+  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.validated',
+    spec, version: manifest.version });
+  return { manifest };
+};
 
+/** The approval gate + registry upsert (steps: approved → adopted). */
+const adoptAfterApproval = async (manifest, spec, prefix, opts) => {
+  log.debug('approval gate', { spec });
   const approved = opts.approved === true ? true : await (async () => {
     if (opts.askApproval === false) return true;
     const verdict = await presentApproval({
@@ -132,7 +114,6 @@ export const mountWorkspacePlugin = async (ctx, spec, opts = {}) => {
   })();
   if (!approved) return refused('approval', spec, 'the user declined the mount');
   log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.approved', spec });
-
   const registry = await upsertRegistryRow({
     fsRead, fsWrite, path: `${prefix ? prefix + '/' : ''}dsh.plugins/1/registry.json`,
   }, {
@@ -141,15 +122,23 @@ export const mountWorkspacePlugin = async (ctx, spec, opts = {}) => {
     installedAt: new Date().toISOString(),
   });
   if (!registry.ok) return refused('adopted', spec, `${registry.code}: ${registry.message}`);
-  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.adopted', spec, version: manifest.version });
+  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.adopted',
+    spec, version: manifest.version });
+  return { adopted: true };
+};
 
+/** Register the entry bytes on the loader seam and import them (step:
+ * linked) — the REAL dynamic load, post-boot. */
+const linkEntry = async (manifest, spec, prefix) => {
+  log.debug('entry link begin', { spec });
   const entryRel = manifest.entry.replace(/^\.?\//, '');
   const entryPath = `${prefix ? prefix + '/' : ''}plugins/${spec}/${entryRel}`;
   let entryBytes;
   try {
     ({ bytes: entryBytes } = await fsRead('app', entryPath));
   } catch (error) {
-    return refused('linked', spec, `no readable entry at ${entryPath}: ${error?.message ?? error}`);
+    return refused('linked', spec,
+      `no readable entry at ${entryPath}: ${error?.message ?? error}`);
   }
   const moduleName = `plugins/${spec}/${entryRel}`;
   const define = globalThis.__dshModuleDefine;
@@ -163,21 +152,48 @@ export const mountWorkspacePlugin = async (ctx, spec, opts = {}) => {
   } catch (error) {
     return refused('linked', spec, `the entry did not link: ${error?.message ?? error}`);
   }
-  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.linked', spec, module: moduleName });
+  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.linked',
+    spec, module: moduleName });
+  return { ns, moduleName };
+};
 
+/**
+ * `mountWorkspacePlugin(ctx, spec, opts?)` — adopt + live-mount the
+ * workspace tree at plugins/<spec>/ (manifest grammar as above). Steps
+ * (each an E2E log line, one round trip each): read → validated →
+ * approved → adopted → linked → mounted. See the option docs above.
+ */
+export const mountWorkspacePlugin = async (ctx, spec, opts = {}) => {
+  log.debug('mount begin', { spec });
+  if (!ctx || typeof ctx.plugin !== 'function') {
+    return refused('context', spec, 'no cordis context to mount on');
+  }
+  if (typeof spec !== 'string' || !/^[a-z0-9][a-z0-9.-]*$/.test(spec)) {
+    return refused('spec', spec, 'a spec must be a bare plugin id');
+  }
+  const prefix = typeof opts.prefix === 'string' ? opts.prefix : workspacePrefix();
+  const read = await readManifest(spec, prefix);
+  if (read.manifest === undefined) return read;
+  const manifest = read.manifest;
+  const adopted = await adoptAfterApproval(manifest, spec, prefix, opts);
+  if (adopted.adopted !== true) return adopted;
+  const linked = await linkEntry(manifest, spec, prefix);
+  if (linked.ns === undefined) return linked;
   try {
-    await ctx.plugin(ns, opts.pluginOpts ?? {});
+    await ctx.plugin(linked.ns, opts.pluginOpts ?? {});
   } catch (error) {
     return refused('mounted', spec, `ctx.plugin refused: ${error?.message ?? error}`);
   }
-  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.mounted', spec, version: manifest.version });
-  return { mounted: true, spec, version: manifest.version, module: moduleName };
+  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.mounted',
+    spec, version: manifest.version });
+  return { mounted: true, spec, version: manifest.version, module: linked.moduleName };
 };
 
 /** The turn-settled hook the creation seats call: if the session authored
  * a plugin tree (plugins/<spec>/manifest.json exists), mount it live. A
  * tree that does not exist is not an error — most turns author none. */
 export const mountAfterTurn = async (ctx, specs, opts = {}) => {
+  log.debug('mount-after-turn begin', { specs });
   const mounted = [];
   for (const spec of specs) {
     const outcome = await mountWorkspacePlugin(ctx, spec, opts);

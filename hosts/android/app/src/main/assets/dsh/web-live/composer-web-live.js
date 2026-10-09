@@ -79,37 +79,7 @@ const fail = makeFailGate({
   complete: (ok, reason) => globalThis.__dshComplete(ok, reason),
 });
 const demand = (cond, reason) => { if (cond) return; fail(reason); throw new Error(reason); };
-
-/** Bus deliveries may arrive before the awaiting half exists (the drive
- * injects right after eval), so the subscription is module-scope, buffers,
- * and wakes pending `take()` waiters — never a poll. Once `dispatch` is
- * installed, deliveries go straight to it. */
-const queue = [];
-let wake = null;
-let dispatch = null;
-globalThis.__dshBusOnMessage = (line) => {
-  const msg = JSON.parse(line);
-  if (dispatch !== null) return dispatch(msg);
-  queue.push(msg);
-  wake?.();
-};
-/** All posted bus frames, in order — the settings-surface probes assert on
- * the api.respond frames (the exact wire the carrier hands the page). */
-const posted = [];
-const post = (msg) => {
-  posted.push(msg);
-  globalThis.__dshBusPost?.(JSON.stringify(msg));
-};
-
-/** Wait for (and remove) the next delivery of one type. */
-const take = async (type) => {
-  for (;;) {
-    const at = queue.findIndex((msg) => msg.type === type);
-    if (at >= 0) return queue.splice(at, 1)[0];
-    await new Promise((resolve) => { wake = resolve; });
-    wake = null;
-  }
-};
+const { queue, post, take, deliver, install: installBusDispatch } = makeComposerBus();
 
 /** Wait (bounded, microtask-granular — no timers) for the configured agent
  * and its session to appear in the registries (async past the mount). */
@@ -127,11 +97,9 @@ const awaitAgent = async (ctx) => {
 /** Boot the spine: the profile container is the host-granted root from the
  * runtime.config delivery (the seeded workspace's REAL directory), the llm
  * route the carrier's scripted endpoint. */
-const bootPhase = async (cfg, route) => {
-  const root = cfg.containerRoot;
-  demand(typeof root === 'string' && root.startsWith('/'),
-    `profile container not granted by the host: ${JSON.stringify(root)}`);
-  const { ctx } = await bootUpstream({
+/** The boot options object (split from bootPhase at the code-size
+ * gate): the interactive rows + the creation/presetJoin flags. */
+const bootOptions = (cfg, route, root) => ({
     scenario: SCENARIO,
     agentId: AGENT_ID,
     sessionId: SESSION_ID,
@@ -175,7 +143,14 @@ const bootPhase = async (cfg, route) => {
       onWire: (info) => emit('llm/request/built', info),
       onSse: (info) => emit('llm/sse', info),
     },
-  });
+});
+
+const bootPhase = async (cfg, route) => {
+  const rooted = typeof cfg.containerRoot === 'string'
+    && cfg.containerRoot.startsWith('/');
+  demand(rooted, `profile container not granted by the host: ${JSON.stringify(cfg.containerRoot)}`);
+  const { ctx } = await bootUpstream(bootOptions(cfg, route, root));
+;
   return ctx;
 };
 
@@ -222,57 +197,6 @@ const installTurnEvidence = (ctx, route, cfg) => {
   });
 };
 
-/** The creation-mode mount hook: when a turn settles and the session
- * authored a plugin tree (plugins/pomodoro-clock/ — the pomodoro scripted
- * round writes it; a REAL endpoint's turn may author any tree the manifest
- * grammar accepts), the seat drives approve → live mount → the plugin's own
- * native surface. The approval is the checkpoint boundary (plugin-mount.js
- * asks presentApproval; the official seat dispatches it to the native
- * dialog). One attempt per spec per boot — a declined mount never
- * re-prompts on the next turn. */
-const installCreationMount = (ctx, cfg) => {
-  const attempted = new Set();
-  ctx.on('session/event', (session, event) => {
-    if (event?.type !== 'turn/end') return;
-    for (const spec of ['pomodoro-clock']) {
-      if (attempted.has(spec)) continue;
-      // The workspace prefix from the boot config (the pinned-globals
-      // derivation is absent here — this seat never chdirs): containerRoot
-      // minus the fs scope root, e.g. '<fsRoot>/workspace' → 'workspace'.
-      const prefixOf = (c) => {
-        if (typeof c?.containerRoot !== 'string' || typeof c?.fsScopeRoot !== 'string') {
-          return undefined;
-        }
-        if (!c.containerRoot.startsWith(c.fsScopeRoot)) return undefined;
-        return c.containerRoot.slice(c.fsScopeRoot.length)
-          .replace(/^\/+/g, '').replace(/\/+$/g, '');
-      };
-      mountWorkspacePlugin(ctx, spec, { prefix: prefixOf(cfg) })
-        .then((outcome) => {
-          if (outcome.mounted) {
-            attempted.add(spec); // mounted: never remount this boot
-            emit('write.plugin.mounted', {
-              sessionId: session?.id ?? null, spec, version: outcome.version });
-            return;
-          }
-          if (outcome.step === 'read') {
-            return; // an absent tree is not an attempt — the next turn may author it
-          }
-          attempted.add(spec); // a real refusal (declined, invalid, failed
-          // link) does not re-prompt on later turns
-          emit('write.plugin.refused', {
-            sessionId: session?.id ?? null, spec, step: outcome.step,
-            reason: outcome.reason });
-        })
-        .catch((error) => {
-          attempted.add(spec);
-          emit('write.plugin.mount-failed', {
-            spec, reason: error?.message ?? String(error) });
-        });
-    }
-  });
-};
-
 /** The resident runtime half: claims + api.request + the follow streams all
  * answer from the spine, WITH the write surface composed. Evidence is
  * fail-loud: an UNSTRUCTURED claimed-endpoint failure is a defect and kills
@@ -307,7 +231,7 @@ const installRuntimeHalf = (ctx, cfg, route) => {
   };
   // `dispatch` installs BEFORE the buffer drains: a delivery racing the swap
   // goes direct or is still in the queue — never stranded, never doubled.
-  dispatch = busHandler;
+  installBusDispatch(busHandler);
   for (const msg of queue.splice(0)) busHandler(msg);
 };
 
@@ -349,7 +273,7 @@ const awaitRespond = makeProbeAwaiter({ frames: posted, fail, yieldTurn: yieldTo
 const probeSettingsRoster = async () => {
   log.debug('settings probes begin', {});
   for (const { rpcId, endpoint } of SETTINGS_PROBES) {
-    dispatch({ type: 'api.request', rpcId, endpoint, payload: { args: {} } });
+    deliver({ type: 'api.request', rpcId, endpoint, payload: { args: {} } });
   }
   // 预设 roster: the REAL vendored service's answer over the wire.
   const roster = (await awaitRespond('probe/agentPresets-list-1'));
@@ -546,7 +470,7 @@ const main = async () => {
   await probeIshRun();
   await awaitAgent(ctx);
   installTurnEvidence(ctx, route, cfg);
-  installCreationMount(ctx, cfg);
+  installCreationMount(ctx, cfg, emit);
   installRuntimeHalf(ctx, cfg, route);
   await probeSettingsSurfaces();
   log.debug('b4 runtime resident (write surface live; awaiting the page)', {});

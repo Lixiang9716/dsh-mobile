@@ -220,26 +220,8 @@ export const timerSchedule = async (delayMs, opts = {}) =>
 export const timerCancel = async (timerId) =>
   await call('timerCancel', { timerId });
 
-// ---- the render surface (v1.10.0) -----------------------------------------
-// Ops are the closed `surface.ops@1` vocabulary; `opts.animate: true` arms
-// the host's frame pump (surface.frame events on the onEvent seam); the
-// user dismissing the surface resolves presentSurface null and settles any
-// later draw with surface closed (the contract's fail-soft posture).
+// ---- the render surface (v1.10.0): surface.js (split at the size gate) ----
 
-export const presentSurface = async (request) => {
-  log.debug('presentSurface', { kind: request?.kind });
-  return await call('presentSurface', request);
-};
-
-export const surfaceDraw = async (surfaceId, ops, opts = {}) => {
-  log.debug('surfaceDraw', { surfaceId, ops: ops.length, seq: opts.seq ?? null });
-  return await call('surfaceDraw', { surfaceId, ops, ...opts });
-};
-
-export const closeSurface = async (surfaceId) => {
-  log.debug('closeSurface', { surfaceId });
-  await call('closeSurface', { surfaceId });
-};
 
 // ---- the device plane (v1.5.0) --------------------------------------------
 

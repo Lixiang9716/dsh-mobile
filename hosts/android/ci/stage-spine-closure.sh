@@ -383,7 +383,7 @@ done
 # long time as a committed-only asset row: an unlisted entry silently freezes
 # on a fresh install (the embed-list trap this file's own comments name).
 for s in android-officialweb-web-live.js android-session-live-read.js \
-         android-composer-live-write.js composer-web-live.js pomodoro-plugin-template.js \
+         android-composer-live-write.js composer-web-live.js pomodoro-plugin-template.js plugin-live-mount.js composer-bus.js \
          write-surface-options.js manager-legs-probe.js \
          probe-respond-await.js scenario-verdict.js api-handler-respond.js; do
     if [ -f "$DSH/web-live/$s" ]; then
@@ -550,7 +550,7 @@ done
 # The staged web-live product boots (twin of the scenario loop above — the
 # same stale-copy shadowing defect, the product mount entries' own row).
 for s in android-officialweb-web-live.js android-session-live-read.js \
-         android-composer-live-write.js composer-web-live.js pomodoro-plugin-template.js \
+         android-composer-live-write.js composer-web-live.js pomodoro-plugin-template.js plugin-live-mount.js composer-bus.js \
          write-surface-options.js manager-legs-probe.js \
          probe-respond-await.js scenario-verdict.js api-handler-respond.js; do
     if [ "$MODE" = "check" ] && ! is_tracked "web-live/$s"; then note_skip; continue; fi
