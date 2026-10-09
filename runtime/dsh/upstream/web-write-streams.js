@@ -23,15 +23,48 @@ import { mintUUID } from 'upstream/web-write.js';
 /** upstream history cursorBeforeNext: the durable cursor before `nextSeq`. */
 const cursorBeforeNext = (nextSeq) => (nextSeq === 0 ? -1 : nextSeq - 1);
 
+/** The page-facing turn/end reason (the AR abort-render round, 2026-10-10).
+ * The vendored agent-loop classifies EVERY cancel as `aborted` — the kill
+ * rides `agent.cancel(cause)` → `phase.abort.abort(cause)` and the loop's
+ * catch turns any aborted signal into `{kind:'aborted', reason: cause}`
+ * (agent-loop lib/index.js at the pin). The cause kind is the only class
+ * marker, and OUR runtime chooses it: the turn watchdog cancels with
+ * `{kind:'watchdog'}` (upstream/turn-watchdog.js), the user's cancel with
+ * `{kind:'user'}` (upstream/web-write.js session/cancel). The vendored chat
+ * page renders a failure notice only for `kind:'error'` reasons
+ * (dsh-client-ui-chat failureFrom) and silence for `aborted` — so a
+ * watchdog kill (a system failure the user did not choose) renders as a
+ * blank reply. This projection presents the watchdog class as the error it
+ * is for the user, keeping the cause's message readable; a USER cancel
+ * stays `aborted` — the silence there is the correct semantics (the user
+ * asked for it). The journal itself is NOT touched: it keeps the honest
+ * aborted+watchdog record, and so does the settle evidence fold
+ * (web-live/turn-failure.js, which reads the spine event, not the wire). */
+export const wireTurnEndReason = (reason) => {
+  if (reason?.kind !== 'aborted' || reason.reason?.kind !== 'watchdog') return reason;
+  return {
+    kind: 'error',
+    error: {
+      code: 'watchdog',
+      message: `turn aborted: ${reason.reason.message ?? 'the turn watchdog killed the turn'}`,
+    },
+  };
+};
+
 /** One wire event record: SessionEventEntry. The envelope passes through the
  * event-local metadata the official client validates (`ignorable`,
  * `sourceEventSeqs`, and the `surfaceOp` marker the four surface-eligible
- * message events REQUIRE — dropping it fails the page's history load). */
+ * message events REQUIRE — dropping it fails the page's history load).
+ * turn/end reasons ride the page-facing projection (wireTurnEndReason) —
+ * this function is the ONE page-facing serialization of journal records,
+ * shared by the follow snapshot, the live event fan, and session/page. */
 export const wireEvent = (event) => ({
   type: 'event',
   event: {
     type: event.type, seq: event.seq, time: event.time ?? 0,
-    data: event.data ?? {},
+    data: event.type === 'turn/end'
+      ? { ...(event.data ?? {}), reason: wireTurnEndReason(event.data?.reason) }
+      : (event.data ?? {}),
     ...(event.ignorable === true ? { ignorable: true } : {}),
     ...(event.sourceEventSeqs === undefined ? {} :
       { sourceEventSeqs: event.sourceEventSeqs }),

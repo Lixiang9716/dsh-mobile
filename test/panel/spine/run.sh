@@ -21,4 +21,5 @@ cd "$ROOT"
 node test/panel/spine/provision-modules.mjs
 exec node --import ./test/panel/spine/register.mjs \
   --test test/panel/spine/composer-journal.test.mjs \
-  test/panel/spine/session-delete.test.mjs
+  test/panel/spine/session-delete.test.mjs \
+  test/panel/spine/watchdog-abort-wire.test.mjs
