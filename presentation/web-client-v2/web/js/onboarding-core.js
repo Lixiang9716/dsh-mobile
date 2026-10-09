@@ -10,29 +10,40 @@
 
 /** The provider rows: DeepSeek's first-party OpenAI-compatible endpoint and
  * the bring-your-own OpenAI-compatible row. Mirrors the runtime's
- * BYOK_PROVIDERS. */
+ * BYOK_PROVIDERS — including each row's DEFAULT contextWindow (tokens, the
+ * compaction capacity the runtime's adapter answers with; the form
+ * pre-fills it and the user may override). */
 export const PROVIDERS = {
   deepseek: {
     label: 'DeepSeek',
     baseURL: 'https://api.deepseek.com',
     model: 'deepseek-chat',
+    contextWindow: 131072,
     baseURLFixed: false,
   },
   'openai-compatible': {
     label: 'OpenAI 兼容 / OpenAI-compatible',
     baseURL: '',
     model: '',
+    contextWindow: 131072,
     baseURLFixed: false,
   },
 };
 
 export const PROVIDER_IDS = Object.keys(PROVIDERS);
 
+/** The contextWindow grammar's upper bound — the runtime's CONTEXT_WINDOW_MAX
+ * mirror (same grammar, same limit: a draft the panel accepts never bounces
+ * at the wire). */
+export const CONTEXT_WINDOW_MAX = 4000000;
+
 const URL_PATTERN = /^https?:\/\/[^\s]+$/;
 
-/** Validate one draft {provider, baseURL, apiKey, model} → {field, why} |
- * null. Same grammar the runtime's save leg enforces — a draft the panel
- * accepts never bounces at the wire. */
+/** Validate one draft {provider, baseURL, apiKey, model, contextWindow?} →
+ * {field, why} | null. Same grammar the runtime's save leg enforces — a
+ * draft the panel accepts never bounces at the wire. contextWindow is
+ * OPTIONAL: an empty field means "the provider row's default" (the runtime
+ * resolves it); a present one must be a whole number within the bound. */
 export function validateDraft(draft) {
   if (!PROVIDER_IDS.includes(draft?.provider)) {
     return { field: 'provider', why: 'unknown provider 未知 provider' };
@@ -51,6 +62,11 @@ export function validateDraft(draft) {
   }
   if (draft.model.length > 128) {
     return { field: 'model', why: 'model id too long (max 128) 模型 id 过长' };
+  }
+  if (draft.contextWindow !== undefined
+    && (!Number.isSafeInteger(draft.contextWindow) || draft.contextWindow <= 0
+      || draft.contextWindow > CONTEXT_WINDOW_MAX)) {
+    return { field: 'contextWindow', why: `context window must be a whole number in 1..${CONTEXT_WINDOW_MAX} 上下文窗口须为 1..${CONTEXT_WINDOW_MAX} 的整数` };
   }
   return null;
 }
@@ -168,7 +184,8 @@ export function saveEnabled(draftFingerprint, probeFingerprint, probeState) {
 /** One stable fingerprint of the credential-bearing fields. The key enters
  * only as an FNV-1a digest — the fingerprint may land in diagnostics
  * (muxDiag), so the key's VALUE never appears in any string this page can
- * produce. */
+ * produce. contextWindow rides it too: a probe passed on one window must
+ * not save a draft with another. */
 export function draftFingerprint(draft) {
   let hash = 0x811c9dc5;
   const key = String(draft?.apiKey ?? '');
@@ -176,5 +193,6 @@ export function draftFingerprint(draft) {
     hash ^= key.charCodeAt(at);
     hash = (hash * 0x01000193) >>> 0;
   }
-  return [draft?.provider ?? '', draft?.baseURL ?? '', draft?.model ?? '', hash.toString(16)].join('\u0000');
+  return [draft?.provider ?? '', draft?.baseURL ?? '', draft?.model ?? '',
+    String(draft?.contextWindow ?? ''), hash.toString(16)].join('\u0000');
 }

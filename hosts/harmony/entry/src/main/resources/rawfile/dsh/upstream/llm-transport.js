@@ -3,35 +3,29 @@
  * llm-transport — the GATEWAY TRANSPORT SEAM for the vendored dsh-llm
  * (decision D9, the W-LLM leg).
  *
- * The vendored `LlmRuntime` is transport-agnostic: provider backends register
- * through `registerAdapter(providers, adapter)` and stream harness
- * `StreamChunk`s. On the desktop the direct-fetch adapters (dsh-llm-deepseek,
- * dsh-llm-pi-ai) own `fetch` + SSE. QuickJS has no fetch/sockets — the mobile
- * equivalent is the gateway `httpFetch` primitive (streaming AsyncIterable
- * body, base64 byte bridge, abortable). THIS module is that adapter: an
- * upstream-SHAPE OpenAI-compatible chat-completions adapter whose entire
- * transport is `gateway.httpFetch`, modeled on dsh-llm-deepseek's wire layer
+ * The vendored `LlmRuntime` is transport-agnostic: provider backends register through
+ * `registerAdapter(providers, adapter)` and stream harness `StreamChunk`s. On the
+ * desktop the direct-fetch adapters (dsh-llm-deepseek, dsh-llm-pi-ai) own `fetch` +
+ * SSE. QuickJS has no fetch/sockets — the mobile equivalent is the gateway `httpFetch`
+ * primitive (streaming AsyncIterable body, base64 byte bridge, abortable). THIS module
+ * is that adapter: an upstream-SHAPE OpenAI-compatible chat-completions adapter whose
+ * entire transport is `gateway.httpFetch`, modeled on dsh-llm-deepseek's wire layer
  * (MIT) with the platform seam swapped:
  *
  *   upstream desktop                      this seam
  *   ------------------------------        ------------------------------
  *   fetch(url, {body, signal})     →     gateway httpFetch(url, {body})
- *   Response.body (Web stream)     →     httpFetch response.body (AsyncIterable
- *                                          of Uint8Array fed by http.body events)
+ *   Response.body (Web stream)     →     httpFetch response.body (AsyncIterable of Uint8Array)
  *   signal abort                    →     response.abort() → GatewayError
  *                                          'cancelled' → LlmError ABORTED
- *   EventSourceParserStream         →     incremental SSE byte parser (below;
- *                                          reads may split anywhere, including
- *                                          mid-UTF-8 — same contract)
- *   (upstream: none — fetch has     →     the read-idle watchdog (loop-u2,
- *   its own socket timeouts)              upstream/llm-read-idle.js): N
- *                                          seconds of wire silence aborts
- *                                          the attempt as a retryable
- *                                          LlmError TIMEOUT, and caller
- *                                          aborts unwind a byteless stall
- *                                          eagerly (ABORTED, non-retryable)
- *   TextEncoder/TextDecoder         →     utf8Encode/utf8Decode (no Text* globals
- *                                          in the dsh runtime)
+ *   EventSourceParserStream         →     incremental SSE byte parser (below; reads may
+ *                                          split anywhere, including mid-UTF-8 — same contract)
+ *   (upstream: none — fetch has its own   the read-idle watchdog (loop-u2, upstream/
+ *   socket timeouts)                      llm-read-idle.js): N seconds of wire silence
+ *                                          aborts the attempt as a retryable LlmError
+ *                                          TIMEOUT, and caller aborts unwind a byteless
+ *                                          stall eagerly (ABORTED, non-retryable)
+ *   TextEncoder/TextDecoder         →     utf8Encode/utf8Decode (no Text* globals in the dsh runtime)
  *
  * Zero vendored edits: the harness vocabulary (messages, StreamChunks,
  * LlmError taxonomy, attribution headers) all comes from the vendored
@@ -188,18 +182,13 @@ const httpErrorCode = (status, error) => {
   return `HTTP_${status}`;
 };
 
-const collectBody = async (response) => {
-  const decode = utf8Decoder();
-  let text = '';
-  for await (const chunk of response.body) text += decode(chunk);
-  return text;
-};
-
 /** Diagnose a non-2xx response into the provider-neutral LlmError taxonomy
  * (upstream mapping: JSON error body first, status-class fallback). */
 const demandStreamResponse = async (response) => {
   if (response.status >= 200 && response.status < 300) return;
-  const raw = await collectBody(response);
+  const decode = utf8Decoder();
+  let raw = '';
+  for await (const chunk of response.body) raw += decode(chunk);
   let providerError;
   try { providerError = JSON.parse(raw).error; } catch { /* non-JSON body */ }
   throw new LlmError(
@@ -254,8 +243,15 @@ class GatewayLlmAdapter extends LlmAdapter {
   }
 
   async resolveModel(route, model, _signal) {
-    // the mock route pins effort 'off'; else upstream fails UNSUPPORTED_REASONING_EFFORT
-    return { provider: route, id: model, name: model, reasoning: { efforts: [{ id: 'off', name: 'off' }] } };
+    // the mock route pins effort 'off'; else upstream fails UNSUPPORTED_REASONING_EFFORT.
+    // context.contextWindow is the compaction capacity (dsh-compaction-basic's pressure
+    // budget reads resolveModelInfo's context; an adapter answering none hard-fails long
+    // conversations). Absent route contextWindow = answer no context (the registry's grammar).
+    return {
+      provider: route, id: model, name: model,
+      ...(this.deps.contextWindow === undefined ? {} : { context: { contextWindow: this.deps.contextWindow } }),
+      reasoning: { efforts: [{ id: 'off', name: 'off' }] },
+    };
   }
 
   async *stream(requestOptions) {
@@ -277,24 +273,21 @@ class GatewayLlmAdapter extends LlmAdapter {
   }
 }
 
-/** Build one adapter bound to one route. Observability rides hooks:
- * onWire(info) fires once per wire request (the scenario logs the request
- * evidence); onSse(info) once per decoded SSE data payload (the parse
- * evidence); onRequestBody(body) fires once per wire request with the
- * serialized request body (the prompt-override evidence: the caller asserts
- * on the assembled `messages`, e.g. that the system message carries an
- * override — plain caller-side data, no endpoint or key material).
- * Hooks receive plain deterministic fields only (no port, no key material).
+/** Build one adapter bound to one route. Observability rides hooks — onWire(info)
+ * fires once per wire request (the request evidence), onSse(info) once per decoded
+ * SSE data payload (the parse evidence), onRequestBody(body) once per wire request
+ * with the serialized body (the prompt-override evidence: the caller asserts on the
+ * assembled `messages`); hooks receive plain deterministic fields only (no port, no
+ * key material).
  *
- * The LOOPBACK demand is the determinism boundary: an E2E drive may only
- * ever talk to the carrier's scripted endpoint, so a non-loopback baseURL
- * there is a defect, not a configuration. A USER-SUPPLIED endpoint is the
- * one legitimate exception — the user-facing serving boot reads it from the
- * app's own credential file — and it must SAY SO with `userEndpoint: true`,
- * so the exception is a named decision at the call site instead of a guard
- * quietly weakened for every caller. */
+ * The LOOPBACK demand is the determinism boundary: an E2E drive may only ever talk
+ * to the carrier's scripted endpoint — a non-loopback baseURL there is a defect,
+ * not a configuration. A USER-SUPPLIED endpoint is the one legitimate exception
+ * (the user-facing serving boot reads it from the app's own credential file), and
+ * it must SAY SO with `userEndpoint: true`: a named decision at the call site, not
+ * a guard quietly weakened for every caller. */
 export function createGatewayLlmAdapter(options) {
-  const { baseURL, apiKey, provider, name, onWire, onSse, onRequestBody, userEndpoint = false, readIdleTimeoutMs } = options;
+  const { baseURL, apiKey, provider, name, onWire, onSse, onRequestBody, userEndpoint = false, readIdleTimeoutMs, contextWindow } = options;
   if (userEndpoint === true) {
     if (typeof baseURL !== 'string' || !/^https?:\/\/[^\s]+$/.test(baseURL)) {
       throw new TypeError(`llm-transport: user endpoint baseURL is not an http(s) URL, got ${String(baseURL)}`);
@@ -307,6 +300,12 @@ export function createGatewayLlmAdapter(options) {
   }
   if (typeof apiKey !== 'string' || apiKey.length === 0) throw new TypeError('llm-transport: apiKey is required');
   if (typeof provider !== 'string' || provider.length === 0) throw new TypeError('llm-transport: provider is required');
+  // contextWindow is OPTIONAL at this seam (the mock route carries none) but a
+  // PRESENT one must be a positive integer — the vendored registry rejects the
+  // rest with INVALID_MODEL_CONTEXT at resolveModelInfo; garbage fails loud HERE.
+  if (contextWindow !== undefined && (!Number.isSafeInteger(contextWindow) || contextWindow <= 0)) {
+    throw new TypeError(`llm-transport: contextWindow must be a positive integer, got ${String(contextWindow)}`);
+  }
   return new GatewayLlmAdapter({
     endpoint: `${baseURL.replace(/\/+$/, '')}/chat/completions`,
     apiKey,
@@ -314,6 +313,7 @@ export function createGatewayLlmAdapter(options) {
     onWire,
     onSse,
     onRequestBody,
+    ...(contextWindow === undefined ? {} : { contextWindow }),
     idleTimeoutMs: parseReadIdleTimeoutMs(readIdleTimeoutMs),
     pacer: makeFastTransportPacer(), // loop-c2: one ladder per provider route
   });

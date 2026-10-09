@@ -38,17 +38,24 @@ const setSaveEnabled = () => {
     draftFingerprint(readDraft()), probeFingerprint, probeState);
 };
 
-const readDraft = () => ({
-  provider: $('onboarding-provider').value,
-  baseURL: $('onboarding-baseurl').value.trim(),
-  apiKey: $('onboarding-key').value,
-  model: $('onboarding-model').value.trim(),
-});
+const readDraft = () => {
+  const windowText = $('onboarding-context').value.trim();
+  return {
+    provider: $('onboarding-provider').value,
+    baseURL: $('onboarding-baseurl').value.trim(),
+    apiKey: $('onboarding-key').value,
+    model: $('onboarding-model').value.trim(),
+    // Empty = "the provider row's default" (the runtime resolves it; the
+    // field rides the wire only when the user overrode it).
+    ...(windowText === '' ? {} : { contextWindow: Number(windowText) }),
+  };
+};
 
 const applyProviderPreset = () => {
   const preset = PROVIDERS[$('onboarding-provider').value] ?? PROVIDERS.deepseek;
   $('onboarding-baseurl').value = preset.baseURL;
   $('onboarding-model').value = preset.model;
+  $('onboarding-context').value = String(preset.contextWindow);
 };
 
 const setProbeLine = (line) => {
@@ -179,7 +186,7 @@ const wireForm = (mux, rpc, toast, onReady) => {
     probeFingerprint = null;
     setSaveEnabled();
   });
-  for (const id of ['onboarding-baseurl', 'onboarding-key', 'onboarding-model']) {
+  for (const id of ['onboarding-baseurl', 'onboarding-key', 'onboarding-model', 'onboarding-context']) {
     $(id).addEventListener('input', setSaveEnabled);
   }
   $('onboarding-key-toggle').addEventListener('click', () => {
