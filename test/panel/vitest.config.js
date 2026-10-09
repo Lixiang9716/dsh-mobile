@@ -80,6 +80,11 @@ export default defineConfig({
       { find: 'install-fetch.js', replacement: fileURLToPath(new URL('../../runtime/dsh/install-fetch.js', import.meta.url)) },
       { find: 'receipt-journal.js', replacement: fileURLToPath(new URL('../../runtime/dsh/receipt-journal.js', import.meta.url)) },
       { find: 'upstream/web-write-inventory.js', replacement: fileURLToPath(new URL('../../runtime/dsh/upstream/web-write-inventory.js', import.meta.url)) },
+      // The BYOK contextWindow suite (P4) drives upstream/llm-route.js for
+      // real; its web-write-settings.js dependency imports the dsh-root-
+      // relative 'upstream/web-write-llm.js' (the quickjs loader's bare map
+      // on device) — the same alias precedent as the four rows above.
+      { find: 'upstream/web-write-llm.js', replacement: fileURLToPath(new URL('../../runtime/dsh/upstream/web-write-llm.js', import.meta.url)) },
       { find: 'upstream/web-write-marketplace.js', replacement: fileURLToPath(new URL('../../runtime/dsh/upstream/web-write-marketplace.js', import.meta.url)) },
       { find: 'upstream/web-write-plugin-manager.js', replacement: fileURLToPath(new URL('../../runtime/dsh/upstream/web-write-plugin-manager.js', import.meta.url)) },
       { find: 'upstream/web-write-cordis.js', replacement: fileURLToPath(new URL('../../runtime/dsh/upstream/web-write-cordis.js', import.meta.url)) },

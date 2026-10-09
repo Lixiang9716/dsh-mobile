@@ -56,11 +56,32 @@ export const BYOK_REF = 'dsh.llm/byok-route';
  * presentation/web-client-v2/web/js/onboarding-core.js; this repo mirrors
  * page-side vocabulary deliberately, it never imports runtime code).
  * `displayName` is the models-directory row label — the same strings the
- * page's PROVIDERS render. */
+ * page's PROVIDERS render. `contextWindow` is the row's DEFAULT context
+ * capacity in tokens — the number dsh-compaction-basic sizes its pressure
+ * budget from (an adapter with no context hard-fails long conversations at
+ * "no context capacity" once compaction triggers). deepseek: deepseek-chat's
+ * documented 128K (api-docs.deepseek.com; the 1M-era flash/v4-pro models can
+ * be named with a form override). openai-compatible: the configurable
+ * reasonable default — most OpenAI-compatible endpoints serve ≥128K. */
 export const BYOK_PROVIDERS = {
-  deepseek: { displayName: 'DeepSeek', baseURL: 'https://api.deepseek.com', model: 'deepseek-chat' },
-  'openai-compatible': { displayName: 'OpenAI 兼容', baseURL: '', model: '' },
+  deepseek: { displayName: 'DeepSeek', baseURL: 'https://api.deepseek.com', model: 'deepseek-chat', contextWindow: 131072 },
+  'openai-compatible': { displayName: 'OpenAI 兼容', baseURL: '', model: '', contextWindow: 131072 },
 };
+
+/** The fallback context capacity when neither the credential nor its
+ * provider row names one (a custom provider id the panel accepts): the same
+ * reasonable default the openai-compatible row carries. */
+export const DEFAULT_CONTEXT_WINDOW = 131072;
+
+/** The credential grammar's upper bound for contextWindow: above every
+ * known model's context (the widest today is 1-2M), below absurd garbage —
+ * an over-sized window recreates exactly the hard fail this field exists to
+ * prevent (compaction budgets against a capacity the endpoint does not
+ * have), so a number that cannot be real rejects at the door. */
+export const CONTEXT_WINDOW_MAX = 4000000;
+
+const isContextWindow = (value) =>
+  Number.isSafeInteger(value) && value > 0 && value <= CONTEXT_WINDOW_MAX;
 
 const PROVIDER_PATTERN = /^[a-z0-9][a-z0-9-]{0,40}$/;
 
@@ -69,13 +90,16 @@ const PROVIDER_PATTERN = /^[a-z0-9][a-z0-9-]{0,40}$/;
 const REF_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 /** Pure validation for one onboarding credential {provider, baseURL, apiKey,
- * model} → {error: {field, why}} | null. Shared by the coverage save leg
- * and usable in probes; the PAGE keeps its own mirror for inline feedback. */
+ * model, contextWindow?} → {error: {field, why}} | null. Shared by the
+ * coverage save leg and usable in probes; the PAGE keeps its own mirror for
+ * inline feedback. `contextWindow` is OPTIONAL: absent means the provider
+ * row's default applies downstream (byokRoute); present must be a positive
+ * integer within CONTEXT_WINDOW_MAX. */
 export const validateCredential = (value) => {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return { error: { field: 'credential', why: 'the credential is not an object' } };
   }
-  const { provider, baseURL, apiKey, model } = value;
+  const { provider, baseURL, apiKey, model, contextWindow } = value;
   if (typeof provider !== 'string' || !PROVIDER_PATTERN.test(provider)) {
     return { error: { field: 'provider', why: `provider must match ${PROVIDER_PATTERN}` } };
   }
@@ -91,6 +115,9 @@ export const validateCredential = (value) => {
   if (typeof model !== 'string' || model.length === 0 || model.length > 128) {
     return { error: { field: 'model', why: 'model must be 1..128 chars' } };
   }
+  if (contextWindow !== undefined && !isContextWindow(contextWindow)) {
+    return { error: { field: 'contextWindow', why: `contextWindow must be an integer in 1..${CONTEXT_WINDOW_MAX}` } };
+  }
   return null;
 };
 
@@ -101,13 +128,16 @@ export const deriveByokRef = (provider) =>
   `${String(provider).toUpperCase().replace(/[^A-Z0-9]+/g, '_')}_API_KEY`;
 
 /** The stored shape: exactly the staged config.json's fields, minus nothing
- * — the key rides INSIDE the keychain bytes, never beside them. */
+ * — the key rides INSIDE the keychain bytes, never beside them. The optional
+ * contextWindow rides only when the credential carried one (an absent one
+ * re-defaults at route resolution, so older stored credentials stay valid). */
 export const encodeCredential = (credential) =>
   encodeUtf8(JSON.stringify({
     provider: credential.provider,
     baseURL: credential.baseURL,
     apiKey: credential.apiKey,
     model: credential.model,
+    ...(credential.contextWindow === undefined ? {} : { contextWindow: credential.contextWindow }),
   }));
 
 /** keychain bytes → credential | null. A gateway error (the primitive is
@@ -176,12 +206,20 @@ export const stagedRoute = (cfg) => {
     }
     const provider = typeof cfg.llmProvider === 'string' && cfg.llmProvider.length > 0
       ? cfg.llmProvider : 'openai-compatible';
+    // The staged endpoint's context capacity (optional; the same seam the
+    // BYOK rows default): present-but-garbage fails loud here like every
+    // other malformed staged field, not silently as a windowless adapter.
+    if (cfg.llmContextWindow !== undefined && !isContextWindow(cfg.llmContextWindow)) {
+      throw new Error(`runtime.config llmContextWindow must be an integer in 1..${CONTEXT_WINDOW_MAX}: `
+        + `${JSON.stringify(cfg.llmContextWindow)}`);
+    }
     let host = 'the configured endpoint';
     try { host = new URL(cfg.llmBaseUrl).host; } catch { /* keep the generic label */ }
     return {
       kind: 'staged',
       baseURL: cfg.llmBaseUrl, apiKey: cfg.llmApiKey, provider,
       model: cfg.llmModel, scripted: false, userEndpoint: true,
+      ...(cfg.llmContextWindow === undefined ? {} : { contextWindow: cfg.llmContextWindow }),
       ...(models === undefined ? {} : { models }),
       adapterName: `user-supplied OpenAI-compatible endpoint (${provider})`,
       transportLabel: `gateway httpFetch → ${host} (user-supplied endpoint)`,
@@ -211,6 +249,13 @@ export const byokRoute = (credential) => {
     kind: 'byok',
     baseURL: credential.baseURL, apiKey: credential.apiKey, provider: credential.provider,
     model: credential.model, scripted: false, userEndpoint: true,
+    // The effective context capacity: the credential's own override, else
+    // its provider row's default, else the openai-compatible fallback —
+    // never absent, so the rebound adapter always answers compaction's
+    // resolveModelInfo with a context (the capacity the seam demands).
+    contextWindow: credential.contextWindow
+      ?? BYOK_PROVIDERS[credential.provider]?.contextWindow
+      ?? DEFAULT_CONTEXT_WINDOW,
     displayName: BYOK_PROVIDERS[credential.provider]?.displayName,
     adapterName: `BYOK onboarding endpoint (${credential.provider})`,
     transportLabel: `gateway httpFetch → ${host} (BYOK onboarding credential)`,
@@ -307,6 +352,7 @@ export const rebindLlmRoute = (ctx, credential) => {
     provider: route.provider,
     name: route.adapterName,
     userEndpoint: route.userEndpoint,
+    contextWindow: route.contextWindow, // the compaction capacity (resolveModel's context)
     onWire: route.onWire,
     onSse: route.onSse,
     onRequestBody: route.onRequestBody,
@@ -340,6 +386,7 @@ export const restoreBootRoute = (ctx) => {
     provider: route.provider,
     name: route.adapterName,
     userEndpoint: route.userEndpoint,
+    contextWindow: route.contextWindow, // the boot route carries one only when staged (llmContextWindow)
     onWire: route.onWire,
     onSse: route.onSse,
     onRequestBody: route.onRequestBody,

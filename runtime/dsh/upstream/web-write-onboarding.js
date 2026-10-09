@@ -88,18 +88,23 @@ const makeStatusHandler = (llmRoute) => async () => {
 };
 
 /** The save leg: persist into the keychain, then rebind, then point the
- * surface's route (read at session/CREATE time) at the user's endpoint. */
+ * surface's route (read at session/CREATE time) at the user's endpoint. The
+ * credential's optional contextWindow rides the same payload end to end
+ * (validated by validateCredential, resolved to a default in byokRoute when
+ * the draft carried none); the surface's route view carries the RESOLVED
+ * window the rebound adapter answers compaction with. */
 const makeSaveHandler = (ctx, llmRoute) => async (args) => {
   const invalid = validateCredential(args);
   if (invalid !== null) {
     throw badRequest(`onboarding/save: ${invalid.error.field} — ${invalid.error.why}`);
   }
   await keychainSet(BYOK_REF, encodeCredential(args));
-  rebindLlmRoute(ctx, args);
+  const route = rebindLlmRoute(ctx, args);
   llmRoute.provider = args.provider;
   llmRoute.model = args.model;
   llmRoute.baseURL = args.baseURL;
   llmRoute.kind = 'byok';
+  llmRoute.contextWindow = route.contextWindow;
   return {};
 };
 
@@ -119,6 +124,7 @@ const makeClearHandler = (ctx, llmRoute) => async () => {
   llmRoute.model = route.model;
   llmRoute.baseURL = route.baseURL;
   llmRoute.kind = route.kind;
+  llmRoute.contextWindow = route.contextWindow;
   return {};
 };
 

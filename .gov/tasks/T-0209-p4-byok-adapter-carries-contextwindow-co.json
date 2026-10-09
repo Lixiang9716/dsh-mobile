@@ -1,0 +1,22 @@
+{
+  "title": "P4: BYOK adapter carries contextWindow (compaction capacity)",
+  "created": "2026-10-09T10:50:34+00:00",
+  "rules": {
+    "hash": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "6d186be6616493c3d8ae7d24174a4e1634711180ca5b3b760452d3c09d7cdb90"
+    }
+  },
+  "checklist": [
+    "[x] unit tests: validateCredential accepts/rejects contextWindow (positive int, upper bound)",
+    "[x] unit tests: encode/byokRoute/rebind pass-through + BYOK_PROVIDERS defaults (deepseek actual, openai-compatible 131072)",
+    "[x] unit tests: llm-transport resolveModel answers context.contextWindow when configured",
+    "[x] page mirror onboarding-core.js PROVIDERS/validateDraft/fingerprint carry contextWindow; form override",
+    "[x] existing panel suite green incl. onboarding-core tests",
+    "[x] closures re-staged (android + harmony) and --check green"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0209"
+}

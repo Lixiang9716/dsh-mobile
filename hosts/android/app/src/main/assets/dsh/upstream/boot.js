@@ -16,10 +16,9 @@
  *     session-projection → settings → agent-loop), in activation order.
  *   - $DSH_HOME / process.cwd() collapse into the host-granted PROFILE
  *     CONTAINER (caller-provided paths, pinned for the shims).
- *   - `llm` is the VENDORED dsh-llm LlmRuntime (adapter registry), with the
- *     gateway transport adapter (upstream/llm-transport.js) registered for
- *     the caller's provider route — the same service the desktop boots, over
- *     the mobile transport seam (gateway httpFetch).
+ *   - `llm` is the VENDORED dsh-llm LlmRuntime (adapter registry), with the gateway
+ *     transport adapter (upstream/llm-transport.js) registered for the caller's
+ *     provider route — the desktop's service over the mobile seam (gateway httpFetch).
  *
  * Exports bootUpstream(options) → { ctx, services, sessionId, agentId }.
  */
@@ -40,8 +39,7 @@ import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
 import { registerRouteDisposer, registerDirectoryHandle } from 'upstream/llm-route.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
-// The GOAL/COMMAND/FILE-REFERENCE/CREATION rows (split at the code-size
-// gate, 2026-10-03; see the module header).
+// The GOAL/COMMAND/FILE-REFERENCE/CREATION rows (split at the code-size gate, 2026-10-03).
 import { mountCompositionHostPlane, mountCoverageRows } from 'upstream/boot-coverage-rows.js';
 export { joinDefaultPreset } from 'upstream/boot-coverage-rows.js';
 // The FIRST ported tool package (D9): its namespace object IS the plugin.
@@ -374,7 +372,10 @@ const mountSpine = async (ctx, identity) => {
  * @param options.sessionId - exact session identity for the configured agent.
  * @param options.cwd - session cwd (mobile-honest: a gateway fs scope label).
  * @param options.llm - the llm route {baseURL, apiKey, provider, model,
- *   onWire?, onSse?, readIdleTimeoutMs? (the loop-u2 attempt-level stall guard; absent = the 120s default)}; required, no transport-free fallback.
+ *   onWire?, onSse?, readIdleTimeoutMs? (the loop-u2 attempt-level stall guard; absent = the 120s default),
+ *   contextWindow? (the compaction capacity, consumed through resolveModelInfo;
+ *   BYOK always carries one, staged only when runtime.config stages llmContextWindow)};
+ *   required, no transport-free fallback.
  * @param options.systemPrompt - optional override seam: {personaPrefix} —
  *   the vendored SystemPrompt's own config (the prompt's persona section),
  *   mounted verbatim; default '' (the historical boot shape).
@@ -393,12 +394,11 @@ const mountSpine = async (ctx, identity) => {
  * @param options.onEvent - observability hook: (event, fields) => void; boot
  *   emits `upstream.profile`, `llm/runtime`, `upstream.services`.
  */
-/** Mount the dsh-base row `llm`: the VENDORED LlmRuntime with the gateway
- * transport adapter registered for the caller's provider route, DECLARED in
- * the configurable-provider directory under the route's settings namespace
- * (upstream/preset — the models 设置页 renders a provider only when the
- * directory names it; the namespace itself is registered by the settings
- * legs, web-write-settings.js). */
+/** Mount the dsh-base row `llm`: the VENDORED LlmRuntime with the gateway transport
+ * adapter registered for the caller's provider route, DECLARED in the configurable-
+ * provider directory under the route's settings namespace (upstream/preset — the
+ * models 设置页 renders a provider only when the directory names it; the namespace
+ * itself is registered by the settings legs, web-write-settings.js). */
 const mountLlm = async (ctx, llm, onEvent) => {
   await ctx.plugin(LlmRuntime);
   const runtime = ctx.get('llm');
@@ -412,12 +412,12 @@ const mountLlm = async (ctx, llm, onEvent) => {
     onWire: llm.onWire,
     onSse: llm.onSse,
     onRequestBody: llm.onRequestBody, readIdleTimeoutMs: llm.readIdleTimeoutMs, // loop-u2's attempt-level stall guard; undefined = the 120s default
+    contextWindow: llm.contextWindow, // the compaction capacity (resolveModel's context); undefined = the route stages none
   }));
   registerRouteDisposer(ctx, routeDisposer); // the BYOK rebind seam (upstream/llm-route.js)
-  // The directory registration's handle rides the same seam: a route rebind/
-  // restore atomically replaces the models 设置页 row (llm-route.js). Both
-  // registries key on the boot CONTEXT — ctx.get('llm') hands out a fresh
-  // wrapper per access, so the service object is not an identity.
+  // The directory handle rides the same seam: a rebind/restore atomically replaces the
+  // models 设置页 row. Both registries key on the boot CONTEXT — ctx.get('llm') hands
+  // out a fresh wrapper per access, so the service object is not an identity.
   registerDirectoryHandle(ctx, runtime.registerConfigurableProviders([{
     provider: llm.provider,
     displayName: llm.displayName ?? 'OpenAI 兼容',

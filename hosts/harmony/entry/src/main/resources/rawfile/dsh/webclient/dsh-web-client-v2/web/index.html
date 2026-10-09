@@ -120,6 +120,10 @@
       <input id="onboarding-model" class="onboarding-input" type="text"
         placeholder="deepseek-chat" autocomplete="off" spellcheck="false">
 
+      <label class="onboarding-label" for="onboarding-context">上下文窗口 <span class="onboarding-en">Context window (tokens)</span></label>
+      <input id="onboarding-context" class="onboarding-input" type="number" min="1" step="1"
+        inputmode="numeric" placeholder="131072" autocomplete="off">
+
       <div class="onboarding-actions">
         <button id="onboarding-test" class="onboarding-btn onboarding-secondary" type="button">测试连接 · Test</button>
         <button id="onboarding-save" class="onboarding-btn onboarding-primary" type="button" disabled>保存并开始 · Save &amp; start</button>
