@@ -290,14 +290,14 @@ find "$DSH/upstream/shims" -name '*.js' -type f | while IFS= read -r src; do
 done
 mkdir -p "$ASSETS/upstream/shims/sharp"
 cp "$DSH/upstream/shims/sharp/package.json" "$ASSETS/upstream/shims/sharp/package.json"
-for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
+for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js plugin-mount.js surface.js; do
     cmp -s "$DSH/$f" "$ASSETS/$f" || cp "$DSH/$f" "$ASSETS/$f"
 done
 
 # The dsh-root runtime files the boot graph imports (gateway.js grows
 # with the contract: the shell plugins import wasmRun/ishRun from it;
 # ed25519.js + marketplace-resolver.js ride the marketplace seam).
-for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
+for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js plugin-mount.js surface.js; do
     cmp -s "$DSH/$f" "$ASSETS/$f" || cp "$DSH/$f" "$ASSETS/$f"
 done
 
@@ -383,7 +383,7 @@ done
 # on a fresh install (the embed-list trap this file's own comments name).
 for s in android-officialweb-web-live.js android-session-live-read.js android-composer-live-write.js composer-web-live.js \
          write-surface-options.js manager-legs-probe.js probe-respond-await.js scenario-verdict.js \
-         api-handler-respond.js; do
+         api-handler-respond.js plugin-live-mount.js composer-bus.js; do
     if [ -f "$DSH/web-live/$s" ]; then
         cp "$DSH/web-live/$s" "$ASSETS/web-live/$s"
     fi
@@ -514,7 +514,7 @@ done
     done
 cmp -s "$DSH/upstream/shims/sharp/package.json" "$ASSETS/upstream/shims/sharp/package.json" ||
     note_drift "shims/sharp/package.json"
-for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
+for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js plugin-mount.js surface.js; do
     cmp -s "$DSH/$f" "$ASSETS/$f" || note_drift "$f"
 done
 # The staged web-client trees (tracked asset copies, judged both ways the
@@ -548,7 +548,7 @@ done
 # same stale-copy shadowing defect, the product mount entries' own row).
 for s in android-officialweb-web-live.js android-session-live-read.js android-composer-live-write.js composer-web-live.js \
          write-surface-options.js manager-legs-probe.js probe-respond-await.js scenario-verdict.js \
-         api-handler-respond.js; do
+         api-handler-respond.js plugin-live-mount.js composer-bus.js; do
     if [ "$MODE" = "check" ] && ! is_tracked "web-live/$s"; then note_skip; continue; fi
     cmp -s "$DSH/web-live/$s" "$ASSETS/web-live/$s" || note_drift "web-live/$s"
 done

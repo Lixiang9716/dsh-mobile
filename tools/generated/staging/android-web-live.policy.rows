@@ -7,3 +7,5 @@ web-live/manager-legs-probe.js
 web-live/probe-respond-await.js
 web-live/scenario-verdict.js
 web-live/write-surface-options.js
+web-live/plugin-live-mount.js
+web-live/composer-bus.js
