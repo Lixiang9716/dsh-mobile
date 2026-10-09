@@ -189,6 +189,7 @@ stage_test() {
             runtime/dsh/ci/run-upstream-e2e.sh
             runtime/dsh/ci/run-upstream-boot-e2e.sh
             runtime/dsh/ci/run-settings-surfaces-e2e.sh
+            runtime/dsh/ci/run-session-preset-join-node.sh
             runtime/dsh/ci/run-open-design-e2e.sh
             runtime/dsh/ci/run-office-e2e.sh
             runtime/dsh/ci/run-shim-exposure-probe.sh ;;
