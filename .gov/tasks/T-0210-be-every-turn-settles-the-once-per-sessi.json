@@ -1,0 +1,21 @@
+{
+  "title": "BE: every turn settles \u2014 the once-per-session settled latch swallows second-turn e2e records",
+  "created": "2026-10-09T17:20:00+00:00",
+  "rules": {
+    "hash": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "6d186be6616493c3d8ae7d24174a4e1634711180ca5b3b760452d3c09d7cdb90"
+    }
+  },
+  "checklist": [
+    "[x] web-live/turn-evidence.js: the turn accumulator extracted with per-turn re-arm (settle re-opens a fresh record); composer-web-live.js + harmony-composer-live-write.js ride it",
+    "[x] node --test reproduction: 4 sessions x 2 turns interleaved asserts every settle arrives (the burst model)",
+    "[x] single-turn records byte-identical: composer-live-write + harmony manifests' pinned settle events:11 unchanged",
+    "[x] new module in HAP: Index.ets BUNDLE_FILES + staging emit + harmony rawfile copy + closures battery green",
+    "gates: check-size + check-logging + gov task close; PR CI green; squash-merged"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0210"
+}

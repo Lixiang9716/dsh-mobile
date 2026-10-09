@@ -1211,6 +1211,7 @@ const BUNDLE_FILES: string[] = [
   'web-live/officialweb-web-live.js',
   'web-live/probe-respond-await.js',
   'web-live/scenario-verdict.js',
+  'web-live/turn-evidence.js',
   'web-live/turn-failure.js',
   'web-live/write-surface-options.js',
   'webclient/dsh-web-client-v2/manifest.json',
