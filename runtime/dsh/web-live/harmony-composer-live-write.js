@@ -30,6 +30,8 @@ import { createLogger } from 'logger.js';
 import { bootUpstream, joinDefaultPreset, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
+import { describeLlmRetry } from 'upstream/retry-telemetry.js';
+import { turnFailureOf } from 'web-live/turn-failure.js';
 import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
 
 const SCENARIO = 'harmony.composer.live-write';
@@ -149,14 +151,19 @@ const assistantTextOf = (event) => (event?.data?.message?.content ?? [])
 
 /** Turn evidence for the PAGE-driven session: the runtime never prompts —
  * the user/message event can only come from the composer's admitted prompt.
- * On turn/end the assistant text is asserted against the scripted stream. */
+ * On turn/end the assistant text is asserted against the scripted stream.
+ * Failure surfacing rides the twin's contract (composer-web-live
+ * installTurnEvidence, the P1 300s-silent-hang round): the `turn/end` reason
+ * and the newest `llm/retry` line fold into a structured `error` on the
+ * settled record (web-live/turn-failure.js); the scripted-route demand is
+ * unchanged. */
 const installTurnEvidence = (ctx) => {
-  const turns = new Map(); // sessionId → {prompt, events, text, settled}
+  const turns = new Map(); // sessionId → {prompt, events, text, settled, lastRetry}
   ctx.on('session/event', (session, event) => {
     if (session?.id === undefined || event === undefined) return;
     let turn = turns.get(session.id);
     if (turn === undefined) {
-      turn = { prompt: false, events: 0, text: '', settled: false };
+      turn = { prompt: false, events: 0, text: '', settled: false, lastRetry: undefined };
       turns.set(session.id, turn);
     }
     turn.events++;
@@ -164,13 +171,16 @@ const installTurnEvidence = (ctx) => {
       turn.prompt = true;
       emit('write.prompt.observed', { sessionId: session.id, seq: event.seq });
     }
+    if (event.type === 'llm/retry') turn.lastRetry = describeLlmRetry(event.data);
     if (event.type === 'assistant/message') turn.text = assistantTextOf(event);
     if (event.type === 'turn/end' && !turn.settled) {
       turn.settled = true;
       demand(turn.text === EXPECTED_TEXT,
         `page session "${session.id}" assistant text is "${turn.text}"`);
+      const failure = turnFailureOf(event.data?.reason, turn.lastRetry);
       emit('write.turn.settled', {
         sessionId: session.id, events: turn.events, text: turn.text,
+        ...(failure === null ? {} : { error: failure }),
       });
     }
   });

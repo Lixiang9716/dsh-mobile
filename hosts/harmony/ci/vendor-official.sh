@@ -322,6 +322,7 @@ $(cd runtime/dsh && find vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 \
 SPINE_OURS="scenario/boot-verification.js
 web-live/harmony-session-live-read.js
 web-live/harmony-composer-live-write.js
+web-live/turn-failure.js
 scenario/harmony-capability-binding.js
 web-live/harmony-httpfetch-streaming.js
 web-live/api-handler-respond.js

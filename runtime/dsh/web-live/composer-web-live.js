@@ -35,6 +35,8 @@ import { makeFailGate } from 'web-live/scenario-verdict.js';
 import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
 import { installCreationMount } from 'web-live/plugin-live-mount.js';
 import { makeComposerBus } from 'web-live/composer-bus.js';
+import { describeLlmRetry } from 'upstream/retry-telemetry.js';
+import { turnFailureOf } from 'web-live/turn-failure.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
@@ -164,14 +166,23 @@ const assistantTextOf = (event) => (event?.data?.message?.content ?? [])
  * On turn/end the assistant text is asserted against the scripted stream —
  * ONLY on the scripted route: a real endpoint's turn is nondeterministic, so
  * it is reported verbatim and never predicted (asserting it would turn every
- * honest answer into a drive failure). */
+ * honest answer into a drive failure).
+ *
+ * Failure surfacing (the P1 300s-silent-hang round): a turn that settles
+ * with NO assistant text used to emit `text:""` and nothing else — the
+ * failure reason died in the runtime log while the page showed an empty
+ * reply (measured 2026-10-09, session-4331764d: a watchdog kill rendered as
+ * a bare empty settle). The `turn/end` reason and the session's newest
+ * `llm/retry` journal line now fold into a structured `error` object on the
+ * settled record (web-live/turn-failure.js); normal completions emit
+ * byte-identical records. */
 const installTurnEvidence = (ctx, route, cfg) => {
-  const turns = new Map(); // sessionId → {prompt, events, text, settled}
+  const turns = new Map(); // sessionId → {prompt, events, text, settled, lastRetry}
   ctx.on('session/event', (session, event) => {
     if (session?.id === undefined || event === undefined) return;
     let turn = turns.get(session.id);
     if (turn === undefined) {
-      turn = { prompt: false, events: 0, text: '', settled: false };
+      turn = { prompt: false, events: 0, text: '', settled: false, lastRetry: undefined };
       turns.set(session.id, turn);
     }
     turn.events++;
@@ -179,6 +190,7 @@ const installTurnEvidence = (ctx, route, cfg) => {
       turn.prompt = true;
       emit('write.prompt.observed', { sessionId: session.id, seq: event.seq });
     }
+    if (event.type === 'llm/retry') turn.lastRetry = describeLlmRetry(event.data);
     if (event.type === 'assistant/message') turn.text = assistantTextOf(event);
     if (event.type === 'turn/end' && !turn.settled) {
       turn.settled = true;
@@ -190,8 +202,10 @@ const installTurnEvidence = (ctx, route, cfg) => {
         demand(turn.text === EXPECTED_TEXT,
           `page session "${session.id}" assistant text is "${turn.text}"`);
       }
+      const failure = turnFailureOf(event.data?.reason, turn.lastRetry);
       emit('write.turn.settled', {
         sessionId: session.id, events: turn.events, text: turn.text,
+        ...(failure === null ? {} : { error: failure }),
       });
     }
   });
