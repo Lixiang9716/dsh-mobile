@@ -1,0 +1,22 @@
+{
+  "title": "The create-approve-hotmount-native loop: chat generates a REAL cordis plugin, user approves, it live-loads, and a NATIVE pomodoro card appears in the app UI (not an HTML page)",
+  "created": "2026-10-08T15:32:44+00:00",
+  "rules": {
+    "hash": "a48dcc1df661976ca9c622f3ee7d69ea12b042a459e7d9e18d1d96fc3d4e829d",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "c195c538562be1aecd34d90ea5299839e5fc2c3a4c7197965f7baaebd342815d"
+    }
+  },
+  "checklist": [
+    "[x] PR-1 native card surface: plugin UI events (card declaration + timer state) over the bus, a SwiftUI CardPlayer equivalent rendering them in the app chrome",
+    "[x] PR-1 contract note: the plugin-UI event shapes documented in contract/ or as a system-plugin convention (no new gateway primitives unless required)",
+    "PR-2 creation schema: prompt/tool guidance so the model emits a cordis plugin package (manifest.json + index.js with ctx.plugin + UI declaration) instead of an html artifact",
+    "PR-2 approval flow: generated plugin goes through presentApproval (native Approve dialog) then the verified-tarball install pipeline",
+    "PR-3 hot-mount: the installed plugin loads into the RUNNING spine (or the honest fallback: effective on next session, documented)",
+    "E2E leg: chat '\u751f\u6210\u756a\u8304\u65f6\u949f\u63d2\u4ef6' -> approve -> install -> mount -> native pomodoro card renders and the timer runs, evidenced by logs + screenshots (owner demo on dsh-iphone)"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0207"
+}
