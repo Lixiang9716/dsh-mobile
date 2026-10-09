@@ -31,8 +31,7 @@ import { SystemPrompt } from '@deepseek-ai/dsh-system-prompt';
 import { ToolRuntime } from '@deepseek-ai/dsh-tools';
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection';
 import { SettingsMemory } from 'upstream/settings-memory.js';
-  // The SUBAGENT row (T-0050 item 2).
-  await mountSubagentRows(ctx);
+import { mountSubagentRows } from 'upstream/boot-subagent-rows.js';
 import { providerSettingsNs } from 'upstream/web-write-settings.js';
 import { mountWebPlane } from 'upstream/web-search-keyless.js';
 import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
