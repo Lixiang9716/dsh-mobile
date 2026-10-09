@@ -86,6 +86,7 @@ import * as OpenDesign from 'system-plugins/dsh-open-design/index.js';
 // carry; this row is what makes the composition's Enabled declaration TRUE
 // on the mobile seat. Mounted after `tools`, which its `inject` waits for.
 import * as PluginManagerTools from 'system-plugins/dsh-plugin-manager-tools/index.js';
+import * as DshCreate from 'system-plugins/dsh-create/index.js';
 // The FILE-TOOLS row (the dsh-desktop plugin surface): upstream's fs tool
 // family over the vendored fs-local backend, working in ONE in-memory
 // workspace world (upstream/shims/fs.js mountWorkspace). The npm bridge that
@@ -208,6 +209,9 @@ export const spineInventory = (ctx) => {
     tool('shell-ish', 'system-plugins/dsh-shell-ish', 'ish'),
     tool('open-design', 'system-plugins/dsh-open-design', 'open_design_projects'),
     tool('tool-plugin-manager', 'system-plugins/dsh-plugin-manager-tools', 'plugin_manager'),
+    // The create-approve-hotmount loop's product face: chat-authored plugin
+    // → native Approve → registry install → LIVE native card (PR-2/3).
+    tool('tool-plugin-create', 'system-plugins/dsh-create', 'plugin_create'),
     service('fs', '@deepseek-ai/dsh-fs-local', 'fs'),
     tool('tool-fs', '@deepseek-ai/dsh-tool-fs', 'read'),
     tool('tool-str-replace-editor', '@deepseek-ai/dsh-tool-str-replace-editor', 'str_replace_editor'),
@@ -331,6 +335,9 @@ const mountSpine = async (ctx, identity) => {
     await ctx.plugin(ShellIsh);
     await ctx.plugin(OpenDesign);
     await ctx.plugin(PluginManagerTools);
+    // The create-approve-hotmount loop (PR-2/3): chat-authored plugin →
+    // native Approve → registry install → LIVE native card.
+    await ctx.plugin(DshCreate);
     await ctx.plugin(await import('system-plugins/dsh-office/index.js')); // the OFFICE row — dynamic: bare `fflate` needs the bridges body first
     // The WEB row (#335 B5): dynamic import — the bridges must have
     // registered turndown/domino before tool-web's static graph links.

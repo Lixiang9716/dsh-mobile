@@ -101,6 +101,24 @@ export const disableMobileAbsentRows = (text, docName) => {
   return lines.join('\n');
 };
 
+/** The create-approve-hotmount loop's row (PR-2/3): the composition gains
+ * `tool-plugin-create` — the session agent's tool surface must list the
+ * tool for the model's tool_calls to dispatch (the spine's ctx.tools
+ * registration alone serves the inventory, not the per-session list). Same
+ * seam as the disabler: the STAGED copy is patched, the pinned documents
+ * stay untouched (D6); idempotent on re-seed. */
+const spliceCreateRow = (text) => {
+  if (text.includes('id: tool-plugin-create')) return text;
+  const lines = text.split('\n');
+  const at = lines.findIndex((line) => line.includes('- id: tool-plugin-manager'));
+  if (at < 0) return text; // no plugin plane in this document; skip
+  const indent = lines[at].slice(0, lines[at].indexOf('-'));
+  lines.splice(at + 1, 0,
+    `${indent}- id: tool-plugin-create`,
+    `${indent}  name: 'system-plugins/dsh-create/index.js'`);
+  return lines.join('\n');
+};
+
 /** The seed transform: patch every presets/**`*.yml` document in the
  * delivery's file map (keyed by VFS path) in place. Non-preset files pass
  * through byte-identical. */
@@ -108,7 +126,7 @@ export const patchPresetSeedFiles = (files) => {
   for (const [path, file] of Object.entries(files)) {
     if (!path.includes('/presets/') || !path.endsWith('.yml')) continue;
     const text = decodeUtf8(file.bytes);
-    const patched = disableMobileAbsentRows(text, path.split('/').pop());
+    const patched = spliceCreateRow(disableMobileAbsentRows(text, path.split('/').pop()));
     file.bytes = encodeUtf8(patched);
   }
   return files;
