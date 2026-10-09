@@ -14,6 +14,9 @@
  * ABSENT tree is not an attempt — the next turn may author it.
  */
 import { mountWorkspacePlugin } from 'plugin-mount.js';
+import { createLogger } from 'logger.js';
+
+const log = createLogger('dsh.pluginLiveMount');
 
 /** The workspace prefix from the boot config (the pinned-globals
  * derivation is absent on seats that never chdir — the official seat
