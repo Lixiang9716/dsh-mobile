@@ -69,20 +69,21 @@
       "match": {
         "presets": [
           "standard",
+          "mobile",
           "ptc",
           "minimal",
           "cordis"
         ],
-        "default": "standard",
+        "default": "mobile",
         "authorable": false,
-        "healthy": 0
+        "healthy": 1
       }
     },
     {
       "event": "settings.preset.read",
       "match": {
-        "preset": "standard",
-        "bytes": 12162,
+        "preset": "mobile",
+        "bytes": 11862,
         "ok": true
       }
     },
@@ -90,7 +91,7 @@
       "event": "settings.preset.copyRefused",
       "match": {
         "code": "agent-preset/read-only",
-        "preset": "standard"
+        "preset": "mobile"
       }
     },
     {
@@ -106,8 +107,8 @@
         "managementAvailable": false,
         "spineEntries": 16,
         "clientEntries": 58,
-        "presets": 4,
-        "presetRows": 0,
+        "presets": 5,
+        "presetRows": 6,
         "spineSample": [
           {
             "id": "agent-loop",
