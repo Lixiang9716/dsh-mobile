@@ -341,7 +341,7 @@
         "provider": "mock",
         "model": "mock-1",
         "messages": 2,
-        "tools": 15,
+        "tools": 16,
         "path": "/chat/completions",
         "method": "POST",
         "agentLoopMarked": true,
