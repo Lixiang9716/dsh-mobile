@@ -1,0 +1,49 @@
+{
+  "scenario": "surface.pomodoro",
+  "extract": {
+    "prefix": "dsh.runtime.log:"
+  },
+  "expect": [
+    {
+      "event": "scenario.begin",
+      "match": {}
+    },
+    {
+      "event": "surface.opened",
+      "match": {
+        "surfaceId": "sf-1"
+      }
+    },
+    {
+      "event": "frame.presented",
+      "match": {
+        "ops": 9,
+        "seq": 1
+      }
+    },
+    {
+      "event": "frame.malformed-rejected",
+      "match": {
+        "code": "invalid"
+      }
+    },
+    {
+      "event": "pump.ticked",
+      "match": {}
+    },
+    {
+      "event": "pump.disarmed",
+      "match": {}
+    },
+    {
+      "event": "surface.closed",
+      "match": {}
+    },
+    {
+      "event": "scenario.pass",
+      "match": {
+        "outcome": "surface-live"
+      }
+    }
+  ]
+}

@@ -120,6 +120,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/real-agent-loop.js',
   'scenario/real-create.js',
   'scenario/session-mock-llm.js',
+  'scenario/surface-pomodoro.js',
   'scenario/upstream-fake-timers.js',
   'scenario/upstream-harness-matchers.js',
   'scenario/upstream-harness-vi.js',

@@ -332,6 +332,7 @@ scenario/device-plane.js
 scenario/gateway-bridge-smoke.js
 scenario/parity-projector.js
 scenario/session-mock-llm.js
+scenario/surface-pomodoro.js
 scenario/upstream-parity.js
 upstream/boot.js
 upstream/wire-logger.js

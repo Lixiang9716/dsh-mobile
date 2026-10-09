@@ -6,6 +6,14 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix adds the render-surface leg (2026-10-09): the
+> `surface.pomodoro` manifest (`test/e2e/scenarios/surface-pomodoro.json`) pins
+> the v1.10.0 roundtrip — open → arc frame → malformed-op rejection → pump
+> arm/disarm → close, with the honest `negotiation.refused` dual on hosts
+> without the surface. The leg awaits its first device run (the artifacts
+> dir registers then); the interactive-seat mock-route zero-journal defect
+> (T-0208) is the creation chain's last blocker.
+
 > **Currency**: this matrix reflects the T4/T5 harness landing (2026-10-05):
 > the new \`real.agent.loop\` leg boots the FULL spine (tools mounted) on the
 > staged bigmodel credential and glm-5.3-flash drives the five probe turns

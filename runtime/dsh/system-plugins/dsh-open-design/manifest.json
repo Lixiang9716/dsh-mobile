@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "dsh-open-design",
+  "version": "0.1.0",
+  "type": "service",
+  "entry": "index.js",
+  "capabilities": {
+    "required": ["httpFetch"],
+    "optional": []
+  },
+  "hooks": {
+    "activate": "activate"
+  }
+}
