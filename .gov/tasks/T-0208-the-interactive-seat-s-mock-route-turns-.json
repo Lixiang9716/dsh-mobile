@@ -12,9 +12,14 @@
     "Reproduce on the emulator: official interactive seat (release), no staged credential, prompt any session (page-created OR the boot s-b4-ondevice-0001) \u2014 session/page returns records:0 while the model round DID run (httpFetch dispatched, scripted SSE served, turn/end fires ~50ms later, no error logged)",
     "Narrow the route: T-0047 proved REAL-backend streaming turns journal fine on this seat \u2014 drive one turn with the staged bigmodel credential and one with the mock route; if real journals and mock does not, the defect is the mock-route adapter path on the interactive seat",
     "Suspect surface (from the 2026-10-09 session): the agent loop's post-response append path \u2014 the turn completes without appending user/assistant records to the store the session/page projection reads; compare with the drive seat where the same mock SSE journals fine (the session.mock-llm scenario and the composer write legs are green)",
-    "Fix + device-verify: records appear for both routes, the pomodoro scripted turn's write tool calls execute (fsWrite lands plugins/pomodoro-clock/), and the approval dialog \u2192 live mount \u2192 native surface chain completes end to end"
+    "[x] Fix + device-verify: records appear for both routes, the pomodoro scripted turn's write tool calls execute (fsWrite lands plugins/pomodoro-clock/), and the approval dialog \u2192 live mount \u2192 native surface chain completes end to end"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0208"
+  "id": "T-0208",
+  "void": {
+    "ts": "2026-10-09T08:36:43+00:00",
+    "by": "13957@DESKTOP-AOFQD6F",
+    "reason": "Premise dissolved (rule 9): the 'zero-journal' was a throughSeq misread \u2014 session/page with throughSeq:-1 returns empty by design, throughSeq:0 returned all 10 records (diagnosed on the 2026-10-09 diagnostic build: write.turn.settled carried the full mock text). The REAL blockers of the creation chain were (a) the scripted CJK marker \u2014 this build host mangles compiled CJK literal bytes and the committed \\u escape misspelled \u8304 \u2014 fixed by the codepoint scan, and (b) OfficialServe's event sinks wired to onBusLine (JS\u2192host parser) so timer.fire/surface.input never reached the runtime on the interactive seat \u2014 fixed via hostEvent (deliverRuntimeEvent). Both landed in PR #425 with full device evidence (item 4, ticked): prompt \u2192 approval \u2192 live mount \u2192 native surface \u2192 tap \u5f00\u59cb ticks 1 Hz \u2192 tap \u91cd\u7f6e restores 25:00."
+  }
 }

@@ -69,10 +69,19 @@ passed through.
 
 The HarmonyOS descriptor gains the three primitives (parity-gated against
 the C face); the other hosts negotiate them away honestly (the creation
-card viewer stays the floor). The one OPEN blocker is T-0208: the
-interactive seat's MOCK-ROUTE turns journal zero records (the model round
-runs, turn/end fires ~50 ms later, no user/assistant records; REAL-backend
-turns journal fine per T-0047) — so the scripted pomodoro turn's write
-calls never execute and the chain stops one step short of the approval
-dialog. The host surface, mount seam, approval, and overlay are verified
-ready for it.
+card viewer stays the floor). T-0208's premise dissolved under the diagnostic build (2026-10-09):
+the "zero-journal" was a throughSeq misread (-1 is the empty boundary; 0
+returned all records) — the mock route journals fine. The chain's real
+blockers, both fixed in PR #425: (1) the scripted CJK marker — this build
+host mangles compiled CJK literal bytes (source correct on disk, body
+decoded right, comparison still false) and the committed \u escape
+misspelled 茄 (U+8301 vs U+8304), so the marker now scans codepoints;
+(2) OfficialServe's TimerPrimitive/SurfacePrimitives sinks were wired to
+onBusLine — the JS→host bus parser, which silently drops bare
+{"event":…} lines — so timer.fire and surface.frame/input never reached
+the runtime on the interactive seat; the sinks now ride hostEvent
+(deliverRuntimeEvent, HostPhase's twin). Device-verified end to end
+after the fixes: prompt → approval → live mount → native surface →
+tap 开始 ticks 1 Hz (arc gap grows) → tap 重置 restores 25:00. One
+stale-settle line (no in-flight call 132) fired once ~6 min after a
+mount pre-fix and did not reproduce across two fresh boots since.
