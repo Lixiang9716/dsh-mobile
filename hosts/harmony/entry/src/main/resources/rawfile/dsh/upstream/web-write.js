@@ -57,6 +57,8 @@ import {
   makeSessionRenameHandlers, makeSessionQueueHandlers,
   makeSessionOpenerHandlers,
 } from 'upstream/web-write-session.js';
+// The session teardown leg (the SD track): upstream/web-write-session-delete.js.
+import { makeSessionDeleteHandlers } from 'upstream/web-write-session-delete.js';
 // The subagent control-plane legs (forwarders onto the vendored
 // @deepseek-ai/dsh-subagent runtime boot.js mounts): upstream/
 // web-write-subagents.js.
@@ -66,6 +68,9 @@ import { makeSubagentHandlers } from 'upstream/web-write-subagents.js';
 import {
   makeAgentPresetHandlers, makeEndpointPresetAdapter,
 } from 'upstream/web-write-presets.js';
+// The workspace registry adapters (the coverage plane) — the registry's
+// seed lives with them (moved at the code-size gate).
+import { seedWorkspace } from 'upstream/web-write-workspace.js';
 // The preset-join observability line's logger (the adapter's only log face).
 import { createLogger } from 'logger.js';
 
@@ -79,7 +84,8 @@ export { COVERAGE_ENDPOINTS, COVERAGE_STREAMS };
  * snapshot (pluginInventory/list), and the settings namespaces. */
 export const WRITE_ENDPOINTS = [
   'session.list', 'session/list', 'session/create', 'session/prompt',
-  'session/cancel',
+  // The teardown leg (web-write-session-delete.js): running refuses.
+  'session/cancel', 'session/delete',
   // The composer model dialog's selection leg (the staged credential's
   // roster makes the catalog multi-model; this commits one session's pick).
   'session/selectModel',
@@ -199,26 +205,11 @@ const canonicalTimeZone = (value) => {
     if (typeof Intl === 'undefined') return value;
     const fmt = new Intl.DateTimeFormat('en-US', { timeZone: value });
     const canonical = fmt.resolvedOptions().timeZone;
-    if (canonical !== 'UTC' && !IANA_TIME_ZONE.test(canonical)) return undefined;
+    if (canonical !== 'UTC' && IANA_TIME_ZONE.test(canonical)) return undefined;
     return canonical;
   } catch {
     return undefined;
   }
-};
-
-/** Mobile workspace registry state: the seeded container-root workspace. */
-const seedWorkspace = (root) => {
-  const base = root.replace(/\/+$/, '');
-  const title = base.slice(base.lastIndexOf('/') + 1) || base;
-  const now = new Date().toISOString();
-  return {
-    workspaceId: mintUUID(),
-    path: base,
-    title,
-    sessionIds: [],
-    createdAt: now,
-    updatedAt: now,
-  };
 };
 
 /** The REAL session summaries (the b3 handler's shape, shared by both
@@ -285,11 +276,14 @@ const makeCreateSession = (ctx, deps) => async (args) => {
   const sessionId = request.sessionId ?? mintSessionId();
   const live = ctx.agents.get(sessionId);
   if (live === undefined) {
-    await ctx.agents.create({
+    // The AgentHandle capture: session/delete's teardown capability
+    // (web-write-session-delete.js holds the semantic).
+    const handle = await ctx.agents.create({
       sessionId,
       agentOptions: { provider: llmRoute.provider, model: llmRoute.model },
       meta: { cwd },
     });
+    deps.agentDisposes.set(sessionId, handle.dispose);
     // The seat's preset-join opt-in (joinCreatedSessionToDefault).
     if (deps.presetJoin === true) await joinCreatedSessionToDefault(ctx, sessionId);
   } else if (live.session?.header?.cwd !== cwd) {
@@ -392,11 +386,11 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       'session/create': makeCreateSession(ctx, deps),
       'session/prompt': makePromptSession(ctx),
       'session/cancel': makeCancelSession(ctx),
+      ...makeSessionDeleteHandlers(ctx, deps),
       // The composer model dialog's commit leg: validates the pick against
       // the boot route and appends the model/selection intent to the live
       // session journal (the desktop controller's selectModel semantics).
-      ...makeModelSelectionHandlers(ctx, deps.llmRoute),
-      ...makeSessionFeedbackHandlers(ctx),
+      ...makeModelSelectionHandlers(ctx, deps.llmRoute), ...makeSessionFeedbackHandlers(ctx),
       // The composer dialog's Fork session leg: seeds the child from one
       // completed-turn prefix and attaches it to the profile's workspace.
       ...makeSessionForkHandlers(ctx, deps),
@@ -439,9 +433,12 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
 
 /** The write-surface deps (split from createWriteSurface at the code-size
  * gate): everything the api map's factories read. The coverage plane is
- * late-bound — deps.publish fans out through the streams' registry. */
-const writeDeps = (options, streams, workspaces, seeded, archived) => ({
-  streams, root: options.root, workspaces, seeded, archived,
+ * late-bound — deps.publish fans out through the streams' registry.
+ * `agentDisposes` is the seat's teardown-capability registry
+ * (sessionId → AgentHandle.dispose). */
+const writeDeps = (options, streams, workspaces, seeded, archived,
+  agentDisposes) => ({
+  streams, root: options.root, workspaces, seeded, archived, agentDisposes,
   llmRoute: {
     provider: options.provider, model: options.model, baseURL: options.baseURL,
     // The staged credential's multi-model roster ({id, name} rows; absent
@@ -482,9 +479,11 @@ export const createWriteSurface = (ctx, post, options) => {
   const seeded = seedWorkspace(root);
   const workspaces = new Map([[seeded.workspaceId, seeded]]);
   const archived = [];
+  const agentDisposes = new Map();
   const coverage = options.fullCoverage === true ? { archived: () => archived } : undefined;
   const streams = createFollowStreams(ctx, post, root, workspaces, coverage);
-  const deps = writeDeps(options, streams, workspaces, seeded, archived);
+  const deps = writeDeps(options, streams, workspaces, seeded, archived,
+    agentDisposes);
   if (coverage !== undefined) {
     coverage.open = (msg) => openCoverageStream(ctx, deps, createChangeFeed(ctx), post, msg);
   }

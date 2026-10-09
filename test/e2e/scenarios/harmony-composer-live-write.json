@@ -163,7 +163,7 @@
           "$events"
         ],
         "source": "the on-device spine (ctx.sessions/agents/settings)",
-        "endpointCount": 38
+        "endpointCount": 39
       }
     },
     {

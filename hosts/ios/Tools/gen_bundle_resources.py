@@ -55,6 +55,7 @@ RESOURCES = [
     ("upstream_settings_memory_js", DSH / "upstream" / "settings-memory.js"),
     ("upstream_web_write_js", DSH / "upstream" / "web-write.js"),
     ("upstream_web_write_session_js", DSH / "upstream" / "web-write-session.js"),
+    ("upstream_web_write_session_delete_js", DSH / "upstream" / "web-write-session-delete.js"),
     ("upstream_web_write_presets_js", DSH / "upstream" / "web-write-presets.js"),
     ("upstream_boot_subagent_rows_js", DSH / "upstream" / "boot-subagent-rows.js"),
     ("upstream_web_write_subagents_js", DSH / "upstream" / "web-write-subagents.js"),

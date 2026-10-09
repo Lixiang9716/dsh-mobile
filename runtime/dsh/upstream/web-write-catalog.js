@@ -372,7 +372,10 @@ export const makeSessionForkHandlers = (ctx, deps) => ({
     const cut = boundary.seq + 1;
     const childId = `session-${mintUUID()}`;
     const cwd = agent.session?.header?.cwd;
-    await ctx.agents.create({
+    // The handle capture (session/delete's capability source — the same
+    // registry session/create feeds; a forked child deletes like any other
+    // page-created session).
+    const handle = await ctx.agents.create({
       sessionId: childId,
       seed: events.slice(0, cut),
       inheritedEventCount: cut,
@@ -385,6 +388,7 @@ export const makeSessionForkHandlers = (ctx, deps) => ({
         provider: deps.llmRoute.provider, model: deps.llmRoute.model,
       },
     });
+    deps.agentDisposes.set(childId, handle.dispose);
     deps.streams.attachWorkspace(
       deps.workspaces.get(deps.seeded.workspaceId), childId);
     return { sessionId: childId };

@@ -350,6 +350,7 @@ upstream/model-selection-projection.js
 upstream/model-selection-holder.js
 upstream/web-write.js
 upstream/web-write-session.js
+upstream/web-write-session-delete.js
 upstream/web-write-presets.js
 upstream/boot-subagent-rows.js
 upstream/web-write-subagents.js
