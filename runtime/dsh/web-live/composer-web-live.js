@@ -35,6 +35,7 @@ import { makeFailGate } from 'web-live/scenario-verdict.js';
 import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
 import { installCreationMount } from 'web-live/plugin-live-mount.js';
 import { makeComposerBus } from 'web-live/composer-bus.js';
+import { makeTurnEvidence } from 'web-live/turn-evidence.js';
 import { bootOptions as bootOptionsShared } from 'web-live/boot-options.js';
 import { describeLlmRetry } from 'upstream/retry-telemetry.js';
 import { turnFailureOf } from 'web-live/turn-failure.js';
@@ -115,59 +116,31 @@ const bootPhase = async (cfg, route) => {
   return ctx;
 };
 
-/** The assistant text of one assistant/message event (upstream message shape:
- * data.message.content blocks; text blocks joined). */
-const assistantTextOf = (event) => (event?.data?.message?.content ?? [])
-  .filter((block) => block?.type === 'text').map((block) => block.text).join('');
-
-/** Turn evidence for the PAGE-driven session: the runtime never prompts —
- * the user/message event can only come from the composer's admitted prompt.
- * On turn/end the assistant text is asserted against the scripted stream —
- * ONLY on the scripted route: a real endpoint's turn is nondeterministic, so
- * it is reported verbatim and never predicted (asserting it would turn every
- * honest answer into a drive failure).
+/** Turn evidence for the PAGE-driven session (web-live/turn-evidence.js, the
+ * T-0210 split): the accumulator re-arms per turn — a prompt on a settled
+ * record opens a fresh page, so EVERY turn's prompt/settle lands (the
+ * 2026-10-10 burst face: a session's second turn completed, journal had the
+ * account, and the latched once-per-session guard silently emitted nothing).
+ * The first turn's record opens at the session's first event, so the pinned
+ * single-turn manifest records stay byte-identical.
  *
- * Failure surfacing (the P1 300s-silent-hang round): a turn that settles
- * with NO assistant text used to emit `text:""` and nothing else — the
- * failure reason died in the runtime log while the page showed an empty
- * reply (measured 2026-10-09, session-4331764d: a watchdog kill rendered as
- * a bare empty settle). The `turn/end` reason and the session's newest
- * `llm/retry` journal line now fold into a structured `error` object on the
- * settled record (web-live/turn-failure.js); normal completions emit
- * byte-identical records. */
+ * The scripted text assert rides the route, not the turn index: a real
+ * endpoint's turn is nondeterministic and is reported verbatim (asserting it
+ * would turn every honest answer into a drive failure), and CREATION mode's
+ * extra turns are deliberately not the scripted reply — the strict demand is
+ * for the single-turn composer.live-write leg on the scripted route only.
+ *
+ * Failure surfacing (the P1 300s-silent-hang round): the `turn/end` reason
+ * and the turn's newest `llm/retry` journal line fold into a structured
+ * `error` object on the settled record (web-live/turn-failure.js). */
 const installTurnEvidence = (ctx, route, cfg) => {
-  const turns = new Map(); // sessionId → {prompt, events, text, settled, lastRetry}
-  ctx.on('session/event', (session, event) => {
-    if (session?.id === undefined || event === undefined) return;
-    let turn = turns.get(session.id);
-    if (turn === undefined) {
-      turn = { prompt: false, events: 0, text: '', settled: false, lastRetry: undefined };
-      turns.set(session.id, turn);
-    }
-    turn.events++;
-    if (event.type === 'user/message' && !turn.prompt) {
-      turn.prompt = true;
-      emit('write.prompt.observed', { sessionId: session.id, seq: event.seq });
-    }
-    if (event.type === 'llm/retry') turn.lastRetry = describeLlmRetry(event.data);
-    if (event.type === 'assistant/message') turn.text = assistantTextOf(event);
-    if (event.type === 'turn/end' && !turn.settled) {
-      turn.settled = true;
-      // CREATION mode (the creation-mode plugin's drive) runs extra turns —
-      // a cancelled drip turn and a tool-call-only create turn — whose text
-      // is deliberately not the scripted reply; the strict text demand is
-      // for the single-turn composer.live-write leg only.
-      if (route.scripted && cfg.creation !== true) {
-        demand(turn.text === EXPECTED_TEXT,
-          `page session "${session.id}" assistant text is "${turn.text}"`);
-      }
-      const failure = turnFailureOf(event.data?.reason, turn.lastRetry);
-      emit('write.turn.settled', {
-        sessionId: session.id, events: turn.events, text: turn.text,
-        ...(failure === null ? {} : { error: failure }),
-      });
-    }
-  });
+  ctx.on('session/event', makeTurnEvidence({
+    emit,
+    demand: route.scripted && cfg.creation !== true ? demand : null,
+    expectedText: EXPECTED_TEXT,
+    describeRetry: describeLlmRetry,
+    failureOf: turnFailureOf,
+  }));
 };
 
 /** The resident runtime half: claims + api.request + the follow streams all

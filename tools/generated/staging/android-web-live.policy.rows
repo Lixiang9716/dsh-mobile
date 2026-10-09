@@ -10,4 +10,5 @@ web-live/plugin-live-mount.js
 web-live/probe-respond-await.js
 web-live/scenario-verdict.js
 web-live/turn-failure.js
+web-live/turn-evidence.js
 web-live/write-surface-options.js
