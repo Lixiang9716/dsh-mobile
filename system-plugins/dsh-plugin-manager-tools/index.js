@@ -72,7 +72,7 @@ const PKG_ID = /^[a-z0-9][a-z0-9.-]*$/;
  * this plane does not own. What the roster row consumes must parse: id,
  * semver version, entry path. @returns null, or the reason. */
 const WORKSPACE_SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
-export const validateWorkspaceManifest = (m) => {
+const validateWorkspaceManifest = (m) => {
   if (!m || typeof m !== 'object' || Array.isArray(m)) return 'manifest must be an object';
   if (typeof m.id !== 'string' || !PKG_ID.test(m.id)) return 'bad manifest id';
   if (typeof m.version !== 'string' || !WORKSPACE_SEMVER.test(m.version)) {
