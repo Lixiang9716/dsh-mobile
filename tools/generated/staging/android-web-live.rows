@@ -10,3 +10,4 @@ web-live/api-handler-respond.js
 web-live/plugin-live-mount.js
 web-live/composer-bus.js
 web-live/turn-failure.js
+web-live/boot-options.js

@@ -1100,6 +1100,7 @@ vendor/npm/zod@4.4.3/v4/locales/yo.js
 vendor/npm/zod@4.4.3/v4/locales/zh-CN.js
 vendor/npm/zod@4.4.3/v4/locales/zh-TW.js
 web-live/api-handler-respond.js
+web-live/boot-options.js
 web-live/composer-bus.js
 web-live/composer-web-live.js
 web-live/harmony-composer-live-write.js
