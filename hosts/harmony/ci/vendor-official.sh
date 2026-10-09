@@ -334,8 +334,12 @@ scenario/gateway-bridge-smoke.js
 scenario/parity-projector.js
 scenario/session-mock-llm.js
 scenario/surface-pomodoro.js
+scenario/create-card.js
+scenario/card-player.js
 scenario/upstream-parity.js
 upstream/boot.js
+system-plugins/dsh-create/index.js
+system-plugins/dsh-create/manifest.json
 upstream/wire-logger.js
 upstream/settings-memory.js
 upstream/llm-route.js

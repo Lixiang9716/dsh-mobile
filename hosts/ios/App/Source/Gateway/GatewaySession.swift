@@ -182,11 +182,22 @@ final class GatewaySession {
 
     private func busPosted(_ line: String) {
         guard !finished, host != nil, let msg = Self.parse(line) else { return }
-        if msg["type"] as? String == "ws.send", let payload = msg["payload"],
-           let text = GatewayCore.jsonLine(payload) {
-            server.send(text) // CarrierServer.send hops to its own queue
+        switch msg["type"] as? String {
+        case "ws.send":
+            if let payload = msg["payload"],
+               let text = GatewayCore.jsonLine(payload) {
+                server.send(text) // CarrierServer.send hops to its own queue
+            }
+        case "card.present", "card.state", "card.dismiss", "card.complete":
+            // A plugin's live card (PR-1): the native surface's channel.
+            onCardEvent?(msg)
+        default:
+            break
         }
     }
+
+    /// The plugin card seam — see SessionServe.onCardEvent (PR-1).
+    var onCardEvent: (([String: Any]) -> Void)?
 
     /// Called on the server queue; hops onto the runtime thread.
     private func ingest(_ text: String) {

@@ -31,6 +31,9 @@ final class V2WebRuntime {
     private let serve = SessionServe(interactive: true)
     let eventLog = CarrierEventLog(scenario: V2WebRuntime.scenario)
     private weak var webView: WKWebView?
+    /// The plugin card surface (PR-1): a chat-created plugin's card renders
+    /// in the app's OWN chrome on this seat.
+    private var cardSurface: CardPlayerSurface?
     private var completion: ((JsOutcome) -> Void)?
     private var watchdog: DispatchWorkItem?
     private var finished = false
@@ -46,6 +49,16 @@ final class V2WebRuntime {
         self.completion = completion
         armWatchdog()
         wireEvidence()
+        // A plugin's live card in the app's OWN chrome (PR-1): the creation
+        // seat surfaces the chat-created plugin's card natively.
+        let surface = CardPlayerSurface()
+        cardSurface = surface
+        serve.onCardEvent = { [weak surface] msg in
+            DispatchQueue.main.async { surface?.handle(msg) }
+        }
+        if let host = webView?.superview {
+            surface.attach(to: host)
+        }
         // First record in the manifest: the launch configuration selected
         // the self-hosted client.
         eventLog.emit("client.selected", ["client": Self.clientID, "source": "launch"])

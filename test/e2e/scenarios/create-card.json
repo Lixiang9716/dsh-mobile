@@ -1,0 +1,16 @@
+{
+  "scenario": "create.card",
+  "extract": { "prefix": "dsh.runtime.log:" },
+  "expect": [
+    { "event": "create.card.begin", "match": {} },
+    { "event": "create.card.seat.ready", "match": { "gateway": "gateway@1" } },
+    { "event": "package.written", "match": { "name": "pomodoro-create" } },
+    { "event": "approval.answered", "match": { "name": "pomodoro-create", "approved": true } },
+    { "event": "registry.installed", "match": { "name": "pomodoro-create" } },
+    { "event": "card.face.presented", "match": { "id": "create-pomodoro-create", "kind": "timer" } },
+    { "event": "tool.returned", "match": { "ok": true } },
+    { "event": "card.face.completed", "match": { "id": "create-pomodoro-create" } },
+    { "event": "create.card.done", "match": { "durationMs": 8000 } },
+    { "event": "scenario.complete", "match": { "status": "pass" } }
+  ]
+}

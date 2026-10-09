@@ -5,7 +5,8 @@ import WebKit
 final class AppDelegate: UIResponder, UIApplicationDelegate {
     private var mainWindow: UIWindow?
     private var console: UITextView?
-    private var webView: WKWebView?
+    /// Internal: the drive family loads the serving seat's origin into it.
+    var webView: WKWebView?
     private var bootVerdict = "PENDING"
     private var carrierVerdict = "PENDING"
     var gatewayVerdict = "PENDING"
@@ -22,7 +23,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     private var official: OfficialWebRuntime?
     private var officialVerdict = "PENDING"
     /// The user-facing serving seat (release boot only; no hooks, no drive).
-    private var serve: SessionServe?
+    /// Internal: the card-player drive reuses the seat with its own entry.
+    var serve: SessionServe?
+    /// The native card surface (`-dsh-mode card-player`): the live card a
+    /// plugin's bus lines render into — held for the window's lifetime.
+    var cardSurface: CardPlayerSurface?
     /// The release boot's launch surface, held until the page renders.
     private var bootOverlay: UIView?
     private var bootOverlayLabel: UILabel?
@@ -100,37 +105,20 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             startBleMode()
         case "mic-plane":
             MicPlaneDrive.launch(self)
+        case "create-card":
+            // PR-2/3 of the create-approve-hotmount loop: the tool chain
+            // leg — package → NATIVE Approve → registry → LIVE native card.
+            announce("DSH create card — create.card, the create-approve-hotmount chain live…",
+                     line: "rt: app launched in create-card mode", web: false)
+            runCreateCardDrive()
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
                      line: "rt: app launched in session mode (\(surface))", web: false)
             runSession()
-        case "official-web":
-            announce("DSH official web — officialweb.mount, the upstream app on the contract carrier…",
-                     line: "rt: app launched in official-web mode", web: true)
-            runOfficialWeb()
-        case "session-live":
-            announce("DSH session live — session.live-read, the upstream spine on-device answering the official app…",
-                     line: "rt: app launched in session-live mode", web: true)
-            runSessionLive()
-        case "session-write":
-            announce("DSH session write — composer.live-write, the official composer driving the upstream spine…",
-                     line: "rt: app launched in session-write mode", web: true)
-            runSessionWrite()
-        case "next-web":
-            announce("DSH next web — v2web.mount, the self-hosted client on the serving seat…",
-                     line: "rt: app launched in next-web mode", web: true)
-            runV2Web()
-        case "serve":
-            // The USER-FACING serving seat with the harness's logging intact:
-            // no probe, no watchdog, no evidence hooks — a human drives the
-            // page exactly as a user would — but the runtime's own records
-            // still print, which is the only way to see what the product path
-            // does (a release build drops every debug/info record by design).
-            // This is the mode to reproduce a user-visible failure in.
-            announce("DSH serve — the user-facing seat, driven by hand (harness logging on)…",
-                     line: "rt: app launched in serve mode", web: true)
-            runServingBoot()
+        case "official-web", "session-live", "session-write", "next-web",
+             "serve", "card-player":
+            launchWebDrive(launchMode)
         default:
             runDefaultChain()
         }
@@ -298,13 +286,24 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// assigned — the serving facts go nowhere, and the user drives the page.
     /// The seat is the same one `composer.live-write` verifies, so the path the
     /// manifest proves and the path a user runs cannot drift apart.
-    private func runServingBoot() {
+    func runServingBoot() {
         let serve = SessionServe(
             credential: SessionServe.loadCredential(),
             interactive: true)
         self.serve = serve
         serve.onOrigin = { [weak self] origin in
             self?.webView?.load(URLRequest(url: origin))
+        }
+        // A plugin's live card renders in the app's OWN chrome (PR-1): the
+        // serve/release seats surface the card.* bus lines natively — the
+        // chat-created pomodoro ticks beside the conversation.
+        let surface = CardPlayerSurface()
+        cardSurface = surface
+        serve.onCardEvent = { [weak surface] msg in
+            DispatchQueue.main.async { surface?.handle(msg) }
+        }
+        if let host = webView?.superview {
+            surface.attach(to: host)
         }
         // A failure here leaves an inert page, which is indistinguishable
         // from a working-but-idle one. Say so on BOTH channels: the screen
@@ -345,7 +344,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// vendored upstream dist; the drive probes the wire + rendered state.
     /// In a release build the same serving stack runs with the evidence
     /// machinery off (no probe, no watchdog, no canonical records).
-    private func runOfficialWeb() {
+    func runOfficialWeb() {
         let official = OfficialWebRuntime(evidence: !BuildFlavor.isRelease)
         self.official = official
         official.attach(webView: webView!)
@@ -364,7 +363,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The W-SESS session-live mount: the spine runs on-device, the claimed
     /// session surface answers the official app, the journal streams real
     /// records.
-    private func runSessionLive() {
+    func runSessionLive() {
         let live = SessionLiveRuntime()
         self.sessionLive = live
         live.attach(webView: webView!)
@@ -383,7 +382,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The W-RPC session-write mount: the spine answers the official app's
     /// write surface; the probe types into the real composer and the reply
     /// renders in the official UI.
-    private func runSessionWrite() {
+    func runSessionWrite() {
         let write = SessionWriteRuntime()
         self.sessionWrite = write
         write.attach(webView: webView!)
@@ -400,7 +399,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     /// The v2web.mount drive: the self-hosted client on the serving seat.
-    private func runV2Web() {
+    func runV2Web() {
         let next = V2WebRuntime()
         self.v2Web = next
         next.attach(webView: webView!)

@@ -121,6 +121,8 @@ const BUNDLE_FILES: string[] = [
   'scenario/real-create.js',
   'scenario/session-mock-llm.js',
   'scenario/surface-pomodoro.js',
+  'scenario/create-card.js',
+  'scenario/card-player.js',
   'scenario/upstream-fake-timers.js',
   'scenario/upstream-harness-matchers.js',
   'scenario/upstream-harness-vi.js',
@@ -150,6 +152,8 @@ const BUNDLE_FILES: string[] = [
   'system-plugins/dsh-open-design/index.js',
   'system-plugins/dsh-open-design/manifest.json',
   'system-plugins/dsh-plugin-manager-tools/index.js',
+  'system-plugins/dsh-create/index.js',
+  'system-plugins/dsh-create/manifest.json',
   'system-plugins/dsh-plugin-manager-tools/manifest.json',
   'system-plugins/dsh-shell-ish/index.js',
   'system-plugins/dsh-shell-ish/manifest.json',
@@ -1231,7 +1235,6 @@ const BUNDLE_FILES: string[] = [
   'webclient/dsh-web-client/manifest.json',
   'webclient/dsh-web-client/web/index.html',
   'webclient/dsh-web-client/web/main.js',
-
 ];
 
 // Custom approval dialog — presentApproval's native surface (contract §4:

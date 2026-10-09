@@ -8,6 +8,7 @@
 # row omits stays with check-staging's ios surface (blocking, earlier in the
 # DAG).
 logger_js=logger.js
+plugin_mount_js=plugin-mount.js
 transport_tokens_mjs=transport-tokens.mjs
 receipt_journal_js=receipt-journal.js
 profile_m3_patch_json=profiles/install-full-cycle/cordis.patch.json
@@ -92,6 +93,8 @@ scenario_m3_fetch_install_js=scenario/install-from-http.js
 scenario_upstream_parity_js=scenario/upstream-parity.js
 scenario_upstream_suite_js=scenario/upstream-suite-leg.js
 scenario_agent_flow_js=scenario/agent-flow.js
+scenario_card_player_js=scenario/card-player.js
+scenario_create_card_js=scenario/create-card.js
 scenario_b1_web_live_js=web-live/officialweb-web-live.js
 scenario_b3_web_live_js=web-live/session-web-live.js
 scenario_b4_web_live_js=web-live/composer-web-live.js

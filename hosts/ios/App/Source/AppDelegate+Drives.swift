@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /// The E2E drive launchers that outgrew AppDelegate's file budget — the
 /// -dsh-mode case table calls these; the session lifecycle (the `gateway`
@@ -39,6 +40,72 @@ extension AppDelegate {
             self?.gateway = nil
             print("rt: ble-plane drive finished verdict=\(outcome.verdict)")
             fflush(stdout)
+        }
+    }
+
+    /// The create-approve-hotmount chain leg (the `-dsh-mode create-card`
+    /// seat): the create.card scenario invokes dsh-create's plugin_create
+    /// execute — package, NATIVE Approve (the drive taps), registry install,
+    /// and the LIVE native card. The card seam (PR-1) renders beside the
+    /// verdict panel.
+    func runCreateCardDrive() {
+        let surface = CardPlayerSurface()
+        cardSurface = surface
+        let session = GatewaySession(
+            entryModule: "scenario/create-card.js",
+            sourceProvider: { String(cString: dsh_runtime_res_scenario_create_card_js(nil)) })
+        session.onCardEvent = { [weak surface] msg in
+            DispatchQueue.main.async { surface?.handle(msg) }
+        }
+        gateway = session
+        session.run { [weak self] outcome in
+            self?.show(outcome, phase: "create.card") { self?.gatewayVerdict = $0 }
+            self?.gateway = nil
+            print("rt: create-card drive finished verdict=\(outcome.verdict)")
+            fflush(stdout)
+        }
+        if let window = UIApplication.shared.connectedScenes
+            .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first,
+           let host = window.rootViewController?.view {
+            surface.attach(to: host)
+        }
+    }
+
+    /// The WEB-seat launch modes' table (one line each in the dispatch
+    /// switch): banner + canonical stdout line + the drive. The serve and
+    /// card-player comments explain the seat's contract — see
+    /// runServingBoot and CardPlayerDrive for the machinery.
+    func launchWebDrive(_ mode: String) {
+        switch mode {
+        case "official-web":
+            announce("DSH official web — officialweb.mount, the upstream app on the contract carrier…",
+                     line: "rt: app launched in official-web mode", web: true)
+            runOfficialWeb()
+        case "session-live":
+            announce("DSH session live — session.live-read, the upstream spine on-device answering the official app…",
+                     line: "rt: app launched in session-live mode", web: true)
+            runSessionLive()
+        case "session-write":
+            announce("DSH session write — composer.live-write, the official composer driving the upstream spine…",
+                     line: "rt: app launched in session-write mode", web: true)
+            runSessionWrite()
+        case "next-web":
+            announce("DSH next web — v2web.mount, the self-hosted client on the serving seat…",
+                     line: "rt: app launched in next-web mode", web: true)
+            runV2Web()
+        case "serve":
+            // The USER-FACING serving seat with the harness's logging intact
+            // (a release build drops every debug/info record by design) —
+            // the mode to reproduce a user-visible failure in.
+            announce("DSH serve — the user-facing seat, driven by hand (harness logging on)…",
+                     line: "rt: app launched in serve mode", web: true)
+            runServingBoot()
+        case "card-player":
+            // PR-1 of the create-approve-hotmount-native loop: a plugin card
+            // rendered by the app's OWN chrome (not an HTML page).
+            CardPlayerDrive.launch(self)
+        default:
+            break
         }
     }
 

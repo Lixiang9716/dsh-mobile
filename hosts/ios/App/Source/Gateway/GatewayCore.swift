@@ -130,6 +130,7 @@ final class GatewayCore {
         "bleScanStart", "bleScanStop", "bleConnect", "bleDisconnect",
         "bleRead", "bleWrite", "bleSubscribe", "bleUnsubscribe",
         "micStart", "micStop",
+        "timerSchedule", "timerCancel",
     ]
     /// The capability plane's PHASED rows (proposal v1.10.0): shapes on
     /// record, implementations follow as their own changes — declared
@@ -152,6 +153,7 @@ final class GatewayCore {
         _ = CameraPrimitives(core: self, fs: fs)
         _ = BLEPrimitives(core: self, radio: bleRadio ?? SystemBleRadio())
         _ = MicPrimitives(core: self)
+        _ = TimerPrimitives(core: self)
         return NotifyPrimitive(core: self)
     }
 

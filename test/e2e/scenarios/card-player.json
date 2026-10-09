@@ -1,0 +1,17 @@
+{
+  "scenario": "card.player",
+  "extract": { "prefix": "dsh.runtime.log:" },
+  "expect": [
+    { "event": "card.player.begin", "match": {} },
+    { "event": "card.seat.ready", "match": { "gateway": "gateway@1" } },
+    { "event": "card.present.posted", "match": { "id": "pomodoro-demo", "durationMs": 1500000 } },
+    { "event": "card.state.posted", "match": { "tick": 1, "remainingMs": 1499000 } },
+    { "event": "card.state.posted", "match": { "tick": 2, "remainingMs": 1498000 } },
+    { "event": "card.state.posted", "match": { "tick": 3, "remainingMs": 1497000 } },
+    { "event": "card.state.posted", "match": { "tick": 4, "remainingMs": 1496000 } },
+    { "event": "card.state.posted", "match": { "tick": 5, "remainingMs": 1495000 } },
+    { "event": "card.complete.posted", "match": { "id": "pomodoro-demo" } },
+    { "event": "card.player.done", "match": { "ticks": 5 } },
+    { "event": "scenario.complete", "match": { "status": "pass" } }
+  ]
+}
