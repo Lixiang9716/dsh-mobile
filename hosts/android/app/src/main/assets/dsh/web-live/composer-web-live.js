@@ -35,6 +35,7 @@ import { makeFailGate } from 'web-live/scenario-verdict.js';
 import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
 import { installCreationMount } from 'web-live/plugin-live-mount.js';
 import { makeComposerBus } from 'web-live/composer-bus.js';
+import { bootOptions as bootOptionsShared } from 'web-live/boot-options.js';
 import { describeLlmRetry } from 'upstream/retry-telemetry.js';
 import { turnFailureOf } from 'web-live/turn-failure.js';
 
@@ -97,55 +98,13 @@ const awaitAgent = async (ctx) => {
   return ctx.agents.get(SESSION_ID);
 };
 
-/** Boot the spine: the profile container is the host-granted root from the
- * runtime.config delivery (the seeded workspace's REAL directory), the llm
- * route the carrier's scripted endpoint. */
-/** The boot options object (split from bootPhase at the code-size
- * gate): the interactive rows + the creation/presetJoin flags. */
-const bootOptions = (cfg, route, root) => ({
-    scenario: SCENARIO,
-    agentId: AGENT_ID,
-    sessionId: SESSION_ID,
-    cwd: root,
-    onEvent: emit,
-    // The interactive surfaces ("/" menu): rows delivered only by the
-    // user-facing seat (SessionServe's interactive flag). The evidence drive
-    // delivers neither row, so its boot stays byte-identical to the manifest.
-    commands: cfg.commands === true,
-    skills: cfg.skills,
-    goals: cfg.goals === true,
-    fileReferences: cfg.fileReferences === true,
-    // The CREATION row (the creation-mode plugin): the present tool, under
-    // the user-facing seat's interactive flag like the rows above.
-    creation: cfg.creation === true,
-    // The deployment default preset join (T-0048's shape): the boot agent
-    // AND every session the page creates resolve tools/prompt/skills
-    // against the joined composition, not the empty global layer — without
-    // it a creation turn's write tool calls drop on the floor (measured
-    // 2026-10-09: the session agent published onto an empty toolset).
-    presetJoin: cfg.presetJoin === true,
-    container: {
-      cwd: root,
-      tmpdir: `${root}/tmp`,
-      home: `${root}/home`,
-      // The granted scope's root: the fs shims map absolute paths onto
-      // (scope, scope-relative path) through it. Absent on a host that grants
-      // no scope, in which case the shims refuse rather than guess.
-      scopeRoot: cfg.fsScopeRoot,
-      env: { DSH_MOCK_LLM_URL: route.baseURL, DSH_MOCK_LLM_KEY: route.apiKey },
-      argv: ['dsh', '--profile', 'mobile'],
-    },
-    llm: {
-      baseURL: route.baseURL,
-      apiKey: route.apiKey,
-      provider: route.provider,
-      model: route.model,
-      userEndpoint: route.userEndpoint,
-      adapterName: route.adapterName,
-      transportLabel: route.transportLabel,
-      onWire: (info) => emit('llm/request/built', info),
-      onSse: (info) => emit('llm/sse', info),
-    },
+/** The boot options object: the interactive rows + the creation/presetJoin
+ * flags — web-live/boot-options.js (split at the code-size gate, re-split
+ * at testability: the boot-carrier regression test imports the pure module,
+ * whose graph is empty — THIS module runs main() at import and cannot be
+ * imported under vitest). */
+const bootOptions = (cfg, route, root) => bootOptionsShared(cfg, route, root, {
+  scenario: SCENARIO, agentId: AGENT_ID, sessionId: SESSION_ID, onEvent: emit,
 });
 
 const bootPhase = async (cfg, route) => {

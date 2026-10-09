@@ -383,7 +383,8 @@ done
 # on a fresh install (the embed-list trap this file's own comments name).
 for s in android-officialweb-web-live.js android-session-live-read.js android-composer-live-write.js composer-web-live.js \
          write-surface-options.js manager-legs-probe.js probe-respond-await.js scenario-verdict.js \
-         api-handler-respond.js plugin-live-mount.js composer-bus.js turn-failure.js; do
+         api-handler-respond.js plugin-live-mount.js composer-bus.js turn-failure.js \
+         boot-options.js; do
     if [ -f "$DSH/web-live/$s" ]; then
         cp "$DSH/web-live/$s" "$ASSETS/web-live/$s"
     fi
@@ -548,7 +549,8 @@ done
 # same stale-copy shadowing defect, the product mount entries' own row).
 for s in android-officialweb-web-live.js android-session-live-read.js android-composer-live-write.js composer-web-live.js \
          write-surface-options.js manager-legs-probe.js probe-respond-await.js scenario-verdict.js \
-         api-handler-respond.js plugin-live-mount.js composer-bus.js turn-failure.js; do
+         api-handler-respond.js plugin-live-mount.js composer-bus.js turn-failure.js \
+         boot-options.js; do
     if [ "$MODE" = "check" ] && ! is_tracked "web-live/$s"; then note_skip; continue; fi
     cmp -s "$DSH/web-live/$s" "$ASSETS/web-live/$s" || note_drift "web-live/$s"
 done

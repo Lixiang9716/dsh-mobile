@@ -1194,6 +1194,7 @@ const BUNDLE_FILES: string[] = [
   'vendor/npm/zod@4.4.3/v4/locales/zh-CN.js',
   'vendor/npm/zod@4.4.3/v4/locales/zh-TW.js',
   'web-live/api-handler-respond.js',
+  'web-live/boot-options.js',
   'web-live/pomodoro-plugin-template.js',
   'web-live/plugin-live-mount.js',
   'web-live/composer-bus.js',

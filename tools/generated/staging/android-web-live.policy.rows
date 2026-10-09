@@ -1,4 +1,5 @@
 web-live/api-handler-respond.js
+web-live/boot-options.js
 web-live/android-composer-live-write.js
 web-live/android-officialweb-web-live.js
 web-live/android-session-live-read.js
