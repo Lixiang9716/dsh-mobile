@@ -70,6 +70,8 @@ final class CarrierAPIBridge {
         guard let path = request.path else {
             return answer(conn, status: 400, body: Data("bad request".utf8), mime: "text/plain")
         }
+        NSLog("dsh.bridge: api path=%@ authed=%d", path,
+              request.isAuthed(token: sessionToken) ? 1 : 0)
         guard request.method == "POST" else {
             return answer(conn, status: 405, body: Data(), mime: "text/plain")
         }

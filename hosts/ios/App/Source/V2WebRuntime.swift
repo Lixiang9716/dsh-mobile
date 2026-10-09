@@ -27,8 +27,11 @@ final class V2WebRuntime {
     static let gameCardTitle = "弹球小游戏 — 点按全屏查看"
 
     /// interactive: the CREATION row (the present tool) rides the same
-    /// user-facing flag — this drive IS the creation-mode seat.
-    private let serve = SessionServe(interactive: true)
+    /// user-facing flag — this drive IS the creation-mode seat. The staged
+    /// credential flows when present (the real-LLM creation turn); a seat
+    /// with no credential keeps the scripted route byte-for-byte (CI).
+    private let serve = SessionServe(
+        credential: SessionServe.loadCredential(), interactive: true)
     let eventLog = CarrierEventLog(scenario: V2WebRuntime.scenario)
     private weak var webView: WKWebView?
     /// The plugin card surface (PR-1): a chat-created plugin's card renders
