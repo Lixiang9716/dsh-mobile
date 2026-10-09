@@ -18,6 +18,10 @@ enum BundleStager {
         }
         try write("logger.js", data: resData(dsh_runtime_res_logger_js),
                   under: root)
+        // The workspace plugin's live-mount seam (web-live/plugin-live-mount
+        // imports it bundle-root-relative; main's creation-mount chain).
+        try write("plugin-mount.js",
+                  data: resData(dsh_runtime_res_plugin_mount_js), under: root)
         // The transport token table the scenarios import beside the logger
         // (createLogger(scenarioModule) resolves bundle-root-relative).
         try write("transport-tokens.mjs",

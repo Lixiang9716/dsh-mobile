@@ -9,6 +9,7 @@ DSH = REPO / "runtime" / "dsh"
 
 RESOURCES = [
     ("logger_js", DSH / "logger.js"),
+    ("plugin_mount_js", DSH / "plugin-mount.js"),
     ("transport_tokens_mjs", DSH / "transport-tokens.mjs"),
     ("receipt_journal_js", DSH / "receipt-journal.js"),
     ("profile_m3_patch_json", DSH / "profiles" / "install-full-cycle" / "cordis.patch.json"),
@@ -93,6 +94,8 @@ RESOURCES = [
     ("scenario_upstream_parity_js", DSH / "scenario" / "upstream-parity.js"),
     ("scenario_upstream_suite_js", DSH / "scenario" / "upstream-suite-leg.js"),
     ("scenario_agent_flow_js", DSH / "scenario" / "agent-flow.js"),
+    ("scenario_card_player_js", DSH / "scenario" / "card-player.js"),
+    ("scenario_create_card_js", DSH / "scenario" / "create-card.js"),
     ("scenario_b1_web_live_js", DSH / "web-live" / "officialweb-web-live.js"),
     ("scenario_b3_web_live_js", DSH / "web-live" / "session-web-live.js"),
     ("scenario_b4_web_live_js", DSH / "web-live" / "composer-web-live.js"),

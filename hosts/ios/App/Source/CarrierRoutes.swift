@@ -144,6 +144,10 @@ extension CarrierServer {
         guard request.header("authorization") == "Bearer \(Self.mockLlmKey)" else {
             return respondError(401, "mock authentication failed", conn: conn)
         }
+        NSLog("dsh.mock: body len=%d plugin=%d create=%d",
+              request.body.count,
+              request.body.range(of: Data("PLUGIN_CREATE_TURN".utf8)) != nil ? 1 : 0,
+              request.body.range(of: Data("CREATE_TURN".utf8)) != nil ? 1 : 0)
         // The scripted-turn dispatch: MOST-SPECIFIC marker first —
         // PLUGIN_CREATE_TURN contains the CREATE_TURN substring.
         if dispatchScriptedTurn(request, "PLUGIN_CREATE_TURN",
@@ -295,6 +299,7 @@ extension CarrierServer {
     private func servePluginCreateScript(
         respond: @escaping (Int, Data, String, NWConnection) -> Void,
         conn: NWConnection) {
+        NSLog("%@", "dsh.mock: PLUGIN_CREATE script served (marker matched)")
         var body = Data()
         func sse(_ payload: @autoclosure () -> Any) {
             guard let data = try? JSONSerialization.data(withJSONObject: payload()),
