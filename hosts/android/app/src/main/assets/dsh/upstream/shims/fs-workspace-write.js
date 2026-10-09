@@ -50,6 +50,12 @@ const mkdirSegments = (state, canonical, options) => {
       state.dirs.add(dir);
       if (typeof options.mode === 'number' && dir === canonical) state.dirModes.set(dir, options.mode);
       first = first ?? dir;
+      // A created directory IS a mutation: the watch registry must hear
+      // it, or an evented watcher on the path itself (fs-watch's
+      // watchFile, the chokidar bridge) never learns its target appeared
+      // (P3, 2026-10-09 — the mkdir arm was the one mutating face that
+      // never notified).
+      notifyWatches(dir);
       try {
         if (typeof dir === 'string' && dir.startsWith('/')) {
           globalThis.__dshProcMkdirReal?.(dir);
