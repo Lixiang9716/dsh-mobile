@@ -147,11 +147,10 @@ const bootOptions = (cfg, route, root) => ({
 });
 
 const bootPhase = async (cfg, route) => {
-  const rooted = typeof cfg.containerRoot === 'string'
-    && cfg.containerRoot.startsWith('/');
-  demand(rooted, `profile container not granted by the host: ${JSON.stringify(cfg.containerRoot)}`);
+  const root = cfg.containerRoot;
+  demand(typeof root === 'string' && root.startsWith('/'),
+    `profile container not granted by the host: ${JSON.stringify(root)}`);
   const { ctx } = await bootUpstream(bootOptions(cfg, route, root));
-;
   return ctx;
 };
 
