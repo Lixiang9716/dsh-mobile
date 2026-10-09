@@ -66,6 +66,10 @@ import { makeSubagentHandlers } from 'upstream/web-write-subagents.js';
 import {
   makeAgentPresetHandlers, makeEndpointPresetAdapter,
 } from 'upstream/web-write-presets.js';
+// The preset-join observability line's logger (the adapter's only log face).
+import { createLogger } from 'logger.js';
+
+const log = createLogger('web-write');
 
 export { COVERAGE_ENDPOINTS, COVERAGE_STREAMS };
 
@@ -243,7 +247,11 @@ const makeListSessions = (ctx) => async () => {
  * silently joined nothing would answer the empty layer again (the exact
  * defect the flag exists to close). The agent resolves through the registry
  * lookup — the same live handle path the boot agent's join reads (the
- * create return carried no scoped ctx on the harmony seat, 2026-10-08). */
+ * create return carried no scoped ctx on the harmony seat, 2026-10-08).
+ * The debug line after the mount is the join's observability half (T-0209):
+ * the vendored service warns at `agent/created` — BEFORE this join runs — so
+ * every page-created session logs that warn even when the join then covers
+ * it; the paired line names what the session actually composed from. */
 const joinCreatedSessionToDefault = async (ctx, sessionId) => {
   const service = ctx.get('agentPresets');
   if (service === undefined) {
@@ -251,7 +259,9 @@ const joinCreatedSessionToDefault = async (ctx, sessionId) => {
       'session.create presetJoin: the agentPresets service is not mounted', {});
   }
   const agent = ctx.agents.get(sessionId);
-  await service.mount(agent.ctx, undefined);
+  const preset = await service.mount(agent.ctx, undefined);
+  log.debug('session preset joined', { sessionId, preset: preset?.id, agent: agent.id });
+  return preset;
 };
 
 /** The REAL create path: mint → agents.create (meta.cwd) → workspace
