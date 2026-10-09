@@ -211,10 +211,10 @@ export class OfficialServe {
    * the native overlay presenter; events ride the same bus sink the
    * scenario drives use. */
   private timer: TimerPrimitive = new TimerPrimitive((eventJson: string): void => {
-    this.onBusLine(eventJson);
+    this.deliverRuntimeEvent(eventJson);
   });
   private surface: SurfacePrimitives = new SurfacePrimitives((eventJson: string): void => {
-    this.onBusLine(eventJson);
+    this.deliverRuntimeEvent(eventJson);
   });
   /** presentApproval's dialog presenter (the ApprovalDialog posture; the
    * descriptor offered the primitive before this seat could dispatch it —
@@ -777,6 +777,21 @@ export class OfficialServe {
 
   // ---- the runtime's bus posts ------------------------------------------------
 
+  /** Host → runtime events (timer.fire, surface.frame / surface.input) —
+   * HostPhase's deliverEvent twin. onBusLine is the JS→host bus parser and
+   * silently drops a bare {"event":…} line, so the primitives' sink must
+   * never route there (measured 2026-10-09: touches on an open surface
+   * reached the overlay and vanished — the runtime never saw one). */
+  private deliverRuntimeEvent(eventJson: string): void {
+    if (!this.started) {
+      return;
+    }
+    const status: number = hostEvent(2, eventJson);
+    if (status < 0) {
+      hilog.error(0x0000, TAG, 'official: event failed: %{public}s', eventJson);
+    }
+  }
+
   /** JS → host: web.boot / api.claim / mux.claim / api.respond / mux.*. */
   private onBusLine(line: string): void {
     let msg: BusMessage = {};
@@ -931,8 +946,26 @@ export class OfficialServe {
       this.server.respondText(conn, 200, SSE_TYPE, this.gameStream());
       return;
     }
-    if (req.body.includes('番茄钟') || req.body.includes('\\u756a\\u8301\\u949f')
-      || req.body.includes('pomodoro')) {
+    // The marker matches the prompt's text by CODEPOINT SCAN (番茄钟 =
+    // U+756A U+8304 U+949F), never a CJK string literal: the compiled
+    // literal's bytes are at the mercy of the build host's source-encoding
+    // handling (measured 2026-10-09: the source literal's UTF-8 bytes were
+    // correct on disk, the branch was reached, the body decoded right —
+    // and the literal comparison still lost; the scan is literal-free).
+    // The \\u-escaped and ASCII spellings cover clients that escape or
+    // name it in English.
+    let pomodoroMarker = req.body.includes('pomodoro')
+      || req.body.includes('\\u756a\\u8304\\u949f');
+    if (!pomodoroMarker) {
+      for (let i = 0; i + 2 < req.body.length; i += 1) {
+        if (req.body.charCodeAt(i) === 0x756a && req.body.charCodeAt(i + 1) === 0x8304
+          && req.body.charCodeAt(i + 2) === 0x949f) {
+          pomodoroMarker = true;
+          break;
+        }
+      }
+    }
+    if (pomodoroMarker) {
       // The POMODORO creation round: the typed prompt asks for a plugin, the
       // scripted turn writes the REAL plugin tree (manifest + the surface
       // arc timer source) into the workspace; the post-turn mount flow

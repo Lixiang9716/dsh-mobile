@@ -47,7 +47,7 @@ export class GatewayError extends Error {
  * Rejections are reshaped to GatewayError; unknown/absent codes pass
  * through untouched (receivers never fall back on a code they do not
  * know — fail-loud rule). */
-const call = async (name, args) => {
+export const call = async (name, args) => {
   log.debug('gateway call', { name });
   try {
     return await globalThis.__dshGatewayCall(name, JSON.stringify(args));
