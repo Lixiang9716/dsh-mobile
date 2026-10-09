@@ -116,7 +116,18 @@ export const disableMobileAbsentRows = (text, docName) => {
  * mapping key (252:3)" on every preset with a plugin plane (mobile,
  * standard, cordis, ptc — minimal survived) and session/create died
  * everywhere; the panel replica mirrored only the disabler, so CI could
- * not see it. */
+ * not see it.
+ *
+ * The row lands DISABLED: the vendored mount health resolves every enabled
+ * row's plugin name, and `system-plugins/...` has no resolvable face in
+ * the preset resolver's world (no package, not preset-relative) — an
+ * enabled row refused EVERY session/create ("names a plugin that cannot
+ * be resolved", measured right after the splice-point fix). The creation
+ * tool itself is served by the spine's own boot mount
+ * (boot.js tool('tool-plugin-create', 'system-plugins/dsh-create', ...)),
+ * which is how every creation round to date has dispatched; this row
+ * graduates to enabled only when the plugin gains a face the resolver
+ * answers (a package face, or a preset-relative delivery). */
 const spliceCreateRow = (text) => {
   if (text.includes('id: tool-plugin-create')) return text;
   const lines = text.split('\n');
@@ -132,7 +143,8 @@ const spliceCreateRow = (text) => {
   }
   lines.splice(end, 0,
     `${indent}- id: tool-plugin-create`,
-    `${indent}  name: 'system-plugins/dsh-create/index.js'`);
+    `${indent}  name: 'system-plugins/dsh-create/index.js'`,
+    `${indent}  disabled: true`);
   return lines.join('\n');
 };
 

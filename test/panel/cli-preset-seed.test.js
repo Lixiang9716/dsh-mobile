@@ -135,23 +135,31 @@ const applySeedPatch = (text, absentIds, docName) => {
     if (nameAt < 0) throw new Error(`preset-mobile-rows: ${docName} row "${rowId}" has no name line`);
     lines.splice(block.start + 1, 0, `${block.indent}  disabled: true`);
   }
-  if (!text.includes('id: tool-plugin-create')) {
-    const at = lines.findIndex((line) => line.includes('- id: tool-plugin-manager'));
-    if (at >= 0) {
-      const indent = lines[at].slice(0, lines[at].indexOf('-'));
-      let end = lines.length;
-      for (let i = at + 1; i < lines.length; i += 1) {
-        const line = lines[i];
-        if (line.startsWith(`${indent}-`)) { end = i; break; } // the next row
-        if (line.trim() === '') continue; // blank: still inside the block
-        if (!line.startsWith(`${indent} `)) { end = i; break; } // dedent: list ended
-      }
-      lines.splice(end, 0,
-        `${indent}- id: tool-plugin-create`,
-        `${indent}  name: 'system-plugins/dsh-create/index.js'`);
-    }
+  return spliceCreateRowReplica(lines).join('\n');
+};
+
+/** The create-row splice, replicated from preset-mobile-rows.js
+ * (spliceCreateRow): inserted at the tool-plugin-manager row block's END,
+ * DISABLED — the preset resolver has no face for the system-plugins
+ * spelling (an enabled row refused every session/create, measured
+ * 2026-10-10); the tool itself rides the spine's own boot mount. */
+const spliceCreateRowReplica = (lines) => {
+  if (lines.some((line) => line.includes('id: tool-plugin-create'))) return lines;
+  const at = lines.findIndex((line) => line.includes('- id: tool-plugin-manager'));
+  if (at < 0) return lines;
+  const indent = lines[at].slice(0, lines[at].indexOf('-'));
+  let end = lines.length;
+  for (let i = at + 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (line.startsWith(`${indent}-`)) { end = i; break; } // the next row
+    if (line.trim() === '') continue; // blank: still inside the block
+    if (!line.startsWith(`${indent} `)) { end = i; break; } // dedent: list ended
   }
-  return lines.join('\n');
+  lines.splice(end, 0,
+    `${indent}- id: tool-plugin-create`,
+    `${indent}  name: 'system-plugins/dsh-create/index.js'`,
+    `${indent}  disabled: true`);
+  return lines;
 };
 
 /** The composition's rows, flattened the way the health check walks them
