@@ -48,6 +48,7 @@ import { WebDist, BootRow } from './WebDist';
 import { WebPlugins } from './WebPlugins';
 import { ApiBridge } from './ApiBridge';
 import { HttpFetch } from './HttpFetch';
+import { KeychainPrimitives } from './KeychainPrimitives';
 import { SurfacePrimitives, SurfaceOpenFn, SurfaceSubmitFn, SurfaceCloseFn, SurfaceFrame } from './SurfacePrimitives';
 import { TimerPrimitive } from './TimerPrimitive';
 
@@ -101,16 +102,20 @@ const RECOVERY_DEFAULTS = '{"backoffBaseMs":500,"backoffFactor":2,' +
   '"backoffMaxMs":10000,"generationReadyWarnMs":3000,' +
   '"generationReadyTimeoutMs":15000}';
 /** The official-phase RuntimeDescriptor: httpFetch v2 is REAL on this host
- * (the streaming body bridge, model/HttpFetch.ets) — 8 available (the
- * serving face carries the timer pair since #395) / 3 unavailable. This is
- * the narrow official serving face, NOT the binding gateway table: it names
- * only what this seat serves or explicitly dropped from the v0 table, so
- * the binding descriptor's honest-absence families (fs metadata, wasmRun,
- * ishRun) are out of its scope — nothing on this seat negotiates them. */
+ * (the streaming body bridge, model/HttpFetch.ets) — 13 available (the
+ * serving face carries the timer pair since #395, the surface trio since
+ * #424, and the keychain pair since the BYOK round: onboarding/save seals
+ * its credential through keychainSet, and a saved route resurrects at boot
+ * via keychainGet) / 1 unavailable. This is the narrow official serving
+ * face, NOT the binding gateway table: it names only what this seat serves
+ * or explicitly dropped from the v0 table, so the binding descriptor's
+ * honest-absence families (fs metadata, wasmRun, ishRun) are out of its
+ * scope — nothing on this seat negotiates them. */
 export const OFFICIAL_DESCRIPTOR = '{"available":["fsRead","fsWrite","fsScope",' +
   '"notify","presentApproval","httpFetch","timerSchedule","timerCancel",' +
-  '"presentSurface","surfaceDraw","closeSurface"],' +
-  '"unavailable":["presentPicker","keychainGet","keychainSet"]}';
+  '"presentSurface","surfaceDraw","closeSurface",' +
+  '"keychainGet","keychainSet"],' +
+  '"unavailable":["presentPicker"]}';
 
 interface BootMessage {
   rows?: Array<Record<string, string>>;
@@ -216,6 +221,13 @@ export class OfficialServe {
   private surface: SurfacePrimitives = new SurfacePrimitives((eventJson: string): void => {
     this.deliverRuntimeEvent(eventJson);
   });
+  /** The keychain pair on this seat (contract v0 rows; the same HUKS-sealed
+   * blobs the binding drive serves — constructed with the ability's filesDir
+   * at startRuntime, the HostPhase form). The BYOK round's only seat-side
+   * need: onboarding/save seals the credential, boot resurrects the saved
+   * route. Null before the first startRuntime — the dispatch answers
+   * unavailable loud. */
+  private keychain: KeychainPrimitives | null = null;
   /** presentApproval's dialog presenter (the ApprovalDialog posture; the
    * descriptor offered the primitive before this seat could dispatch it —
    * the creation-mount flow is its first live caller). */
@@ -470,6 +482,7 @@ export class OfficialServe {
    * holds. */
   private startRuntime(ctx: common.UIAbilityContext, scenario: string): void {
     this.ctxAbility = ctx;
+    this.keychain = new KeychainPrimitives(ctx.filesDir);
     const storedOpen = OfficialServe.surfaceOpenStore;
     if (storedOpen !== null) {
       this.surface.setView(storedOpen, OfficialServe.surfaceSubmitStore
@@ -1210,6 +1223,35 @@ export class OfficialServe {
     }
     if (name === 'closeSurface') {
       this.surface.close(callId, args, settleSurface);
+      return;
+    }
+    if (name === 'keychainGet' || name === 'keychainSet') {
+      // DEFERRED like the timer/surface settles above: the HUKS paths
+      // settle from a later tick on their own, but KeychainPrimitives also
+      // settles SYNCHRONOUSLY on three faces (unset-ref get answers 'null',
+      // a delete set answers '{}', malformed args reject) — and a hostSettle
+      // re-entered from inside the C dispatch callback throws (the same
+      // no-re-entry rule the timer branch cites, measured 2026-10-09). The
+      // fresh-install status detect and onboarding/clear both ride those
+      // sync faces, so the settle hops one event-loop turn regardless.
+      const settleKeychain = (id: number, payloadJson: string, ok: boolean): void => {
+        setTimeout((): void => {
+          const status: number = hostSettle(2, id, ok, payloadJson);
+          if (status < 0) {
+            hilog.error(0x0000, TAG, 'official: keychain settle failed');
+          }
+        }, 0);
+      };
+      if (this.keychain === null) {
+        settleKeychain(callId, '{"code":"unavailable","primitive":'
+          + JSON.stringify(name) + ',"message":"no keychain on this seat"}', false);
+        return;
+      }
+      if (name === 'keychainGet') {
+        this.keychain.get(callId, args, settleKeychain);
+      } else {
+        this.keychain.set(callId, args, settleKeychain);
+      }
       return;
     }
     // Anything else here is a wiring bug — fail loud through a structured

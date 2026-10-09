@@ -1,0 +1,21 @@
+{
+  "title": "P0: the interactive seat serves the keychain pair \u2014 BYOK onboarding lands",
+  "created": "2026-10-09T10:54:42+00:00",
+  "rules": {
+    "hash": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "6d186be6616493c3d8ae7d24174a4e1634711180ca5b3b760452d3c09d7cdb90"
+    }
+  },
+  "checklist": [
+    "[x] review the seat diff against HostPhase's forwarding form (constructor, settle shape, descriptor move)",
+    "[x] harden the keychain settle to the seat's deferred discipline (sync faces: unset-ref get, delete set)",
+    "[x] descriptor comment states the real counts (13 available / 1 unavailable)",
+    "[x] descriptor-parity selftest+gate green; size and logging gates green",
+    "PR created, CI all green, squash-merged"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0209"
+}
