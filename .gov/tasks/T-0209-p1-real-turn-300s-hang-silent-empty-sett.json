@@ -1,0 +1,22 @@
+{
+  "title": "P1: real-turn 300s hang + silent empty settle \u2014 surface errors, bound stalled streams, make retry exhaustion loud",
+  "created": "2026-10-09T10:49:53+00:00",
+  "rules": {
+    "hash": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "6d186be6616493c3d8ae7d24174a4e1634711180ca5b3b760452d3c09d7cdb90"
+    }
+  },
+  "checklist": [
+    "[x] Diagnostic experiment: concurrent two-session bigmodel prompt reproduces the stall; root cause distinguished (a) harmony HTTP concurrent SSE (b) same-key rate limit (c) proxy/NAT \u2014 evidence recorded",
+    "[x] Fix 1: a turn settling with no assistant text surfaces its failure reason as a structured record/event to the page (turn/end reason projected; not text:'' silence)",
+    "[x] Fix 2: HttpFetch streaming read gains a stalled-read timeout (tens of seconds) so dead streams fail fast into retry",
+    "[x] Fix 3: retry pacing/budget reviewed \u2014 after N attempts the turn settles with an explicit error",
+    "[x] Local tests: host-side unit tests for timeout/error settle paths all pass; relevant local gates green",
+    "PR created with experiment record + root cause; CI gates green; squash-merged"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0209"
+}
