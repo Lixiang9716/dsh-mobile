@@ -1,0 +1,26 @@
+{
+  "title": "P2: real-turn journal zero-entry \u2014 session/page projection misses byok turn messages",
+  "created": "2026-10-09T10:40:31+00:00",
+  "rules": {
+    "hash": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "6d186be6616493c3d8ae7d24174a4e1634711180ca5b3b760452d3c09d7cdb90"
+    }
+  },
+  "checklist": [
+    "failing test reproduces: byok-shaped turn (reasoning blocks + tool calls) lands, page projection returns message records",
+    "root cause identified and fixed in append or projection path",
+    "new test + existing composer/journal tests green in runtime/dsh",
+    "local gates: check-size, check-logging (and descriptor-parity if related)",
+    "PR created, CI all green, squash-merged"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0209",
+  "void": {
+    "ts": "2026-10-09T14:03:14+00:00",
+    "by": "13957@DESKTOP-AOFQD6F",
+    "reason": "Premise dissolved (rule 9, T-0208 precedent): the byok turn journals COMPLETELY \u2014 repro'd twice on the REAL spine under Node (test/panel/spine harness: boot.js + web-write.js surface + gateway/timer seams). (1) Synthetic GLM wire (reasoning_content deltas + incremental tool_calls, 2 rounds): journal 13 events, user/message seq5 + assistant/message seq8 both surfaceOp:append, session/page returns all records. (2) REAL bigmodel glm-5.3-flash via staged httpFetch over the real socket: journal 11 events incl. assistant/message with reasoning+text blocks; page complete; reopen follow snapshot carries the full log. The observed '1 record (agent/inbox/spliced)' is EXACTLY the throughSeq:0 page shape against a healthy journal (page throughSeq:-1 -> [] and throughSeq:0 -> [event 0], both by design \u2014 the T-0208 misread class). The durable artifact lands as a regression guard: the spine suite pins the byok journal+projection contract and the cursor shapes."
+  }
+}
