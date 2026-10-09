@@ -6,6 +6,13 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵加入 render-surface 腿（2026-10-09）：
+> `surface.pomodoro` manifest（`test/e2e/scenarios/surface-pomodoro.json`）钉定
+> v1.10.0 回合——打开 → 弧线帧 → 畸形操作拒绝 → 帧泵武装/解除 → 关闭，
+> 无 surface 宿主走诚实的 `negotiation.refused` 对偶。该腿等待首次设备运行
+> （artifacts 目录届时登记）；交互座位 mock 路由零入账缺陷（T-0208）是
+> 创作链的最后一块阻塞。
+
 > **时效性**：本矩阵反映 T4/T5 harness 落地（2026-10-05）：新的
 > `real.agent.loop` 腿在钉定的 bigmodel 凭据上启动完整 spine（工具挂载），
 > glm-5.3-flash 亲自驱动五个探针轮次——fs 边界的四种形态（锚点拒绝、

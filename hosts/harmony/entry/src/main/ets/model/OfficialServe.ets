@@ -48,6 +48,8 @@ import { WebDist, BootRow } from './WebDist';
 import { WebPlugins } from './WebPlugins';
 import { ApiBridge } from './ApiBridge';
 import { HttpFetch } from './HttpFetch';
+import { SurfacePrimitives, SurfaceOpenFn, SurfaceSubmitFn, SurfaceCloseFn, SurfaceFrame } from './SurfacePrimitives';
+import { TimerPrimitive } from './TimerPrimitive';
 
 const TAG: string = 'dsh.app';
 /** The official carrier's first port (the legacy m2/m5 phases keep 17877). */
@@ -106,7 +108,8 @@ const RECOVERY_DEFAULTS = '{"backoffBaseMs":500,"backoffFactor":2,' +
  * the binding descriptor's honest-absence families (fs metadata, wasmRun,
  * ishRun) are out of its scope — nothing on this seat negotiates them. */
 export const OFFICIAL_DESCRIPTOR = '{"available":["fsRead","fsWrite","fsScope",' +
-  '"notify","presentApproval","httpFetch","timerSchedule","timerCancel"],' +
+  '"notify","presentApproval","httpFetch","timerSchedule","timerCancel",' +
+  '"presentSurface","surfaceDraw","closeSurface"],' +
   '"unavailable":["presentPicker","keychainGet","keychainSet"]}';
 
 interface BootMessage {
@@ -131,6 +134,24 @@ interface BusMessage {
   details?: Record<string, Object>;
   endpoints?: string[];
 }
+
+/** The pomodoro script's write payloads (ArkTS wants declared classes,
+ * not Record literals, for JSON.stringify inputs). */
+class PomodoroManifest {
+  id: string = '';
+  name: string = '';
+  version: string = '';
+  entry: string = '';
+}
+
+class PomodoroWrite {
+  file_path: string = '';
+  content: string = '';
+}
+
+/** The approval presenter signature (the ApprovalDialog posture). */
+export type ApprovalFn = (title: string,
+  resolve: (approved: boolean) => void) => void;
 
 export class OfficialServe {
   // ---- the evidence seam ------------------------------------------------------
@@ -176,6 +197,38 @@ export class OfficialServe {
   private plugins: WebPlugins | null = null;
   private bridge: ApiBridge | null = null;
   private http: HttpFetch = new HttpFetch();
+  /** The ability context (startRuntime stashes it — the rawfile reads). */
+  private ctxAbility: common.UIAbilityContext | null = null;
+  /** Presenters registered BEFORE any seat constructs an instance (Index's
+   * aboutToAppear): static storage, applied at construction — whichever
+   * serve goes live (the release seat Index constructs, or the official
+   * drive phase's) finds its presenters in place. */
+  private static surfaceOpenStore: SurfaceOpenFn | null = null;
+  private static surfaceSubmitStore: SurfaceSubmitFn | null = null;
+  private static surfaceCloseStore: SurfaceCloseFn | null = null;
+  private static approvalPresenterStore: ApprovalFn | null = null;
+  /** The render surface (contract v1.10.0) on this seat — Index registers
+   * the native overlay presenter; events ride the same bus sink the
+   * scenario drives use. */
+  private timer: TimerPrimitive = new TimerPrimitive((eventJson: string): void => {
+    this.onBusLine(eventJson);
+  });
+  private surface: SurfacePrimitives = new SurfacePrimitives((eventJson: string): void => {
+    this.onBusLine(eventJson);
+  });
+  /** presentApproval's dialog presenter (the ApprovalDialog posture; the
+   * descriptor offered the primitive before this seat could dispatch it —
+   * the creation-mount flow is its first live caller). */
+  private approvalPresenter: (title: string,
+    resolve: (approved: boolean) => void) => void =
+    (title: string, resolve: (approved: boolean) => void): void => {
+      const stored = OfficialServe.approvalPresenterStore;
+      if (stored !== null) {
+        stored(title, resolve);
+        return;
+      }
+      resolve(false);
+    };
   private token: string = '';
   private port: number = 0;
   private started = false;
@@ -416,6 +469,13 @@ export class OfficialServe {
    * follow on the same stack so the boot wire composes while the carrier
    * holds. */
   private startRuntime(ctx: common.UIAbilityContext, scenario: string): void {
+    this.ctxAbility = ctx;
+    const storedOpen = OfficialServe.surfaceOpenStore;
+    if (storedOpen !== null) {
+      this.surface.setView(storedOpen, OfficialServe.surfaceSubmitStore
+        ?? ((frame: SurfaceFrame): void => {}), OfficialServe.surfaceCloseStore
+        ?? ((): void => {}));
+    }
     hostStart(this.webRoot, this.capturePath, this.fsRoot, OFFICIAL_DESCRIPTOR,
       (line: string): void => {
         this.onBusLine(line);
@@ -824,7 +884,7 @@ export class OfficialServe {
       '","containerRoot":' + JSON.stringify(workspace) +
       ',"fsScopeRoot":' + JSON.stringify(this.fsRoot) +
       ',"commands":true,"fullCoverage":true,"goals":true,' +
-      '"fileReferences":true,"creation":true,"skills":{"dshHome":' +
+      '"presetJoin":true,"fileReferences":true,"creation":true,"skills":{"dshHome":' +
       JSON.stringify(workspace + '/home') + ',"agentsHome":' +
       JSON.stringify(workspace + '/home/agents') + ',"customSkillDirs":[' +
       JSON.stringify(workspace + '/skills') + ']}';
@@ -871,6 +931,21 @@ export class OfficialServe {
       this.server.respondText(conn, 200, SSE_TYPE, this.gameStream());
       return;
     }
+    if (req.body.includes('番茄钟') || req.body.includes('\\u756a\\u8301\\u949f')
+      || req.body.includes('pomodoro')) {
+      // The POMODORO creation round: the typed prompt asks for a plugin, the
+      // scripted turn writes the REAL plugin tree (manifest + the surface
+      // arc timer source) into the workspace; the post-turn mount flow
+      // (approval dialog → live mount → native surface) takes over when
+      // the turn settles. One round per launch (the create latch shape).
+      if (this.pomodoroScriptDone) {
+        this.server.respondText(conn, 200, SSE_TYPE, this.successStream());
+        return;
+      }
+      this.pomodoroScriptDone = true;
+      this.pomodoroStream(conn);
+      return;
+    }
     if (req.body.includes('CREATE_TURN')) {
       // ONE create round per launch: a follow-up model call (the agent
       // loop's post-tool continuation) gets the plain success body, or the
@@ -893,9 +968,72 @@ export class OfficialServe {
 
   private createScriptDone: boolean = false;
 
+  /** The POMODORO round's one-shot latch (pomodoroStream). */
+  private pomodoroScriptDone: boolean = false;
+
   /** The GAME leg's one-shot latch (gameStream) — one per scripted create
    * turn, so the compact and game legs compose in one launch. */
   private gameScriptDone: boolean = false;
+
+  /** The POMODORO script: the turn writes the workspace plugin tree —
+   * plugins/pomodoro-clock/{manifest.json, plugin.js} (plugin.js bytes come
+   * from the STAGED template rawfile at request time, so the repo carries
+   * exactly one source of the plugin) — then summarizes. The runtime's
+   * post-turn hook sees the tree settle and drives approve → live mount →
+   * the native arc surface (web-live/plugin-turn-mount.js). */
+  private pomodoroStream(conn: socket.TCPSocketConnection): void {
+    const workspace: string = this.fsRoot + '/workspace';
+    this.readRawfileText('dsh/web-live/pomodoro-plugin-template.js')
+      .then((pluginJs: string): void => {
+        const manifestRow: PomodoroManifest = new PomodoroManifest();
+        manifestRow.id = 'pomodoro-clock';
+        manifestRow.name = '番茄时钟';
+        manifestRow.version = '0.1.0';
+        manifestRow.entry = 'plugin.js';
+        const manifestJson: string = JSON.stringify(manifestRow);
+        const manifestCall: PomodoroWrite = new PomodoroWrite();
+        manifestCall.file_path = workspace + '/plugins/pomodoro-clock/manifest.json';
+        manifestCall.content = manifestJson;
+        const manifestArgs: string = JSON.stringify(JSON.stringify(manifestCall));
+        const pluginCall: PomodoroWrite = new PomodoroWrite();
+        pluginCall.file_path = workspace + '/plugins/pomodoro-clock/plugin.js';
+        pluginCall.content = pluginJs;
+        const pluginArgs: string = JSON.stringify(JSON.stringify(pluginCall));
+        const summary: string = JSON.stringify(
+          '已创建番茄时钟插件 pomodoro-clock v0.1.0：25 分钟专注 + 5 分钟休息的弧线计时盘，原生渲染。请在弹窗中批准挂载。');
+        const sse: string =
+          'data: {"choices":[{"index":0,"delta":{"tool_calls":[' +
+          '{"index":0,"id":"call-pomo-0","type":"function",' +
+          '"function":{"name":"write","arguments":' + manifestArgs + '}},' +
+          '{"index":1,"id":"call-pomo-1","type":"function",' +
+          '"function":{"name":"write","arguments":' + pluginArgs + '}}' +
+          ']},"finish_reason":null}]}\n\n' +
+          'data: {"choices":[{"index":0,"delta":{"content":' + summary +
+          '},"finish_reason":"stop"}],"usage":{"prompt_tokens":6,"completion_tokens":48}}\n\n' +
+          'data: [DONE]\n\n';
+        this.server.respondText(conn, 200, SSE_TYPE, sse);
+      })
+      .catch((err: BusinessError): void => {
+        hilog.error(0x0000, TAG, 'pomodoro stream: template read failed: %{public}s',
+          err.message ?? 'unknown');
+        this.server.respondText(conn, 200, SSE_TYPE, this.successStream());
+      });
+  }
+
+  /** One rawfile as UTF-8 text (the pomodoro template's byte source). */
+  private readRawfileText(rel: string): Promise<string> {
+    return new Promise<string>((resolve, reject): void => {
+      if (this.ctxAbility === null) {
+        reject(new Error('no UIAbility context'));
+        return;
+      }
+      this.ctxAbility.resourceManager.getRawFileContent(rel).then((buf: Uint8Array): void => {
+        resolve(util.TextDecoder.create('utf-8').decodeToString(buf));
+      }, (err: BusinessError): void => {
+        reject(err);
+      });
+    });
+  }
 
   private successStream(): string {
     const successText = 'Hello from upstream';
@@ -977,14 +1115,100 @@ export class OfficialServe {
       this.http.abort(args);
       return;
     }
-    // The official-web legs never touch notify/approval; anything else here
-    // is a wiring bug — fail loud through a structured rejection.
+    if (name === 'timerSchedule' || name === 'timerCancel') {
+      // Settles are DEFERRED one event-loop turn: timerCancel settles
+      // synchronously inside TimerPrimitive, and a hostSettle re-entered
+      // from inside the C dispatch callback throws (the same re-entry rule
+      // HostPhase's deferred audit queue exists for — measured 2026-10-09:
+      // every timerCancel dispatch failed with on_dispatch callback failed).
+      const settleTimer = (id: number, payload: string, ok: boolean): void => {
+        setTimeout((): void => {
+          const st: number = hostSettle(2, id, ok, payload);
+          if (st < 0) {
+            hilog.error(0x0000, TAG, 'official: timer settle failed');
+          }
+        }, 0);
+      };
+      if (name === 'timerSchedule') {
+        this.timer.schedule(callId, args, settleTimer);
+      } else {
+        this.timer.cancel(callId, args, settleTimer);
+      }
+      return;
+    }
+    if (name === 'presentApproval') {
+      let title = 'Approval';
+      try {
+        const parsed = JSON.parse(args) as Record<string, Object>;
+        if (typeof parsed.title === 'string') {
+          title = parsed.title;
+        }
+      } catch (e) {
+        hostSettle(2, callId, false,
+          '{"code":"invalid","primitive":"presentApproval","message":"bad args"}');
+        return;
+      }
+      this.approvalPresenter(title, (approved: boolean): void => {
+        const status: number = hostSettle(2, callId, true,
+          JSON.stringify({ approved }));
+        if (status < 0) {
+          hilog.error(0x0000, TAG, 'official: approval settle failed');
+        }
+      });
+      return;
+    }
+    const settleSurface = (callIdNum: number, payloadJson: string, ok: boolean): void => {
+      // deferred: surfaceDraw/closeSurface settle synchronously (the same
+      // no-re-entry rule as the timer settles above)
+      setTimeout((): void => {
+        const status: number = hostSettle(2, callIdNum, ok, payloadJson);
+        if (status < 0) {
+          hilog.error(0x0000, TAG, 'official: surface settle failed');
+        }
+      }, 0);
+    };
+    if (name === 'presentSurface') {
+      this.surface.present(callId, args, settleSurface);
+      return;
+    }
+    if (name === 'surfaceDraw') {
+      this.surface.draw(callId, args, settleSurface);
+      return;
+    }
+    if (name === 'closeSurface') {
+      this.surface.close(callId, args, settleSurface);
+      return;
+    }
+    // Anything else here is a wiring bug — fail loud through a structured
+    // rejection.
     const status: number = hostSettle(2, callId, false,
       '{"code":"invalid","primitive":' + JSON.stringify(name) +
       ',"message":"not forwarded"}');
     if (status < 0) {
       hilog.error(0x0000, TAG, 'official: reject settle failed');
     }
+  }
+
+  /** Index registers the overlay + dialog presenters BEFORE any seat goes
+   * live (static storage, applied at construction — see the field init). */
+  static setSurfaceView(open: SurfaceOpenFn, submit: SurfaceSubmitFn,
+    close: SurfaceCloseFn): void {
+    OfficialServe.surfaceOpenStore = open;
+    OfficialServe.surfaceSubmitStore = submit;
+    OfficialServe.surfaceCloseStore = close;
+  }
+
+  /** The overlay's touch/close routing (Index → the live surface). */
+  onSurfaceTouch(kind: string, x: number, y: number): void {
+    this.surface.onTouch(kind, x, y);
+  }
+
+  onSurfaceUserClosed(): void {
+    this.surface.onUserClosed();
+  }
+
+  static setApprovalPresenter(presenter: ApprovalFn): void {
+    OfficialServe.approvalPresenterStore = presenter;
   }
 
   static randomToken(): string {

@@ -1,0 +1,20 @@
+{
+  "title": "The interactive seat's mock-route turns journal zero records \u2014 the creation chain's last blocker",
+  "created": "2026-10-09T05:22:35+00:00",
+  "rules": {
+    "hash": "5fed98aae9738ce8e6003d93fd785d78c60c44c5e11d3f278acdb20a08d968d0",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "6d186be6616493c3d8ae7d24174a4e1634711180ca5b3b760452d3c09d7cdb90"
+    }
+  },
+  "checklist": [
+    "Reproduce on the emulator: official interactive seat (release), no staged credential, prompt any session (page-created OR the boot s-b4-ondevice-0001) \u2014 session/page returns records:0 while the model round DID run (httpFetch dispatched, scripted SSE served, turn/end fires ~50ms later, no error logged)",
+    "Narrow the route: T-0047 proved REAL-backend streaming turns journal fine on this seat \u2014 drive one turn with the staged bigmodel credential and one with the mock route; if real journals and mock does not, the defect is the mock-route adapter path on the interactive seat",
+    "Suspect surface (from the 2026-10-09 session): the agent loop's post-response append path \u2014 the turn completes without appending user/assistant records to the store the session/page projection reads; compare with the drive seat where the same mock SSE journals fine (the session.mock-llm scenario and the composer write legs are green)",
+    "Fix + device-verify: records appear for both routes, the pomodoro scripted turn's write tool calls execute (fsWrite lands plugins/pomodoro-clock/), and the approval dialog \u2192 live mount \u2192 native surface chain completes end to end"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0208"
+}

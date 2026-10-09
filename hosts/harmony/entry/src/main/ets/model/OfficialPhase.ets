@@ -116,6 +116,11 @@ export class OfficialPhase {
   onPageEnd: () => void = (): void => {};
   openOrigin: (url: string) => void = (url: string): void => {};
 
+  /** The serving seat this phase drives (Index's surface/approval routing). */
+  getServe(): OfficialServe {
+    return this.serve;
+  }
+
   static getInstance(): OfficialPhase {
     if (OfficialPhase.instance === null) {
       OfficialPhase.instance = new OfficialPhase();

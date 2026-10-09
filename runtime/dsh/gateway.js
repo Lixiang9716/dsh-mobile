@@ -220,6 +220,9 @@ export const timerSchedule = async (delayMs, opts = {}) =>
 export const timerCancel = async (timerId) =>
   await call('timerCancel', { timerId });
 
+// ---- the render surface (v1.10.0): surface.js (split at the size gate) ----
+
+
 // ---- the device plane (v1.5.0) --------------------------------------------
 
 export const deviceInfo = async () => await call('deviceInfo', {});

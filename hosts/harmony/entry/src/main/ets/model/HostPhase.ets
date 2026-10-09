@@ -56,6 +56,7 @@ import { notificationManager } from '@kit.NotificationKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HttpPrimitive } from './HttpPrimitive';
 import { TimerPrimitive } from './TimerPrimitive';
+import { SurfacePrimitives, SurfaceOpenFn, SurfaceSubmitFn, SurfaceCloseFn } from './SurfacePrimitives';
 import { KeychainPrimitives } from './KeychainPrimitives';
 import { PickerPrimitives } from './PickerPrimitives';
 import { DevicePlanePrimitives } from './DevicePlanePrimitives';
@@ -132,7 +133,7 @@ const ENTRY_STAGE: string = 'credential-stage.js';
 export const BINDING_DESCRIPTOR: string =
   '{"available":["fsRead","fsWrite","fsScope","httpFetch","notify",' +
   '"presentApproval","presentPicker","keychainGet","keychainSet",' +
-  '"timerSchedule","timerCancel",' +
+  '"timerSchedule","timerCancel","presentSurface","surfaceDraw","closeSurface",' +
   '"deviceInfo","haptic","clipboardRead","clipboardWrite","presentShare",' +
   '"keepAwake","cameraCapture","bleScanStart","bleScanStop","bleConnect",' +
   '"bleDisconnect","bleRead","bleWrite","bleSubscribe","bleUnsubscribe",' +
@@ -211,6 +212,9 @@ export class HostPhase {
   private timer: TimerPrimitive = new TimerPrimitive((eventJson: string): void => {
     this.deliverEvent(eventJson);
   });
+  private surface: SurfacePrimitives = new SurfacePrimitives((eventJson: string): void => {
+    this.deliverEvent(eventJson);
+  });
   private keychain: KeychainPrimitives | null = null;
   private picker: PickerPrimitives | null = null;
   /** The deferred §6 audit queue: flat [name, args, payloadJson, ok] rows,
@@ -231,6 +235,22 @@ export class HostPhase {
   setApprovalPresenter(presenter: ApprovalPresenter): void {
     this.approvalPresenter = presenter;
     this.device?.setApprovalPresenter(presenter);
+  }
+
+  /** Index registers the native surface overlay here (the render surface,
+   * contract v1.10.0) — the same presenter posture as approvals. */
+  setSurfaceView(open: SurfaceOpenFn, submit: SurfaceSubmitFn,
+    close: SurfaceCloseFn): void {
+    this.surface.setView(open, submit, close);
+  }
+
+  /** The overlay's touch/close routing (Index → the live surface). */
+  onSurfaceTouch(kind: string, x: number, y: number): void {
+    this.surface.onTouch(kind, x, y);
+  }
+
+  onSurfaceUserClosed(): void {
+    this.surface.onUserClosed();
   }
 
   /** The staged user-store seed file (PickerPrimitives.seedUserFile), '');
@@ -836,6 +856,12 @@ export class HostPhase {
       this.timer.schedule(callId, args, this.auditedSettle(name, args));
     } else if (name === 'timerCancel') {
       this.timer.cancel(callId, args, this.auditedSettle(name, args));
+    } else if (name === 'presentSurface') {
+      this.surface.present(callId, args, this.auditedSettle(name, args));
+    } else if (name === 'surfaceDraw') {
+      this.surface.draw(callId, args, this.auditedSettle(name, args));
+    } else if (name === 'closeSurface') {
+      this.surface.close(callId, args, this.auditedSettle(name, args));
     } else if (name === 'presentPicker') {
       this.picker?.present(callId, args, this.auditedSettle(name, args));
     } else if (name === 'keychainGet') {

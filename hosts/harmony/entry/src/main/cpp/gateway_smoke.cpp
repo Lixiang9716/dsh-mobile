@@ -81,7 +81,7 @@ const char *DSH_SMOKE_DESCRIPTOR =
 const char *DSH_BINDING_DESCRIPTOR =
     "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\","
     "\"notify\",\"presentApproval\",\"presentPicker\",\"keychainGet\","
-    "\"keychainSet\",\"timerSchedule\",\"timerCancel\","
+    "\"keychainSet\",\"timerSchedule\",\"timerCancel\",\"presentSurface\",\"surfaceDraw\",\"closeSurface\","
     "\"deviceInfo\",\"haptic\",\"clipboardRead\","
     "\"clipboardWrite\",\"presentShare\",\"keepAwake\",\"cameraCapture\","
     "\"bleScanStart\",\"bleScanStop\",\"bleConnect\",\"bleDisconnect\","
@@ -495,6 +495,9 @@ static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
             strcmp(name, "presentPicker") == 0 || strcmp(name, "keychainGet") == 0 ||
             strcmp(name, "keychainSet") == 0 || strcmp(name, "httpFetch") == 0 ||
             strcmp(name, "timerSchedule") == 0 || strcmp(name, "timerCancel") == 0 ||
+            strcmp(name, "presentSurface") == 0 ||
+            strcmp(name, "surfaceDraw") == 0 ||
+            strcmp(name, "closeSurface") == 0 ||
             strcmp(name, "deviceInfo") == 0 || strcmp(name, "haptic") == 0 ||
             strcmp(name, "clipboardRead") == 0 || strcmp(name, "clipboardWrite") == 0 ||
             strcmp(name, "presentShare") == 0 || strcmp(name, "keepAwake") == 0 ||

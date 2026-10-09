@@ -33,6 +33,8 @@ import { probeManagerLegs as probeManagerLegsShared } from 'web-live/manager-leg
 import { makeProbeAwaiter } from 'web-live/probe-respond-await.js';
 import { makeFailGate } from 'web-live/scenario-verdict.js';
 import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
+import { installCreationMount } from 'web-live/plugin-live-mount.js';
+import { makeComposerBus } from 'web-live/composer-bus.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
@@ -78,37 +80,7 @@ const fail = makeFailGate({
   complete: (ok, reason) => globalThis.__dshComplete(ok, reason),
 });
 const demand = (cond, reason) => { if (cond) return; fail(reason); throw new Error(reason); };
-
-/** Bus deliveries may arrive before the awaiting half exists (the drive
- * injects right after eval), so the subscription is module-scope, buffers,
- * and wakes pending `take()` waiters — never a poll. Once `dispatch` is
- * installed, deliveries go straight to it. */
-const queue = [];
-let wake = null;
-let dispatch = null;
-globalThis.__dshBusOnMessage = (line) => {
-  const msg = JSON.parse(line);
-  if (dispatch !== null) return dispatch(msg);
-  queue.push(msg);
-  wake?.();
-};
-/** All posted bus frames, in order — the settings-surface probes assert on
- * the api.respond frames (the exact wire the carrier hands the page). */
-const posted = [];
-const post = (msg) => {
-  posted.push(msg);
-  globalThis.__dshBusPost?.(JSON.stringify(msg));
-};
-
-/** Wait for (and remove) the next delivery of one type. */
-const take = async (type) => {
-  for (;;) {
-    const at = queue.findIndex((msg) => msg.type === type);
-    if (at >= 0) return queue.splice(at, 1)[0];
-    await new Promise((resolve) => { wake = resolve; });
-    wake = null;
-  }
-};
+const { queue, posted, post, take, deliver, install: installBusDispatch } = makeComposerBus();
 
 /** Wait (bounded, microtask-granular — no timers) for the configured agent
  * and its session to appear in the registries (async past the mount). */
@@ -126,11 +98,9 @@ const awaitAgent = async (ctx) => {
 /** Boot the spine: the profile container is the host-granted root from the
  * runtime.config delivery (the seeded workspace's REAL directory), the llm
  * route the carrier's scripted endpoint. */
-const bootPhase = async (cfg, route) => {
-  const root = cfg.containerRoot;
-  demand(typeof root === 'string' && root.startsWith('/'),
-    `profile container not granted by the host: ${JSON.stringify(root)}`);
-  const { ctx } = await bootUpstream({
+/** The boot options object (split from bootPhase at the code-size
+ * gate): the interactive rows + the creation/presetJoin flags. */
+const bootOptions = (cfg, route, root) => ({
     scenario: SCENARIO,
     agentId: AGENT_ID,
     sessionId: SESSION_ID,
@@ -146,6 +116,12 @@ const bootPhase = async (cfg, route) => {
     // The CREATION row (the creation-mode plugin): the present tool, under
     // the user-facing seat's interactive flag like the rows above.
     creation: cfg.creation === true,
+    // The deployment default preset join (T-0048's shape): the boot agent
+    // AND every session the page creates resolve tools/prompt/skills
+    // against the joined composition, not the empty global layer — without
+    // it a creation turn's write tool calls drop on the floor (measured
+    // 2026-10-09: the session agent published onto an empty toolset).
+    presetJoin: cfg.presetJoin === true,
     container: {
       cwd: root,
       tmpdir: `${root}/tmp`,
@@ -168,7 +144,13 @@ const bootPhase = async (cfg, route) => {
       onWire: (info) => emit('llm/request/built', info),
       onSse: (info) => emit('llm/sse', info),
     },
-  });
+});
+
+const bootPhase = async (cfg, route) => {
+  const root = cfg.containerRoot;
+  demand(typeof root === 'string' && root.startsWith('/'),
+    `profile container not granted by the host: ${JSON.stringify(root)}`);
+  const { ctx } = await bootUpstream(bootOptions(cfg, route, root));
   return ctx;
 };
 
@@ -249,7 +231,7 @@ const installRuntimeHalf = (ctx, cfg, route) => {
   };
   // `dispatch` installs BEFORE the buffer drains: a delivery racing the swap
   // goes direct or is still in the queue — never stranded, never doubled.
-  dispatch = busHandler;
+  installBusDispatch(busHandler);
   for (const msg of queue.splice(0)) busHandler(msg);
 };
 
@@ -291,7 +273,7 @@ const awaitRespond = makeProbeAwaiter({ frames: posted, fail, yieldTurn: yieldTo
 const probeSettingsRoster = async () => {
   log.debug('settings probes begin', {});
   for (const { rpcId, endpoint } of SETTINGS_PROBES) {
-    dispatch({ type: 'api.request', rpcId, endpoint, payload: { args: {} } });
+    deliver({ type: 'api.request', rpcId, endpoint, payload: { args: {} } });
   }
   // 预设 roster: the REAL vendored service's answer over the wire.
   const roster = (await awaitRespond('probe/agentPresets-list-1'));
@@ -488,6 +470,7 @@ const main = async () => {
   await probeIshRun();
   await awaitAgent(ctx);
   installTurnEvidence(ctx, route, cfg);
+  installCreationMount(ctx, cfg, emit);
   installRuntimeHalf(ctx, cfg, route);
   await probeSettingsSurfaces();
   log.debug('b4 runtime resident (write surface live; awaiting the page)', {});

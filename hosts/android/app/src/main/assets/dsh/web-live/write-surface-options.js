@@ -43,6 +43,11 @@ export const readWorkspaceRegistry = async (cfg = {}) => {
 export const writeSurfaceOptions = (cfg, ctx, route) => ({
   root: cfg.containerRoot,
   fullCoverage: cfg.fullCoverage === true,
+  // The seat's preset-join opt-in: the write surface's session/create joins
+  // every created session onto the deployment default preset (upstream/
+  // web-write.js joinCreatedSessionToDefault) — without it a creation turn's
+  // tool calls drop onto the empty global layer (measured 2026-10-09).
+  presetJoin: cfg.presetJoin === true,
   provider: route.provider,
   model: route.model,
   models: route.models, // the staged roster (llm-route.js); absent on mock/byok routes

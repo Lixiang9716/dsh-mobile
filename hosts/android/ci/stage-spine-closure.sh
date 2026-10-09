@@ -290,14 +290,14 @@ find "$DSH/upstream/shims" -name '*.js' -type f | while IFS= read -r src; do
 done
 mkdir -p "$ASSETS/upstream/shims/sharp"
 cp "$DSH/upstream/shims/sharp/package.json" "$ASSETS/upstream/shims/sharp/package.json"
-for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
+for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js plugin-mount.js surface.js; do
     cmp -s "$DSH/$f" "$ASSETS/$f" || cp "$DSH/$f" "$ASSETS/$f"
 done
 
 # The dsh-root runtime files the boot graph imports (gateway.js grows
 # with the contract: the shell plugins import wasmRun/ishRun from it;
 # ed25519.js + marketplace-resolver.js ride the marketplace seam).
-for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
+for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js plugin-mount.js surface.js; do
     cmp -s "$DSH/$f" "$ASSETS/$f" || cp "$DSH/$f" "$ASSETS/$f"
 done
 
@@ -366,12 +366,11 @@ done
 # drives is staged above); the mic-plane scenario too (the capability
 # plane's microphone leg, v1.10.0 candidate — an unlisted scenario would
 # silently freeze on a fresh install, the embed-list trap).
-for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
-         android-capability-binding.js \
+for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js android-capability-binding.js \
          device-plane.js camera-plane.js ble-plane.js mic-plane.js \
-         upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
-         upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \
-         upstream-fake-timers.js agent-presets-probe-seed.js agent-flow.js; do
+         upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js upstream-test-harness.js \
+         upstream-harness-matchers.js upstream-harness-vi.js upstream-fake-timers.js agent-presets-probe-seed.js \
+         agent-flow.js; do
     if [ -f "$DSH/scenario/$s" ]; then
         cp "$DSH/scenario/$s" "$ASSETS/scenario/$s"
     fi
@@ -382,10 +381,9 @@ done
 # android-officialweb-web-live.js joins the list here although it rode for a
 # long time as a committed-only asset row: an unlisted entry silently freezes
 # on a fresh install (the embed-list trap this file's own comments name).
-for s in android-officialweb-web-live.js android-session-live-read.js \
-         android-composer-live-write.js composer-web-live.js \
-         write-surface-options.js manager-legs-probe.js \
-         probe-respond-await.js scenario-verdict.js api-handler-respond.js; do
+for s in android-officialweb-web-live.js android-session-live-read.js android-composer-live-write.js composer-web-live.js \
+         write-surface-options.js manager-legs-probe.js probe-respond-await.js scenario-verdict.js \
+         api-handler-respond.js plugin-live-mount.js composer-bus.js; do
     if [ -f "$DSH/web-live/$s" ]; then
         cp "$DSH/web-live/$s" "$ASSETS/web-live/$s"
     fi
@@ -516,7 +514,7 @@ done
     done
 cmp -s "$DSH/upstream/shims/sharp/package.json" "$ASSETS/upstream/shims/sharp/package.json" ||
     note_drift "shims/sharp/package.json"
-for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js; do
+for f in gateway.js logger.js transport-tokens.mjs registry.js workspace-registry.js ed25519.js marketplace-resolver.js canonical-json.js install-fetch.js receipt-journal.js plugin-mount.js surface.js; do
     cmp -s "$DSH/$f" "$ASSETS/$f" || note_drift "$f"
 done
 # The staged web-client trees (tracked asset copies, judged both ways the
@@ -538,21 +536,19 @@ done
 # The staged scenarios (tracked asset copies — the suite driver among them:
 # a stale APK copy would shadow every runtime-side fix, the exact defect the
 # 2026-09-23 round-two chase hit).
-for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
-         android-capability-binding.js \
+for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js android-capability-binding.js \
          device-plane.js camera-plane.js ble-plane.js mic-plane.js \
-         upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
-         upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \
-         upstream-fake-timers.js agent-presets-probe-seed.js agent-flow.js; do
+         upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js upstream-test-harness.js \
+         upstream-harness-matchers.js upstream-harness-vi.js upstream-fake-timers.js agent-presets-probe-seed.js \
+         agent-flow.js; do
     if [ "$MODE" = "check" ] && ! is_tracked "scenario/$s"; then note_skip; continue; fi
     cmp -s "$DSH/scenario/$s" "$ASSETS/scenario/$s" || note_drift "scenario/$s"
 done
 # The staged web-live product boots (twin of the scenario loop above — the
 # same stale-copy shadowing defect, the product mount entries' own row).
-for s in android-officialweb-web-live.js android-session-live-read.js \
-         android-composer-live-write.js composer-web-live.js \
-         write-surface-options.js manager-legs-probe.js \
-         probe-respond-await.js scenario-verdict.js api-handler-respond.js; do
+for s in android-officialweb-web-live.js android-session-live-read.js android-composer-live-write.js composer-web-live.js \
+         write-surface-options.js manager-legs-probe.js probe-respond-await.js scenario-verdict.js \
+         api-handler-respond.js plugin-live-mount.js composer-bus.js; do
     if [ "$MODE" = "check" ] && ! is_tracked "web-live/$s"; then note_skip; continue; fi
     cmp -s "$DSH/web-live/$s" "$ASSETS/web-live/$s" || note_drift "web-live/$s"
 done
