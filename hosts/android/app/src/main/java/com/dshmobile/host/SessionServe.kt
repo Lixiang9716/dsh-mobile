@@ -76,6 +76,7 @@ class SessionServe private constructor(
                 try {
                     seat.begin()
                 } catch (e: Exception) {
+                    android.util.Log.e("dsh.serve", "bootstrap stack", e)
                     seat.fail("serve bootstrap: ${e::class.java.simpleName}: ${e.message}")
                 }
             }
@@ -90,6 +91,10 @@ class SessionServe private constructor(
     private val carrier = CarrierServer()
     private lateinit var plugins: CarrierPlugins
     private lateinit var bridge: CarrierAPIBridge
+    /** The native card face — attached at start (main), fed by the bus
+     * seam; [CardSurface.snapshot] is thread-safe so the /api/state
+     * connection thread reads it without a hop. */
+    @Volatile private var cardSurface: CardSurface? = null
     private lateinit var dist: CarrierWebDist
     private lateinit var core: GatewayCore
     private lateinit var seam: SessionWriteSeam
@@ -174,6 +179,23 @@ class SessionServe private constructor(
         )
         bridge = CarrierAPIBridge(token)
         bridge.deliverToRuntime = { msg -> deliverRuntime(msg) }
+        // The native card face (the Kotlin sibling of hosts/ios
+        // CardPlayerSurface): the card.* bus lines render as a PiP card over
+        // the app's own chrome, and the /api/state seam reads its face.
+        // Views are main-thread confined and begin() runs on dsh-rt-js —
+        // the attach hops.
+        activity.runOnUiThread { cardSurface = CardSurface.attach(activity) }
+        // The app block of the GET /api/state seam: the scripted-approval
+        // flag this launch ran under + the card face's projection.
+        bridge.appState = {
+            val app = JSONObject()
+            val script = activity.intent?.getStringExtra("dsh.script.approval")
+            app.put("scriptApproval",
+                if (script in setOf("approve", "remember", "decline")) script
+                else JSONObject.NULL)
+            cardSurface?.let { app.put("card", it.snapshot().optJSONObject("card")) }
+            app
+        }
         seam = SessionWriteSeam(bridge)
         wireEvidence()
         carrier.registerFallback(dist.handler)
@@ -351,6 +373,11 @@ class SessionServe private constructor(
                     probesDone = true
                     maybeOpenOrigin()
                 }
+                "card.present", "card.state", "card.dismiss", "card.complete" -> {
+                    // The native card face is main-thread confined; the bus
+                    // line arrives on the runtime thread.
+                    activity.runOnUiThread { cardSurface?.handle(msg) }
+                }
                 else -> {
                     val handled = seam.onBusMessage(msg)
                     if (!handled) Log.i(TAG, "bus: unhandled '${msg.optString("type")}'")
@@ -425,6 +452,11 @@ class SessionServe private constructor(
         originOpened = true
         val port = carrier.port
         activity.runOnUiThread {
+            // The origin-token line (the iOS sibling's `dsh.serve: origin
+            // token=` — the drives harvest it from the log to talk to the
+            // /api plane; the token never leaves this log).
+            android.util.Log.i(
+                "dsh.serve", "origin token=$token port=$port")
             webView?.loadUrl("http://127.0.0.1:$port/?token=$token")
         }
     }
