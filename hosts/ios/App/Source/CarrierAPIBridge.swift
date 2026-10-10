@@ -47,6 +47,13 @@ final class CarrierAPIBridge {
     private var muxClaimed = false
     /// Responses awaiting the runtime, by rpcId (bridge queue only).
     private var pendingRPC: [String: NWConnection] = [:]
+    /// rpcId -> endpoint for the pending RPCs (response attribution: the
+    /// page's session/create answer is where the active session is born).
+    private var pendingEndpoint: [String: String] = [:]
+    /// The session the PAGE last opened (created or prompted) — the API
+    /// relay drive targets it so turn events flow into the page's own mux
+    /// subscription and render live, exactly like hand-typing.
+    private var pageSession = ""
 
     init(sessionToken: String) {
         self.sessionToken = sessionToken
@@ -87,6 +94,8 @@ final class CarrierAPIBridge {
             guard let self else { return }
             if self.claimedEndpoints.contains(endpoint) {
                 self.pendingRPC[envelope.rpcId] = conn
+                self.pendingEndpoint[envelope.rpcId] = endpoint
+                self.snoopPageSession(endpoint: endpoint, payload: envelope.payload)
                 self.deliverToRuntime?([
                     "type": "api.request", "rpcId": envelope.rpcId,
                     "endpoint": endpoint, "payload": envelope.payload,
@@ -108,9 +117,31 @@ final class CarrierAPIBridge {
 
     /// Runtime → carrier: settle one claimed RPC with the frozen result
     /// envelope (`result` = the already-shaped ok/error JSON object).
+    private func snoopPageSession(endpoint: String, payload: Any) {
+        guard endpoint == "session/prompt" else { return }
+        guard let args = (payload as? [String: Any])?["args"] as? [String: Any],
+              let request = args["request"] as? [String: Any],
+              let sessionId = request["sessionId"] as? String, !sessionId.isEmpty
+        else { return }
+        notePageSession(sessionId)
+    }
+
+    /// The one source of truth for "the page is looking at this session".
+    private func notePageSession(_ sessionId: String) {
+        guard sessionId != pageSession else { return }
+        pageSession = sessionId
+        NSLog("dsh.bridge: page session %@", sessionId)
+    }
+
     func respondAPI(rpcId: String, result: [String: Any]) {
         queue.async { [weak self] in
             guard let self, let conn = self.pendingRPC.removeValue(forKey: rpcId) else { return }
+            let endpoint = self.pendingEndpoint.removeValue(forKey: rpcId) ?? ""
+            if endpoint == "session/create",
+               let value = (result["value"] as? [String: Any]),
+               let sessionId = value["sessionId"] as? String, !sessionId.isEmpty {
+                self.notePageSession(sessionId)
+            }
             let envelope: [String: Any] = ["type": "server-response", "rpcId": rpcId, "result": result]
             guard let data = try? JSONSerialization.data(withJSONObject: envelope) else { return }
             self.answer(conn, status: 200, body: data, mime: "application/json")
