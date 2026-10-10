@@ -259,6 +259,29 @@ sessionFeedback.
 | invariant, configEditor, setting, workspaceRegistry | desktop diagnostics/composition faces; mobile's equivalents are the settings service, the gateway workspace picker, and the host workspace model |
 | api-gateway (typert/Remote) | the carrier API bridge: `/api/<endpoint>` + the bus-claimed endpoint table (session/*, goals/*, commands/*, marketplace/*, …) — the same namespace surface over the carrier contract, no typert wire |
 
+## Documentation audit coverage (page-by-page, 2026-10-10)
+
+Every docs-site page was read and compared against the host. Dispositions:
+
+| Page | Disposition |
+| --- | --- |
+| develop/basic (first plugin, tool, config, publish) | proven — three forms, defineTool greet, Schemastery config, marketplace mapping (`plugin.forms`) |
+| develop/framework (lifecycle, service, events) | proven — unload/dispose, dependency cascade incl. reload, all five dispatch modes (`plugin.forms`) |
+| develop/practice (three-layer seam, LLM adapter, dynamic-cordis) | proven (Service+inject+adapter legs); dynamic-cordis = the chat-created plugin product flow itself |
+| develop/cordis-tutorial (7 chapters) | proven — the chapters are the framework pages' hands-on forms; ch.6's PENDING trap is where the mount's refusal diagnosis comes from |
+| reference/cordis-api (context, registry, fiber, events, service) | face-audited — 18 methods + 5 instance members + 7 Service kernel symbols asserted present (`seam.inventory/cordis.face`); fiber.update exposed as `updateWorkspacePluginConfig` |
+| reference/capability-seams | runtime-audited — the seam inventory (22 mounted / 20 recorded dispositions, table above) |
+| reference/tool-execution-pipeline | proven — all three waterfalls + monotonic guard + result observation (`plugin.forms` policy phase) |
+| reference/agent-lifecycle | concept page (turn/step; `session/event` vs `agent/*`) — carried by the vendored agent-loop verbatim |
+| reference/api-gateway | classified — desktop typert/Remote wire; mobile serves the same `/api` namespace surface over the carrier bridge + bus-claimed endpoints |
+| reference/cookbook: adding-a-tool, adding-an-llm-adapter, extension-cookbook | proven/classified — every extension pattern (pre-execute, guard, post-execute, result, jobs, adapter registration) is in a leg |
+| reference/cookbook: adding-a-package | desktop monorepo packaging (pnpm/tsdown/constraints) — N/A on mobile; the portable bits are the locale (`meta.title`/`description`) and icon metadata conventions, NOT carried (the marketplace catalog's `summaries.json` covers en/zh at catalog level) — flagged follow-up |
+| guide/quickstart | the Web-UI flow IS this app's product surface |
+| guide/providers | the model-configuration product page; mobile's equivalent is the BYOK/models settings surface (OpenAI-compatible endpoints); the desktop multi-protocol breadth (anthropic-messages / openai-responses via llm-pi-ai) is not vendored on mobile — flagged follow-up |
+| guide/network-proxy, python-sdk | launch-env proxy vars / desktop SDK profile — no plugin-author face; N/A |
+| guide/github-review, guide/schedule, guide/mcp-memory | desktop product features over seams not carried (webhookRuntime; schedule; mcp-client over stdio subprocess = the no-process wall) — flagged follow-ups |
+| generated catalogs (config/tool/persistence) + subsystems (~45 pages) | generated FROM the same vendored packages — by-construction coverage; spot-checked tools + jobs: the documented faces match the vendored lib (the docs site tracks master, so a few type names drift from our 0.1.6-alpha.2 pin — the pin is authoritative) |
+
 ---
 
 [中文版](plugin-dev.zh.md)

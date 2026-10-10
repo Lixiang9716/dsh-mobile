@@ -160,6 +160,29 @@ quickstart 的 Web-UI 流程(模型设置 → 工作区选择 → 带审批的�
 | invariant、configEditor、setting、workspaceRegistry | 桌面诊断/组合面;移动等价物是 settings 服务、网关工作区选择器、宿主工作区模型 |
 | api-gateway(typert/Remote) | carrier API 桥:`/api/<endpoint>` + bus 认领端点表(session/*、goals/*、commands/*、marketplace/* 等)——同一命名空间面走 carrier 契约,无 typert wire |
 
+## 文档审计覆盖(逐页,2026-10-10)
+
+文档站每一页都已读过并与宿主比对。处置:
+
+| 页面 | 处置 |
+| --- | --- |
+| develop/basic(第一个插件、工具、配置、发布) | 已实证——三形态、defineTool greet、Schemastery 配置、市场映射(`plugin.forms`) |
+| develop/framework(生命周期、服务、事件) | 已实证——卸载/处置、依赖级联含重载、全部五种分发模式(`plugin.forms`) |
+| develop/practice(三层拆分、LLM 适配器、持久化插件) | 已实证(Service+inject+适配器腿);dynamic-cordis 即聊天创作插件的产品流程本身 |
+| develop/cordis-tutorial(7 章) | 已实证——各章即框架页的上手形态;第 6 章的 PENDING 陷阱即挂载拒绝诊断的出处 |
+| reference/cordis-api(context、registry、fiber、events、service) | 面审计——18 方法 + 5 实例成员 + 7 个 Service 内核符号断言存在(`seam.inventory/cordis.face`);fiber.update 暴露为 `updateWorkspacePluginConfig` |
+| reference/capability-seams | 运行时实测——seam 清点(22 挂载/20 记录处置,见上表) |
+| reference/tool-execution-pipeline | 已实证——三瀑布 + 单调 guard + 结果观察(`plugin.forms` 策略相) |
+| reference/agent-lifecycle | 概念页(回合/步骤;`session/event` 对 `agent/*`)——由 vendored agent-loop 原样携带 |
+| reference/api-gateway | 已归类——桌面 typert/Remote 线;移动经 carrier 桥 + bus 认领端点服同一 `/api` 命名空间面 |
+| reference/cookbook:adding-a-tool、adding-an-llm-adapter、extension-cookbook | 已实证/已归类——每个扩展模式(pre-execute、guard、post-execute、result、jobs、适配器注册)都在腿里 |
+| reference/cookbook:adding-a-package | 桌面 monorepo 打包(pnpm/tsdown/约束)——移动端不适用;可移植部分是 locale(`meta.title`/`description`)与图标元数据约定,未携带(市场目录的 `summaries.json` 在目录层覆盖 en/zh)——列为后续 |
+| guide/quickstart | Web-UI 流程即本应用的产品面 |
+| guide/providers | 模型配置产品页;移动等价物是 BYOK/模型设置面(OpenAI 兼容端点);桌面多协议广度(经 llm-pi-ai 的 anthropic-messages / openai-responses)未在移动 vendor——列为后续 |
+| guide/network-proxy、python-sdk | 启动环境代理变量 / 桌面 SDK profile——无插件作者面;不适用 |
+| guide/github-review、guide/schedule、guide/mcp-memory | 建立在未携带 seam 上的桌面产品特性(webhookRuntime;schedule;走 stdio 子进程的 mcp-client=无进程墙)——列为后续 |
+| 生成类 catalog(config/tool/persistence)+ subsystems(约 45 页) | 由同一批 vendored 包生成——构造性覆盖;抽查 tools 与 jobs:文档面与 vendored 库一致(文档站跟 master,个别类型名与我们的 0.1.6-alpha.2 钉版有漂移——以钉版为准) |
+
 ---
 
 [English version](plugin-dev.md)
