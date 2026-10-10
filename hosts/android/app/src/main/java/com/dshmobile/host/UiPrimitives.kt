@@ -34,6 +34,13 @@ class UiPrimitives(
 
     private val main = Handler(Looper.getMainLooper())
 
+    /** The scripted-approval launch extra, or null (drives relaunch per
+     * leg, so no caching). Surfaced through GET /api/state too. */
+    fun scriptedApprovalFlag(): String? {
+        val value = activity.intent?.getStringExtra("dsh.script.approval") ?: return null
+        return value.takeIf { it in setOf("approve", "remember", "decline") }
+    }
+
     private val PICKER_MODES = setOf("file", "directory", "media")
     private val stateLock = Object()
     private var pendingPicker: GatewayCore.Done? = null
@@ -72,10 +79,41 @@ class UiPrimitives(
                 settleApproval(done, approved = true, remember = true)
             }
         }
+        approvalSettled = false
         builder.create().show()
+        scriptAnswerIfAsked(remember, done)
+    }
+
+    /** The scripted-approver test seam (the launch extra
+     * `dsh.script.approval approve|remember|decline`): the dialog still
+     * presents — the native path is exercised — then settles exactly the
+     * way the tapped button would, 350 ms later, so drives retire their UI
+     * automation on the one dialog the API plane cannot answer by design.
+     * Absent the extra the human answers; the product default is unchanged.
+     * Exactly one settle per presentation (the seam and a live tap can
+     * race — all settle paths run on main). */
+    private var approvalSettled = false
+
+    private fun scriptAnswerIfAsked(remember: Boolean, done: GatewayCore.Done) {
+        val script = scriptedApprovalFlag() ?: return
+        main.postDelayed({
+            if (approvalSettled) return@postDelayed
+            approvalSettled = true
+            GatewayCore.uiMarker("approval", "script")
+            android.util.Log.i("dsh.approval", "script answered $script")
+            when (script) {
+                "remember" -> settleApproval(done, approved = true, remember = remember)
+                "decline" -> settleApproval(done, approved = false, remember = false)
+                else -> settleApproval(done, approved = true, remember = false)
+            }
+        }, 350)
     }
 
     private fun settleApproval(done: GatewayCore.Done, approved: Boolean, remember: Boolean) {
+        // Exactly one settle per presentation: the scripted seam and a live
+        // tap can race (all settle paths run on main).
+        if (approvalSettled) return
+        approvalSettled = true
         GatewayCore.uiMarker("approval", "done")
         val result = JSONObject().put("approved", approved)
         if (remember) result.put("remember", true)

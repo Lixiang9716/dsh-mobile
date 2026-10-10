@@ -29,6 +29,9 @@ class CarrierAPIBridge(private val sessionToken: String) {
 
     /** Seam out: carrier → runtime deliveries (the runtime hops queues). */
     var deliverToRuntime: ((JSONObject) -> Unit)? = null
+    /** App-level extras for the GET /api/state snapshot (the card face's
+     * projection; the owning seat wires it). */
+    var appState: (() -> JSONObject)? = null
 
     private val lock = Object()
     /** Endpoints the runtime claimed over the bus seam (v0: none). */
@@ -85,6 +88,15 @@ class CarrierAPIBridge(private val sessionToken: String) {
         if (path == null) {
             return answer(out, 400, "bad request".toByteArray(), "text/plain")
         }
+        // The state-snapshot observation seam: a read-only GET beside the
+        // POST envelope plane, same token gate — diagnostics for the drive,
+        // never a page surface.
+        if (path == "/api/state") {
+            if (request.method != "GET") return answer(out, 405, ByteArray(0), "text/plain")
+            if (!request.isAuthed(sessionToken)) return answer(out, 401, ByteArray(0), "text/plain")
+            return answer(out, 200, stateSnapshot().toString().toByteArray(Charsets.UTF_8),
+                "application/json")
+        }
         if (request.method != "POST") return answer(out, 405, ByteArray(0), "text/plain")
         if (!request.isAuthed(sessionToken)) return answer(out, 401, ByteArray(0), "text/plain")
         val endpoint = path.removePrefix("/api/")
@@ -103,6 +115,24 @@ class CarrierAPIBridge(private val sessionToken: String) {
         } else {
             onAPICall?.invoke(endpoint, "unavailable")
         }
+    }
+
+    /** GET /api/state — the state-snapshot observation seam: the bridge's
+     * own facts plus the app layer's projections (the card face). Every
+     * fetch also lands as one `dsh.snapshot` log line — one observation
+     * channel, not a second one. */
+    private fun stateSnapshot(): JSONObject {
+        val snapshot = JSONObject()
+        snapshot.put(
+            "claimedEndpoints",
+            synchronized(lock) { JSONArray(claimedEndpoints.sorted()) },
+        )
+        snapshot.put("muxClaimed", synchronized(lock) { muxClaimed })
+        snapshot.put("pendingRPC", synchronized(lock) { pendingRPC.size })
+        snapshot.put("app", appState?.invoke() ?: JSONObject())
+
+        android.util.Log.i("dsh.snapshot", snapshot.toString())
+        return snapshot
     }
 
     /** Registers one claimed RPC for the runtime and delivers it over the
@@ -127,7 +157,6 @@ class CarrierAPIBridge(private val sessionToken: String) {
             .put("payload", payload)
         val waiter = RpcWaiter()
         synchronized(lock) {
-            android.util.Log.i("CarrierAPIBridge", "TRACE tryForward $endpoint: claimed=${claimedEndpoints.contains(endpoint)} set=${claimedEndpoints.size}")
             if (!claimedEndpoints.contains(endpoint)) {
                 answerUnavailable(rpcId, endpoint, out)
                 return false
@@ -175,9 +204,7 @@ class CarrierAPIBridge(private val sessionToken: String) {
 
     /** Bus-seam claim: the runtime answers these endpoints from now on. */
     fun claim(endpoints: List<String>) {
-        android.util.Log.i("CarrierAPIBridge", "TRACE claim: +${endpoints.size} → set=${synchronized(lock) { claimedEndpoints.size }} containsFB=${synchronized(lock) { claimedEndpoints.contains("sessionFeedback/record") }} containsMI=${synchronized(lock) { claimedEndpoints.contains("marketplace/index") }}")
         synchronized(lock) { claimedEndpoints.addAll(endpoints) }
-        android.util.Log.i("CarrierAPIBridge", "TRACE claim post-add: set=${synchronized(lock) { claimedEndpoints.size }} containsFB=${synchronized(lock) { claimedEndpoints.contains("sessionFeedback/record") }} containsMI=${synchronized(lock) { claimedEndpoints.contains("marketplace/index") }}")
     }
 
     // ---- WS /api/remote.mux (§2.4) ------------------------------------------------
