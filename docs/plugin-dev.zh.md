@@ -51,9 +51,80 @@ export const apply = (ctx) => {
 
 卸载是一等操作:`unmountWorkspacePlugin(spec)` 等待 cordis fiber 的 `dispose()`(插件注册的每个 effect 都随之收尾)并把注册表行置为禁用。再次挂载会在纪元查询(`?e=1`——装载器的 node 式缓存击穿)下重新链接**当前**源码,因此「编辑 → 重启」是真重载,不是旧模块。经插件管理器移除(`marketplace/remove`)会先卸载活挂载——树永远不会从运行中的 fiber 脚下消失。
 
+## 写一个工具(develop/basic/tool)
+
+教程的 `greet` 工具原样可跑——`defineTool` 经装载器裸名映射解析,注册即 effect,执行走真实 ToolRuntime:
+
+```js
+import { defineTool } from '@deepseek-ai/dsh-tools';
+
+export const name = 'greet-tool';
+export const inject = ['tools'];
+
+export function apply(ctx) {
+  ctx.tools.register(defineTool({
+    name: 'greet',
+    description: 'Greet someone by name.',
+    parameters: { name: { type: 'string', required: true, description: 'Who to greet' } },
+    output: { schema: { type: 'string' }, render: (_a, value) => [{ type: 'text', text: value }] },
+    async execute(args) { return `Hello, ${args.name}!`; },
+  }));
+}
+```
+
+其他插件经 `ctx.on('tools/result', (exec, result) => …)` 独立观察每次调用——松耦合,二者互不 import。
+
+## 插件配置(develop/basic/config)
+
+导出 `Config` schema(Schemastery——任何 Standard Schema 校验器均可),`apply(ctx, config)` 收到的就是校验过、默认值补齐的配置:
+
+```js
+import Schema from '@deepseek-ai/schemastery';
+
+export const Config = Schema.object({
+  greeting: Schema.string().default('Hello'),
+});
+export const apply = (ctx, config) => { /* config.greeting 总是有值 */ };
+```
+
+配置经挂载选项传递(`pluginOpts`)。校验发生在 `ctx.plugin` 内部:非法配置会让挂载**响亮失败**(ValidationError),并回滚 adoption(启用位)——坏插件绝不会保持启用、每次启动重试。教程的 `.volatile()` 字段与 `!!js` YAML 标签是桌面组合层的特性;移动宿主的配置在挂载时定格——要改就带新选项重挂。
+
+## 事件(develop/framework/events)
+
+四种分发模式是 cordis 内核原生的,逐字可用:`ctx.emit`(广播)、`ctx.bail`(首个非空返回短路)、`ctx.serial`、`ctx.waterfall`(每个监听器包裹 `next()`)。每个 `ctx.on` 都是 effect——卸载即摘除监听器。`tools/result` 及其他 `namespace/action` harness 事件与教程所示完全一致。
+
+## 服务与依赖级联(develop/framework/service)
+
+提供服务用类形态(`super(ctx, 'myService')`);消费用 `inject: ['myService']`(必需)或 `ctx.get('myService')`(可选)。级联契约在本宿主成立且已实证:**卸载提供方,依赖方随之销毁;服务恢复,依赖方自动重载。**
+
+## 挂载被拒时:PENDING 诊断(cordis-tutorial 06)
+
+`inject` 点名了无人提供的服务的插件,在上游会永远静默等待。本宿主的挂载会**拒绝**并给出诊断(`plugin is PENDING — an injected service is missing`),同时拆除 fiber、回滚 adoption。挂载必须现在就跑起来,否则干脆不挂。
+
+## LLM 适配器(develop/practice/llm-adapter)
+
+工作区插件可以服务自己的提供方——继承 `@deepseek-ai/dsh-llm` 的 `LlmAdapter` 并覆写 `stream()`(基类拥有 `providerInfo`/`providerRetryPolicy`/`resolveModel`/`prepareCall`):
+
+```js
+import { LlmAdapter } from '@deepseek-ai/dsh-llm';
+
+class MyAdapter extends LlmAdapter {
+  async *stream(options) { /* 产出 StreamChunk 协议 */ }
+}
+
+export const inject = ['llm'];
+export const apply = (ctx) => { ctx.llm.registerAdapter(['my-provider'], new MyAdapter()); };
+```
+
+注册即 effect(卸载即撤下提供方),流经真实 `LlmRuntime` 的 waterfall。
+
+## 三层拆分(develop/practice/)与发布(develop/basic/publish)
+
+Definition / Provider / Consumer 对应三个工作区树(或三个市场包),说同一个 Service 名——机制就是上面的 Service 形态 + `inject`;仓库自己的能力面(shell → bash-local → tool-bash)就是参照。发布对应市场面:`dsh plugin add` ≈ `plugin_manager install_bundle`(来自市场索引的签名 uSTAR 包),`remove` ≈ `marketplace/remove`(先卸活挂载),profile 组合包列表 ≈ 启动列表所读的 `dsh.plugins/1` 注册表。npm/pnpm 打包章按设计属于桌面——设备永不编译;作者在自己机器上编译(`dev.sh`)或交付预构建包。
+
 ## E2E 实证在哪
 
-`scenario/plugin-forms.js`(确定性、无模型):三形态全部挂载、`inject` 排序加载、服务经解析器应答、effect 清理在卸载时运行、编辑后的源码重载、启动列表恰好挂载启用的行。用 `runtime/dsh/ci/run-plugin-forms-e2e.sh` 运行(已接入 `build/build.sh test core`);清单在 `test/e2e/scenarios/plugin-forms.json`。
+`scenario/plugin-forms.js`(确定性、无模型):三形态全部挂载、`inject` 排序加载、服务经解析器应答、effect 清理在卸载时运行、编辑后的源码重载、配置校验(显式值 → 默认值 → 非法响亮失败)、四种事件模式分发、greet 工具经真实 ToolRuntime 执行且有独立观察者、依赖级联销毁与重载、PENDING 挂载带诊断拒绝、工作区 LLM 适配器服务真实流、启动列表恰好挂载启用的行——23 个事件一一对应。用 `runtime/dsh/ci/run-plugin-forms-e2e.sh` 运行(已接入 `build/build.sh test core`);清单在 `test/e2e/scenarios/plugin-forms.json`。
 
 ---
 

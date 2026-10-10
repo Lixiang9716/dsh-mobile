@@ -43,6 +43,70 @@
    }
   },
   {
+   "event": "config.validated",
+   "match": {
+    "greeting": "Hola"
+   }
+  },
+  {
+   "event": "config.default",
+   "match": {
+    "greeting": "Hello"
+   }
+  },
+  {
+   "event": "config.invalid",
+   "match": {
+    "refused": true
+   }
+  },
+  {
+   "event": "events.observed",
+   "match": {
+    "on": 1,
+    "bail": "blocked",
+    "wf": "hey!"
+   }
+  },
+  {
+   "event": "events.detached",
+   "match": {
+    "on": 1
+   }
+  },
+  {
+   "event": "tool.greeted",
+   "match": {
+    "text": "Hello, Cordis!",
+    "observed": 1
+   }
+  },
+  {
+   "event": "cascade.disposed",
+   "match": {
+    "alive": false
+   }
+  },
+  {
+   "event": "cascade.reloaded",
+   "match": {
+    "alive": true
+   }
+  },
+  {
+   "event": "pending.refused",
+   "match": {
+    "step": "mounted"
+   }
+  },
+  {
+   "event": "llm.streamed",
+   "match": {
+    "text": "forms-llm-echo",
+    "stop": "stop"
+   }
+  },
+  {
    "event": "form.unmounted",
    "match": {
     "spec": "forms-hello"
