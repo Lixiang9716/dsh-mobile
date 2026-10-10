@@ -1,0 +1,15 @@
+{
+  "host": "android",
+  "udid": "emulator-5554",
+  "runner": "hosts/android/ci/run-card-player.sh",
+  "phase": "card.player",
+  "launch": "emulator, --ez dsh.cardplayer true + --es dsh.script.approval approve (Debug)",
+  "tree": "origin/main fd96e5614b70 (dirty working tree at receipt time)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "scenarios": [
+    { "manifest": "card-player", "verdict": "verdict-card-player.json", "pass": true }
+  ],
+  "stateSeam": "hosts/android/artifacts/card-player/state-snapshot.json",
+  "screens": ["screens/01-card-present.png", "screens/02-card-complete.png", "screens/03-final.png"],
+  "producedAt": "2026-10-10T17:27:51Z"
+}

@@ -11,16 +11,12 @@ import org.json.JSONObject
 
 /**
  * Drives the M4 completion session (`android.capability-binding`) — the Android
- * sibling of hosts/ios SessionRuntime.swift + GatewaySession.swift combined:
- * one C runtime on the single serial HandlerThread, the loopback carrier
- * ([CarrierServer]) serving the embedded Web Client in front of it, the
- * REAL nine-primitive gateway bound through the frozen bridge, and the
- * session projection pushed JS → bus → WS → WebView. The outcome settles
- * exactly once: scenario completion or watchdog (180 s — the UI
- * choreography takes time). JS runs ONLY on the runtime thread; primitive
- * handlers run off it (UI thread / fetch threads); every settle/event hops
- * back via JsRuntime.post (ARCHITECTURE.md §6 thread rules); carrier-side
- * evidence rides the canonical envelope under its scenario id. */
+ * sibling of hosts/ios SessionRuntime + GatewaySession: one C runtime on the
+ * serial HandlerThread, the loopback carrier serving the embedded Web Client,
+ * the REAL nine-primitive gateway through the frozen bridge, the projection
+ * pushed JS → bus → WS → WebView. The outcome settles once (scenario or 180 s
+ * watchdog). JS runs ONLY on the runtime thread; every settle/event hops via
+ * JsRuntime.post (§6); carrier evidence rides the canonical envelope. */
 class BindingHost private constructor(
     private val activity: Activity,
     /** Carrier-side evidence scenario id + JS entry + capture label for this
@@ -30,11 +26,9 @@ class BindingHost private constructor(
     private val entryPath: String = ENTRY,
     private val captureLabel: String = "android-capability-binding",
     /** The v0-plane Web Client this drive serves (client id + staged dir):
-     * the default v0 client, or the compact creation client whose web dir
-     * rides the same assets staging (the iOS drive selects it through
-     * -dsh-web-client; the Android launch extras select the drive). The
-     * compact flag switches the readiness seam: its entry (session-mock-llm)
-     * never posts bus.ready — see deliverHostHello. */
+     * the default v0 client, or the compact creation client (the launch
+     * extras select the drive). The compact flag switches the readiness
+     * seam: its entry never posts bus.ready — see deliverHostHello. */
     private val clientId: String = "dsh-web-client",
     private val webRootDir: String = "webclient/web",
     private val compactLeg: Boolean = false,
@@ -47,6 +41,8 @@ class BindingHost private constructor(
         const val ENTRY = "scenario/android-capability-binding.js"
         const val LLM_SCENARIO = "llm.live-stream.carrier"
         const val LLM_ENTRY = "scenario/llm-live-stream.js"
+        const val CARD_PLAYER_SCENARIO = "card.player"
+        const val CARD_PLAYER_ENTRY = "scenario/card-player.js"
         const val PARITY_SCENARIO = "upstream.parity"
         const val PARITY_ENTRY = "scenario/upstream-parity.js"
         const val SUITE_SCENARIO = "upstream.suite"
@@ -131,6 +127,7 @@ class BindingHost private constructor(
             )
             host.pump.attach(webView)
             instance = host
+            host.cardSurface = CardSurface.attach(activity) // the card face
             host.start(onFinished)
             return host
         }
@@ -138,15 +135,18 @@ class BindingHost private constructor(
         fun startMicPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost =
             drive("mic-plane", MIC_PLANE_SCENARIO, MIC_PLANE_ENTRY, activity, webView, onFinished)
 
+        /** The card-player drive (`card.player`): the card face's proof. */
+        fun startCardPlayer(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost =
+            drive("card-player", CARD_PLAYER_SCENARIO, CARD_PLAYER_ENTRY, activity, webView, onFinished)
+
         /** The camera drive (`android.camera-plane`, v1.10.0): the capture burst
          * against the emulator's virtual camera, the phased rows' honest `unavailable`. */
         fun startCameraPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost =
             drive("camera-plane", CAMERA_PLANE_SCENARIO, CAMERA_PLANE_ENTRY, activity, webView, onFinished)
 
         /** The upstream-suite drive (scenario `upstream.suite`): ONE transpiled
-         * upstream spec executed by the quickjs-shaped harness inside our
-         * runtime — per-test verdicts stream as scenario records; the spec
-         * name rides the runtime.config bus delivery. */
+         * upstream spec executed by the quickjs-shaped harness in our runtime;
+         * the spec name rides the runtime.config bus delivery. */
         fun startSuite(activity: Activity, webView: WebView?, onFinished: (String) -> Unit, spec: String): BindingHost = spawn(
             activity, webView, onFinished,
             scenarioId = SUITE_SCENARIO,
@@ -355,6 +355,8 @@ class BindingHost private constructor(
         timer.register(core)
     }
 
+    /** The card face — attached at drive construction (main), fed by the bus. */
+    @Volatile private var cardSurface: CardSurface? = null
     private val bridge = object : JsRuntime.BindingBridge {
         override fun onGatewayCall(callId: Int, name: String, args: String) {
             if (finished) return
@@ -385,17 +387,16 @@ class BindingHost private constructor(
                 pump.record(payload.toString())
                 carrier.send(payload.toString()) // CarrierServer.send is thread-safe
             }
+            // The card face is main-thread confined; the bus line is not.
+            "card.present", "card.state", "card.dismiss", "card.complete" ->
+                activity.runOnUiThread { cardSurface?.handle(msg) }
         }
     }
 
-    /** host.hello → the page load starts (mount evidence follows). The
-     * scenario announces the bus subscription DURING eval (inside m4Begin,
-     * before the handle field is assigned) and after the carrier is up —
-     * so delivery happens at the later of: begin() returning, bus.ready,
-     * carrier listening. Never reentrant into eval. The compact leg's entry
-     * (scenario/session-mock-llm.js, the iOS drive's shape) never posts
-     * bus.ready — it parks on the host.info EVENT until the page connects —
-     * so that leg opens the origin on handle + port alone. */
+    /** host.hello → the page load starts. Delivery happens at the later of:
+     * begin() returning, bus.ready, carrier listening (the announce rides
+     * eval; never reentrant). The compact leg parks on host.info and opens
+     * the origin on handle + port alone. */
     private fun deliverHostHello() {
         if (hostHelloDelivered || handle == 0L || carrier.port == 0) return
         if (!compactLeg && !busReady) return

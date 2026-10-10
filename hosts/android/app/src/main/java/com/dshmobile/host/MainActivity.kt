@@ -64,6 +64,7 @@ class MainActivity : Activity() {
             startBinding(savedInstanceState, cameraPlane = true)
         } else if (intent.getBooleanExtra(EXTRA_BLE, false)) {
             startBinding(savedInstanceState, ble = true, bleMock = intent.getBooleanExtra(EXTRA_BLE_MOCK, false))
+        } else if (intent.getBooleanExtra(EXTRA_CARD_PLAYER, false)) { startBinding(savedInstanceState, cardPlayer = true)
         } else if (intent.getBooleanExtra(EXTRA_MIC_PLANE, false)) {
             startBinding(savedInstanceState, micPlane = true)
         } else if (intent.getBooleanExtra(EXTRA_NEXT, false)) {
@@ -158,7 +159,7 @@ class MainActivity : Activity() {
         spikeHost?.onRequestPermissionsResult(requestCode, grantResults)
     }
 
-    private fun startBinding(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, compact: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false) {
+    private fun startBinding(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, compact: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false, cardPlayer: Boolean = false) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
         }
@@ -188,7 +189,7 @@ class MainActivity : Activity() {
         JsRuntime.post {
             materializeBundle()
             runOnUiThread {
-                spikeHost = startHost(llm, view, parity, suite, compact, devicePlane, cameraPlane, ble, bleMock, micPlane)
+                spikeHost = startHost(llm, view, parity, suite, compact, devicePlane, cameraPlane, ble, bleMock, micPlane, cardPlayer)
             }
         }
         view.post { BindingHost.dispatchNotifyResponse(intent) }
@@ -197,7 +198,7 @@ class MainActivity : Activity() {
     /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream),
      * the compact creation-client mount, or the M4 binding — with the same
      * carrier + WebView flow. */
-    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, compact: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false): BindingHost {
+    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, compact: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false, cardPlayer: Boolean = false): BindingHost {
 
         val onVerdict = { verdict: String -> verdictView.text = verdict }
         return when {
@@ -208,6 +209,7 @@ class MainActivity : Activity() {
             cameraPlane -> BindingHost.startCameraPlane(this, view, onVerdict)
             ble -> BindingHost.startBle(this, view, onVerdict, bleMock)
             micPlane -> BindingHost.startMicPlane(this, view, onVerdict)
+            cardPlayer -> BindingHost.startCardPlayer(this, view, onVerdict)
             llm -> BindingHost.startLlm(this, view, onVerdict)
             else -> BindingHost.start(this, view, onVerdict)
         }
@@ -228,6 +230,7 @@ class MainActivity : Activity() {
         const val EXTRA_BLE = "dsh.ble"
         const val EXTRA_BLE_MOCK = "dsh.blemock"
         const val EXTRA_MIC_PLANE = "dsh.micplane"
+        const val EXTRA_CARD_PLAYER = "dsh.cardplayer"
         const val EXTRA_NEXT = "dsh.next"
         /** The Web Client the release boot serves (string extra; the iOS
          * launch arg -dsh-web-client's sibling — a client selection, not a
@@ -236,11 +239,9 @@ class MainActivity : Activity() {
     }
 
     /**
-     * The official-web session (`android.officialweb.mount`): the loopback
-     * carrier serves the vendored official dist with the runtime-composed
-     * boot wire into a real WebView; the web-boot runtime composes the
-     * official boot graph over the bus seam (OfficialWebSession).
-     */
+     * The official-web session (`android.officialweb.mount`): the carrier
+     * serves the vendored official dist; the web-boot runtime composes the
+     * official boot graph (OfficialWebSession). */
     private fun startOfficialWeb() {
         val view = drivenWebView { OfficialWebSession.dispatchPageFinished() }
         webView = view

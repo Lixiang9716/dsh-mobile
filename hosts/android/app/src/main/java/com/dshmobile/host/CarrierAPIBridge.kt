@@ -32,6 +32,11 @@ class CarrierAPIBridge(private val sessionToken: String) {
     /** App-level extras for the GET /api/state snapshot (the card face's
      * projection; the owning seat wires it). */
     var appState: (() -> JSONObject)? = null
+    /** The session the PAGE last opened (create responses + prompt
+     * requests) — the iOS sibling's page-session snoop; the API-relay
+     * drives target it so turn events flow into the page's own mux
+     * subscription. */
+    @Volatile var pageSession: String = ""
 
     private val lock = Object()
     /** Endpoints the runtime claimed over the bus seam (v0: none). */
@@ -110,6 +115,12 @@ class CarrierAPIBridge(private val sessionToken: String) {
             return answer(out, 400, "malformed envelope".toByteArray(), "text/plain")
         }
         val (rpcId, payload) = envelope
+        if (endpoint == "session/prompt") {
+            val sessionId = (payload as? JSONObject)
+                ?.optJSONObject("args")?.optJSONObject("request")
+                ?.optString("sessionId")
+            if (!sessionId.isNullOrEmpty()) pageSession = sessionId
+        }
         if (tryForward(rpcId, endpoint, payload, out)) {
             onAPICall?.invoke(endpoint, "forwarded")
         } else {
@@ -123,6 +134,7 @@ class CarrierAPIBridge(private val sessionToken: String) {
      * channel, not a second one. */
     private fun stateSnapshot(): JSONObject {
         val snapshot = JSONObject()
+        snapshot.put("pageSession", pageSession)
         snapshot.put(
             "claimedEndpoints",
             synchronized(lock) { JSONArray(claimedEndpoints.sorted()) },
@@ -199,6 +211,12 @@ class CarrierAPIBridge(private val sessionToken: String) {
         synchronized(lock) {
             val waiter = pendingRPC.remove(rpcId) ?: return
             waiter.supply(result)
+        }
+        // The page's session/create answer is where the active session is
+        // born (the iOS sibling's respondAPI snoop).
+        if (result.toString().contains("sessionId")) {
+            val sessionId = result.optJSONObject("value")?.optString("sessionId")
+            if (!sessionId.isNullOrEmpty()) pageSession = sessionId
         }
     }
 
