@@ -97,6 +97,7 @@ RESOURCES = [
     ("scenario_agent_flow_js", DSH / "scenario" / "agent-flow.js"),
     ("scenario_card_player_js", DSH / "scenario" / "card-player.js"),
     ("scenario_create_card_js", DSH / "scenario" / "create-card.js"),
+    ("scenario_create_calendar_live_js", DSH / "scenario" / "create-calendar-live.js"),
     ("scenario_b1_web_live_js", DSH / "web-live" / "officialweb-web-live.js"),
     ("scenario_b3_web_live_js", DSH / "web-live" / "session-web-live.js"),
     ("scenario_b4_web_live_js", DSH / "web-live" / "composer-web-live.js"),
