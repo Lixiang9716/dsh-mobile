@@ -2,7 +2,7 @@
   "host": "darwin-cli (Darwin Darwin 27.0.0 arm64)",
   "engine": "quickjs-ng",
   "engineVersion": "0.17.0",
-  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned by runtime/spike/vendor/ensure-dsh.sh)",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned by runtime/dsh/vendor/ensure-dsh.sh)",
   "kernel": "@deepseek-ai/cordis@4.0.2",
   "scenario": "office",
   "proves": [
@@ -14,6 +14,6 @@
     "word_create refuses an existing path without overwrite: true (office.negative/refused)"
   ],
   "checker": "test/e2e/scenarios/office.json",
-  "events": 185,
+  "events": 271,
   "exitCode": 0
 }

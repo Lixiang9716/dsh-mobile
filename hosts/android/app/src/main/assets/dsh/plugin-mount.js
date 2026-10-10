@@ -307,19 +307,27 @@ export const mountEnabledRegistry = async (ctx, opts = {}) => {
     if (outcome.mounted) outcomes.mounted.push(outcome);
     else outcomes.refused.push(outcome);
   }
-  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.boot-list',
-    mounted: outcomes.mounted.map((m) => m.spec),
-    refused: outcomes.refused.map((r) => `${r.spec}@${r.step}`) });
+  // Zero rows, zero events: a workspace with no enabled plugins must leave
+  // the boot's event stream BYTE-IDENTICAL (the parity legs' frozen
+  // manifests assert exact sequences — an empty boot-list line would be an
+  // unexpected event there).
+  if (outcomes.mounted.length > 0 || outcomes.refused.length > 0) {
+    log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.boot-list',
+      mounted: outcomes.mounted.map((m) => m.spec),
+      refused: outcomes.refused.map((r) => `${r.spec}@${r.step}`) });
+  }
   return outcomes;
 };
 
 /** The boot-time caller's wrapper (boot.js): mount the enabled rows and
  * report the outcome as one `upstream/boot-plugins` event — a boot never
- * dies on a plugin; refusals ride the event and the spine stands. */
+ * dies on a plugin; refusals ride the event and the spine stands. An empty
+ * boot-list stays silent (frozen parity manifests, see above). */
 export const mountBootRows = async (ctx, onEvent) => {
   log.debug('boot rows begin', {});
   try {
     const rows = await mountEnabledRegistry(ctx);
+    if (rows.ok && rows.mounted.length === 0 && rows.refused.length === 0) return;
     onEvent('upstream/boot-plugins', {
       mounted: rows.ok ? rows.mounted.map((m) => m.spec) : [],
       refused: rows.ok
