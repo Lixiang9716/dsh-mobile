@@ -173,6 +173,15 @@ final class SessionServe {
         bridge.deliverToRuntime = { [weak self] msg in
             self?.deliverRuntime(msg)
         }
+        bridge.appState = { [weak self] in
+            var state: [String: Any] = [
+                "scriptApproval": UIPrimitives.scriptedApprovalFlag() ?? NSNull(),
+            ]
+            if let card = self?.cardState?() {
+                state.merge(card) { _, new in new }
+            }
+            return state
+        }
         try server.start { [weak self] in
             guard let self, self.server.port != 0 else { return }
             self.onCarrierUp?(self.server.port)
@@ -395,6 +404,11 @@ final class SessionServe {
     /// A plugin's live card (PR-1 of the create-approve-hotmount-native
     /// loop): the card.* bus lines flow to the native CardPlayerSurface.
     var onCardEvent: (([String: Any]) -> Void)?
+
+    /// The card face's OWN state read (the native projection half of the
+    /// GET /api/state seam) — set by whatever drive owns the surface, so
+    /// the snapshot reads the component's state, not a parallel mirror.
+    var cardState: (() -> [String: Any])?
 
     /// One JS → host bus message: folds the runtime's claims and answers into
     /// the bridge. This is serving, not evidence — the page's calls are

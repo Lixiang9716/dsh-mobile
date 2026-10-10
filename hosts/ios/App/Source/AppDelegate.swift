@@ -308,6 +308,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         serve.onCardEvent = { [weak surface] msg in
             DispatchQueue.main.async { surface?.handle(msg) }
         }
+        serve.cardState = { [weak surface] in surface?.snapshot() ?? [:] }
         if let host = webView?.superview {
             surface.attach(to: host)
         }

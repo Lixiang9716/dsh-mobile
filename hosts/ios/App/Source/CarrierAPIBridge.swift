@@ -55,6 +55,11 @@ final class CarrierAPIBridge {
     /// subscription and render live, exactly like hand-typing.
     private var pageSession = ""
 
+    /// App-level extras for the GET /api/state snapshot (the owning drive
+    /// wires the card face + scripted-approval flag; hook-free launches
+    /// still get the bridge's own facts).
+    var appState: (() -> [String: Any])?
+
     init(sessionToken: String) {
         self.sessionToken = sessionToken
     }
@@ -79,6 +84,19 @@ final class CarrierAPIBridge {
         }
         NSLog("dsh.bridge: api path=%@ authed=%d", path,
               request.isAuthed(token: sessionToken) ? 1 : 0)
+        // The state-snapshot observation seam: a read-only GET beside the
+        // POST envelope plane, same token gate — diagnostics for the drive,
+        // never a page surface.
+        if path == "/api/state" {
+            guard request.method == "GET" else {
+                return answer(conn, status: 405, body: Data(), mime: "text/plain")
+            }
+            guard request.isAuthed(token: sessionToken) else {
+                return answer(conn, status: 401, body: Data(), mime: "text/plain")
+            }
+            queue.async { [weak self] in self?.snapshotState(conn: conn) }
+            return
+        }
         guard request.method == "POST" else {
             return answer(conn, status: 405, body: Data(), mime: "text/plain")
         }
@@ -113,6 +131,32 @@ final class CarrierAPIBridge {
     private func answerUnavailable(_ rpcId: String, _ endpoint: String, _ conn: NWConnection) {
         let body = Self.envelope(rpcId: rpcId, endpoint: endpoint)
         answer(conn, status: 200, body: Data(body.utf8), mime: "application/json")
+    }
+
+    /// GET /api/state — the state-snapshot observation seam. The bridge's
+    /// own facts (page session, claimed endpoints, in-flight RPCs) plus the
+    /// app layer's (card face, scripted-approval flag). Every fetch also
+    /// lands as one structured line in the unified log, so the D7 matcher
+    /// sees the SAME evidence the driver asserted — one observation channel,
+    /// not a second one.
+    private func snapshotState(conn: NWConnection) {
+        var snapshot: [String: Any] = [
+            "pageSession": pageSession,
+            "claimedEndpoints": claimedEndpoints.sorted(),
+            "muxClaimed": muxClaimed,
+            "pendingRPC": pendingRPC.count,
+        ]
+        if let appState {
+            // The card face is main-thread confined; handlers arrive on this
+            // serial queue, never main, so the sync hop cannot self-deadlock.
+            snapshot["app"] = Thread.isMainThread
+                ? appState() : DispatchQueue.main.sync { appState() }
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: snapshot) else {
+            return answer(conn, status: 500, body: Data(), mime: "text/plain")
+        }
+        NSLog("dsh.snapshot: %@", String(data: data, encoding: .utf8) ?? "{}")
+        answer(conn, status: 200, body: data, mime: "application/json")
     }
 
     /// Runtime → carrier: settle one claimed RPC with the frozen result

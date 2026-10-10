@@ -37,6 +37,26 @@ final class CardPlayerSurface {
         hostView = view
     }
 
+    /// The projection-consistency read for the GET /api/state seam: what
+    /// the NATIVE face holds right now, so a drive can assert that runtime
+    /// truth (the bus records), the page projection, and this surface all
+    /// agree. Main-thread only — the snapshot endpoint hops here
+    /// synchronously from its own queue.
+    func snapshot() -> [String: Any] {
+        var face: [String: Any] = [
+            "attached": hostView != nil,
+            "visible": cardView != nil,
+        ]
+        if cardView != nil, let id = card["id"] as? String {
+            face["id"] = id
+            face["title"] = (card["title"] as? String) ?? id
+            face["kind"] = (card["kind"] as? String) ?? "info"
+            if let label = card["label"] as? String { face["label"] = label }
+            if let subtitle = card["subtitle"] as? String { face["subtitle"] = subtitle }
+        }
+        return ["card": face]
+    }
+
     // ---- the four contract events -------------------------------------------
 
     /// Main-thread only (the drive hops bus events onto main before calling).
