@@ -254,6 +254,7 @@ runtime/dsh/logs-onboarding.txt
 runtime/dsh/logs-marketplace-ui.txt
 runtime/dsh/logs-office.txt
 runtime/dsh/logs-plugin-forms.txt
+runtime/dsh/logs-seam-inventory.txt
 runtime/dsh/logs-open-design.txt
 runtime/dsh/logs-parity.txt
 runtime/dsh/logs-settings-surfaces.txt
