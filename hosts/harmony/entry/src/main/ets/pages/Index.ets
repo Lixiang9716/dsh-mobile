@@ -46,6 +46,7 @@ import { E2eLeg } from '../model/E2eLeg';
 import { HostPhase, WHALE_WEB_DIR } from '../model/HostPhase';
 import { LlmConfigStaging } from '../model/LlmConfigStaging';
 import { OfficialPhase } from '../model/OfficialPhase';
+import { CardFace } from '../model/CardFace';
 import { OfficialServe, NEXT_CLIENT_ROOT } from '../model/OfficialServe';
 import { V2WebPhase } from '../model/V2WebPhase';
 import { ParityMockRoute, PARITY_MOCK_KEY } from '../model/ParityMockRoute';
@@ -1280,6 +1281,13 @@ struct Index {
   @State @Watch('onSurfaceOps') surfaceOpsJson: string = '[]';
   @State surfaceVisible: boolean = false;
   @State surfaceTitle: string = '';
+  // The native card face (the #452 PiP sibling): the bus card.* records
+  // project into these states; a 250 ms tick re-renders the countdown.
+  @State cardVisible: boolean = false;
+  @State cardTitle: string = '';
+  @State cardTime: string = '';
+  @State cardLabel: string = '';
+  @State cardIsTimer: boolean = false;
   private surfaceDimsSink: ((dims: SurfaceDims | null) => void) | null = null;
   private surfaceInput: (kind: string, x: number, y: number) => void =
     (kind: string, x: number, y: number): void => {};
@@ -1311,6 +1319,32 @@ struct Index {
     this.surfaceDimsSink = null;
   }
   private approvalResolve: ((approved: boolean) => void) | null = null;
+  private cardTick: number = -1;
+
+  /** Pushes CardFace's projection into the bindings; owns the local tick's
+   * start/stop (visible = ticking). */
+  private refreshCardFace(): void {
+    const snap = CardFace.snapshot()['card'] as Record<string, Object>;
+    const visible = snap['visible'] === true;
+    if (visible && this.cardTick < 0) {
+      this.cardTick = setInterval((): void => {
+        if (!CardFace.visible()) {
+          clearInterval(this.cardTick);
+          this.cardTick = -1;
+        }
+        this.refreshCardFace();
+      }, 250);
+    } else if (!visible && this.cardTick >= 0) {
+      clearInterval(this.cardTick);
+      this.cardTick = -1;
+    }
+    this.cardVisible = visible;
+    this.cardTitle = String(snap['title'] ?? '');
+    this.cardTime = String(snap['remainingText'] ?? '');
+    this.cardLabel = String(snap['label'] ?? snap['completeMessage'] ?? '');
+    this.cardIsTimer = String(snap['kind'] ?? 'info') === 'timer';
+  }
+
   private approvalController: CustomDialogController | null = null;
   private carrier: CarrierServer = new CarrierServer();
   private webController: webview.WebviewController = new webview.WebviewController();
@@ -1333,6 +1367,13 @@ struct Index {
       (): void => {
         this.surfaceClose();
       });
+    // The card face's record hook: the seat's onBusLine routes card.*
+    // through CardFace, then this refresh pushes the projection into the
+    // @State bindings. The 250 ms tick re-renders the countdown.
+    const live = this.liveServe();
+    if (live !== null) {
+      live.onCardRecord = (): void => this.refreshCardFace();
+    }
     OfficialServe.setSurfaceView(
       (title: string, onResult: (dims: SurfaceDims | null) => void): void => {
         this.surfaceOpen(title, onResult);
@@ -1446,6 +1487,9 @@ struct Index {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const serve = new OfficialServe();
     this.releaseServe = serve;
+    // The card face's record hook: bus card.* records project through
+    // CardFace into the PiP card's @State bindings (this build's Stack).
+    serve.onCardRecord = (): void => this.refreshCardFace();
     serve.onOrigin = (url: string): void => {
       // The official origin becomes the Web's initial src (nothing is
       // mounted yet, so this is exactly one navigation).
@@ -2354,6 +2398,51 @@ struct Index {
     .padding(12)
     if (this.surfaceVisible) {
       this.SurfaceOverlay()
+    }
+    if (this.cardVisible) {
+      Column() {
+        Row() {
+          Text(this.cardTitle)
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .layoutWeight(1)
+            .maxLines(1)
+          Text('✕')
+            .fontSize(15)
+            .fontColor('#6b6b6b')
+            .padding({ left: 8, right: 4 })
+            .onClick((): void => {
+              // Local close (the #452 semantics): the face hides; the
+              // plugin's dismissal authority is unchanged.
+              this.cardVisible = false;
+              clearInterval(this.cardTick);
+              this.cardTick = -1;
+            })
+        }
+        .width('100%')
+        if (this.cardIsTimer) {
+          Text(this.cardTime)
+            .fontSize(34)
+            .fontWeight(FontWeight.Bold)
+            .width('100%')
+            .textAlign(TextAlign.Center)
+            .margin({ top: 4 })
+        }
+        Text(this.cardLabel)
+          .fontSize(12)
+          .fontColor('#6b6b6b')
+          .width('100%')
+          .textAlign(TextAlign.Center)
+          .margin({ top: 6 })
+          .maxLines(3)
+      }
+      .alignItems(HorizontalAlign.Start)
+      .padding(16)
+      .borderRadius(18)
+      .backgroundColor('#F2F1F0')
+      .shadow({ radius: 14, color: '#2E000000', offsetY: 6 })
+      .margin({ top: 52, left: 12, right: 12 })
+      .width('90%')
     }
     }
     .width('100%')

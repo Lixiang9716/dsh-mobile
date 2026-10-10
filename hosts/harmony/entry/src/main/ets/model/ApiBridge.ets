@@ -13,6 +13,7 @@
  * runtime thread (ARCHITECTURE.md §6); the deliver callback re-enters the
  * runtime synchronously and only ever queues or sends back out.
  */
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { socket } from '@kit.NetworkKit';
 import { util } from '@kit.ArkTS';
 import { CarrierRequest, CarrierServer } from './CarrierServer';
@@ -35,6 +36,12 @@ interface MuxFrame {
 }
 
 export class ApiBridge {
+  /** App-level extras for the /api/state snapshot (the card face; the
+   * owning seat wires it). */
+  appState: (() => Record<string, Object>) | undefined = undefined;
+  /** The session the PAGE last opened (create responses + prompt requests)
+   * — the iOS #441 twin; the API-relay drives target it. */
+  private pageSession: string = '';
   /** Evidence hooks — the owning drive logs them; the bridge never logs. */
   onAPICall: (endpoint: string, answered: string) => void =
     (endpoint: string, answered: string): void => {};
@@ -86,6 +93,32 @@ export class ApiBridge {
       this.answer(conn, 400, 'bad request');
       return;
     }
+    // The state-snapshot observation seam (the iOS #441 sibling): a
+    // read-only GET beside the POST envelope plane, same token gate —
+    // diagnostics for the drive, never a page surface. Every fetch also
+    // lands as one `dsh.snapshot` hilog line (one observation channel).
+    if (req.path === '/api/state') {
+      if (req.method !== 'GET') {
+        this.answer(conn, 405, '');
+        return;
+      }
+      if (!WebDist.isAuthedFor(req, this.sessionToken)) {
+        this.answer(conn, 401, '');
+        return;
+      }
+      const snapshot: Record<string, Object> = {
+        'pageSession': this.pageSession,
+        'claimedEndpoints': Array.from(this.claimedEndpoints).sort(),
+        'muxClaimed': this.muxClaimed,
+        'pendingRPC': this.pendingRPC.size,
+      };
+      snapshot['app'] = this.appState !== undefined
+        ? this.appState() as Object : new Object();
+      hilog.info(0x0000, 'dsh.snapshot', '%{public}s', JSON.stringify(snapshot));
+      this.server.respond(conn, 200, 'application/json',
+        WebPluginsText.toBytes(JSON.stringify(snapshot)), {}, false);
+      return;
+    }
     if (req.method !== 'POST') {
       this.answer(conn, 405, '');
       return;
@@ -106,6 +139,14 @@ export class ApiBridge {
       this.onAPICall(endpoint, 'malformed');
       this.answer(conn, 400, 'malformed envelope');
       return;
+    }
+    if (endpoint === 'session/prompt') {
+      const args = msg.payload as Record<string, Object> ?? {};
+      const request = args['request'] as Record<string, Object> ?? {};
+      const sessionId = String(request['sessionId'] ?? '');
+      if (sessionId.length > 0) {
+        this.pageSession = sessionId;
+      }
     }
     if (this.claimedEndpoints.has(endpoint)) {
       this.pendingRPC.set(rpcId, conn);
