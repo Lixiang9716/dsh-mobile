@@ -138,6 +138,25 @@ Definition / Provider / Consumer 对应三个工作区树(或三个市场包),�
 
 quickstart 的 Web-UI 流程(模型设置 → 工作区选择 → 带审批的真实回合)就是本应用的产品面——无需插件开发映射。
 
+## seam 清点(reference/capability-seams,运行时实测)
+
+`scenario/seam-inventory.js` 以生产等价脊柱(全部产品旗 + 组合面)启动,经与 `inject` 同一个解析器逐一探针上游目录的服务名。由 `test/e2e/scenarios/seam-inventory.json` 冻结;运行 `runtime/dsh/ci/run-seam-inventory-e2e.sh`。运行时的回答:
+
+**已挂载(22)**:sessions、agents、systemPrompt、tools、sessionProjections、settings、agentLoop、llm、tokenMeter、jobs、userQuestions、subagentModelSelection、shell(wasm 执行器)、shellEnv、goals、commands、agentPresets、skills、fileReferences、web(免密钥面)、sessionQuery、sessionFeedback。
+
+**缺席,属设计**——每一项都有移动等价物或记录在案的墙:
+
+| 缺席 | 移动端处置 |
+| --- | --- |
+| credentials | 宿主侧存储:网关钥匙串 + profile 凭据文件(`loadCredential`) |
+| approval | 网关 `presentApproval` 原语(契约优先;原生弹窗) |
+| fs(网关,非 seam) | 宿主网关的 fs 原语就是 fs |
+| subprocess、sandbox、terminals | 移动墙:无进程——wasm shell(+可选 iSH)路线 |
+| compaction | 闭包里唯一消费者是 `/compact`(command-compact),上游 README 记录为不携带的桌面行;长会话自动压实列为产品后续 |
+| sessionPersistence | 抽象 seam 已 vendor 但 jsonl 后端未钉版;resume 响亮报错("cannot resume: session persistence is not configured")——会话随启动而生;持久性列为产品后续 |
+| sessionTitle、attachments、schedule、planMode、messageFeedback、mcpResources、spillStore、workflowEngine、lsp | 尚未携带的桌面产品特性(每个都是候选后续,无一静默损坏) |
+| invariant、configEditor、setting、workspaceRegistry | 桌面诊断/组合面;移动等价物是 settings 服务、网关工作区选择器、宿主工作区模型 |
+
 ---
 
 [English version](plugin-dev.md)

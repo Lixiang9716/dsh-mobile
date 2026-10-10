@@ -193,6 +193,7 @@ stage_test() {
             runtime/dsh/ci/run-open-design-e2e.sh
             runtime/dsh/ci/run-office-e2e.sh
             runtime/dsh/ci/run-plugin-forms-e2e.sh
+            runtime/dsh/ci/run-seam-inventory-e2e.sh
             runtime/dsh/ci/run-shim-exposure-probe.sh ;;
         *)
             echo "::error::build: test: unknown platform '$1' (want ios|android|harmony|core)" >&2

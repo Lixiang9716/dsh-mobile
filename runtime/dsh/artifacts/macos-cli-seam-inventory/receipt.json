@@ -1,0 +1,15 @@
+{
+  "host": "darwin-cli (Darwin Darwin 27.0.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned by runtime/dsh/vendor/ensure-dsh.sh)",
+  "kernel": "@deepseek-ai/cordis@4.0.2",
+  "scenario": "seam.inventory",
+  "proves": [
+    "the production-equivalent mobile spine (all product flags + composition plane) boots and holds a non-empty plugin registry (seam.inventory/registry.walk)",
+    "every upstream-catalog service name resolves or is answered absent through the SAME resolver inject uses — the runtime's own seam inventory (seam.inventory/inventory.proved)"
+  ],
+  "checker": "test/e2e/scenarios/seam-inventory.json",
+  "events": 49,
+  "exitCode": 0
+}
