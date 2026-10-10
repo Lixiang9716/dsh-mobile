@@ -173,15 +173,6 @@ final class SessionServe {
         bridge.deliverToRuntime = { [weak self] msg in
             self?.deliverRuntime(msg)
         }
-        bridge.appState = { [weak self] in
-            var state: [String: Any] = [
-                "scriptApproval": UIPrimitives.scriptedApprovalFlag() ?? NSNull(),
-            ]
-            if let card = self?.cardState?() {
-                state.merge(card) { _, new in new }
-            }
-            return state
-        }
         try server.start { [weak self] in
             guard let self, self.server.port != 0 else { return }
             self.onCarrierUp?(self.server.port)
@@ -199,8 +190,7 @@ final class SessionServe {
         server.stop()
     }
 
-    /// The carrier reports its seats' facts as hooks (defaults are no-ops, so
-    /// a hook-free launch passes every one of them through untouched).
+    /// The carrier's seats' facts as hooks (defaults are no-ops).
     private func wireHooks(
         dist: CarrierWebDist, plugins: CarrierPlugins, bridge: CarrierAPIBridge
     ) {
@@ -225,6 +215,7 @@ final class SessionServe {
         bridge.onMuxFrame = { [weak self] direction, kind in
             self?.onMuxFrame?(direction, kind)
         }
+        bridge.appState = { [weak self] in self?.cardState?() ?? [:] }
     }
 
     // ---- the runtime half (the upstream spine) ------------------------------
@@ -401,18 +392,14 @@ final class SessionServe {
 
     // ---- bus seam (runtime → carrier claims + answers) ------------------------
 
-    /// A plugin's live card (PR-1 of the create-approve-hotmount-native
-    /// loop): the card.* bus lines flow to the native CardPlayerSurface.
+    /// card.* bus lines flow to the native CardPlayerSurface (PR-1).
     var onCardEvent: (([String: Any]) -> Void)?
 
-    /// The card face's OWN state read (the native projection half of the
-    /// GET /api/state seam) — set by whatever drive owns the surface, so
-    /// the snapshot reads the component's state, not a parallel mirror.
+    /// The card face's OWN state read — the native half of GET /api/state.
     var cardState: (() -> [String: Any])?
 
     /// One JS → host bus message: folds the runtime's claims and answers into
-    /// the bridge. This is serving, not evidence — the page's calls are
-    /// answered the same way whether or not a drive is attached.
+    /// the bridge (serving, not evidence — pages answer the same either way).
     private func runtimeBusPosted(_ msg: [String: Any]) {
         guard !stopped else { return }
         switch msg["type"] as? String {

@@ -56,8 +56,7 @@ final class CarrierAPIBridge {
     private var pageSession = ""
 
     /// App-level extras for the GET /api/state snapshot (the owning drive
-    /// wires the card face + scripted-approval flag; hook-free launches
-    /// still get the bridge's own facts).
+    /// wires the card face; the seam flag the bridge adds itself).
     var appState: (() -> [String: Any])?
 
     init(sessionToken: String) {
@@ -146,12 +145,17 @@ final class CarrierAPIBridge {
             "muxClaimed": muxClaimed,
             "pendingRPC": pendingRPC.count,
         ]
+        var app: [String: Any] = [
+            "scriptApproval": UIPrimitives.scriptedApprovalFlag() ?? NSNull(),
+        ]
         if let appState {
             // The card face is main-thread confined; handlers arrive on this
             // serial queue, never main, so the sync hop cannot self-deadlock.
-            snapshot["app"] = Thread.isMainThread
+            let extra = Thread.isMainThread
                 ? appState() : DispatchQueue.main.sync { appState() }
+            app.merge(extra) { _, new in new }
         }
+        snapshot["app"] = app
         guard let data = try? JSONSerialization.data(withJSONObject: snapshot) else {
             return answer(conn, status: 500, body: Data(), mime: "text/plain")
         }

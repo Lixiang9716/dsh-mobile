@@ -301,8 +301,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self?.webView?.load(URLRequest(url: origin))
         }
         // A plugin's live card renders in the app's OWN chrome (PR-1): the
-        // serve/release seats surface the card.* bus lines natively — the
-        // chat-created pomodoro ticks beside the conversation.
+        // serve/release seats surface the card.* bus lines natively.
         let surface = CardPlayerSurface()
         cardSurface = surface
         serve.onCardEvent = { [weak surface] msg in
@@ -312,10 +311,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         if let host = webView?.superview {
             surface.attach(to: host)
         }
-        // A failure here leaves an inert page, which is indistinguishable
-        // from a working-but-idle one. Say so on BOTH channels: the screen
-        // (which is what the user is looking at) and the Console (which is
-        // what a warn-keeping release build records).
+        // A failure here leaves an inert page, indistinguishable from an
+        // idle one — say so on BOTH channels (screen + warn-keeping log).
         serve.onRuntimeFailure = { [weak self] message in
             NSLog("%@", "dsh.session.serve: runtime failed: \(message)")
             DispatchQueue.main.async { self?.showBootFailure(message) }
