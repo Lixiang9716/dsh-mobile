@@ -257,6 +257,7 @@ sessionFeedback.
 | sessionPersistence | the abstract seam is vendored but the jsonl backend is not pinned; resume fails loud ("cannot resume: session persistence is not configured") — sessions are per-launch; durability is a flagged product follow-up |
 | sessionTitle, attachments, schedule, planMode, messageFeedback, mcpResources, spillStore, workflowEngine, lsp | desktop product features not yet carried (each a candidate follow-up, none silently broken) |
 | invariant, configEditor, setting, workspaceRegistry | desktop diagnostics/composition faces; mobile's equivalents are the settings service, the gateway workspace picker, and the host workspace model |
+| api-gateway (typert/Remote) | the carrier API bridge: `/api/<endpoint>` + the bus-claimed endpoint table (session/*, goals/*, commands/*, marketplace/*, …) — the same namespace surface over the carrier contract, no typert wire |
 
 ---
 

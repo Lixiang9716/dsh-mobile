@@ -158,6 +158,7 @@ quickstart 的 Web-UI 流程(模型设置 → 工作区选择 → 带审批的�
 | sessionPersistence | 抽象 seam 已 vendor 但 jsonl 后端未钉版;resume 响亮报错("cannot resume: session persistence is not configured")——会话随启动而生;持久性列为产品后续 |
 | sessionTitle、attachments、schedule、planMode、messageFeedback、mcpResources、spillStore、workflowEngine、lsp | 尚未携带的桌面产品特性(每个都是候选后续,无一静默损坏) |
 | invariant、configEditor、setting、workspaceRegistry | 桌面诊断/组合面;移动等价物是 settings 服务、网关工作区选择器、宿主工作区模型 |
+| api-gateway(typert/Remote) | carrier API 桥:`/api/<endpoint>` + bus 认领端点表(session/*、goals/*、commands/*、marketplace/* 等)——同一命名空间面走 carrier 契约,无 typert wire |
 
 ---
 

@@ -84,6 +84,35 @@ const bootPhase = async () => {
   return ctx;
 };
 
+/** The Context/Registry/Fiber/Service API reference
+ * (reference/cordis-api/*): every documented kernel member exists on THIS
+ * engine — the plugin-author contract holds verbatim. */
+const cordisFacePhase = async (ctx) => {
+  log.debug('cordis face begin', {});
+  const methods = ['plugin', 'inject', 'get', 'set', 'provide', 'accessor',
+    'mixin', 'extend', 'isolate', 'intercept', 'effect', 'on', 'once',
+    'emit', 'bail', 'serial', 'waterfall', 'parallel'];
+  const missing = methods.filter((m) => typeof ctx[m] !== 'function');
+  demand(missing.length === 0, `cordis Context API methods missing: ${missing.join(', ')}`);
+  // The service-instance members (the doc's own spelling: ctx.events IS the
+  // EventsService, ctx.registry the RegistryService, ctx.reflect the
+  // reflection layer, ctx.fiber the owning fiber, ctx.logger the logger).
+  const instances = ['registry', 'reflect', 'logger', 'events', 'fiber'];
+  const absentInstances = instances.filter((m) => ctx[m] == null);
+  demand(absentInstances.length === 0,
+    `cordis Context API service members missing: ${absentInstances.join(', ')}`);
+  // The Service API's kernel symbols (reference/cordis-api/service): every
+  // documented static exists on the vendored Service base.
+  const { Service } = await import('@deepseek-ai/cordis');
+  const symbols = ['init', 'check', 'config', 'invoke', 'extend', 'tracker',
+    'resolveConfig'];
+  const missingSymbols = symbols.filter((k) => typeof Service[k] !== 'symbol');
+  demand(missingSymbols.length === 0,
+    `cordis Service kernel symbols missing: ${missingSymbols.join(', ')}`);
+  emit('cordis.face', { methods: methods.length, instances: instances.length,
+    serviceSymbols: symbols.length });
+};
+
 const main = async () => {
   log.debug('main begin', {});
   const ctx = await bootPhase();
@@ -111,22 +140,7 @@ const main = async () => {
   `the core spine services are not all present: ${JSON.stringify(present)}`);
   emit('inventory.probed', { present, absent });
 
-  // The Context API reference (reference/cordis-api/*): every documented
-  // kernel member exists on THIS engine's context — the plugin-author
-  // contract holds verbatim.
-  const methods = ['plugin', 'inject', 'get', 'set', 'provide', 'accessor',
-    'mixin', 'extend', 'isolate', 'intercept', 'effect', 'on', 'once',
-    'emit', 'bail', 'serial', 'waterfall', 'parallel'];
-  const missing = methods.filter((m) => typeof ctx[m] !== 'function');
-  demand(missing.length === 0, `cordis Context API methods missing: ${missing.join(', ')}`);
-  // The service-instance members (the doc's own spelling: ctx.events IS the
-  // EventsService, ctx.registry the RegistryService, ctx.reflect the
-  // reflection layer, ctx.fiber the owning fiber, ctx.logger the logger).
-  const instances = ['registry', 'reflect', 'logger', 'events', 'fiber'];
-  const absentInstances = instances.filter((m) => ctx[m] == null);
-  demand(absentInstances.length === 0,
-    `cordis Context API service members missing: ${absentInstances.join(', ')}`);
-  emit('cordis.face', { methods: methods.length, instances: instances.length });
+  await cordisFacePhase(ctx);
 
   emit('scenario.complete', { status: 'pass' });
   globalThis.__dshComplete(true, 'pass');
