@@ -165,13 +165,475 @@ dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","da
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-service","version":"1.0.0"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"form.mounted","spec":"forms-service"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"forms.live","object":true,"function":true,"service":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"config phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"plugin tree write","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-config/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-config/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-config","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-config/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":212}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1164}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-config/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":368}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":275}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":275}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":275}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-config","module":"plugins/forms-config/index.js"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"config.validated","greeting":"Hola"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1540}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-config","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-config/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":212}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1540}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-config/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":368}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":275}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":275}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":275}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-config","module":"plugins/forms-config/index.js?e=1"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"config.default","greeting":"Hello"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1540}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-config","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-config/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":212}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1540}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-config","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-config/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":368}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":275}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":275}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":275}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-config","module":"plugins/forms-config/index.js?e=2"}]}
+dsh.runtime.log: {"level":"error","module":"cordis:forms-config","message":"{\"name\":\"ValidationError\"}","data":[]}
+dsh.runtime.log: {"level":"warn","module":"dsh.plugin-mount","message":"plugin mount refused","data":[{"step":"mounted","spec":"forms-config","reason":"ctx.plugin refused: invalid config:\n  - $.greeting expected string but got 7 (at greeting)"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1540}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"config.invalid","refused":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"events phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"plugin tree write","data":[{"spec":"forms-events"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-events/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-events/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-events"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-events","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-events/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":212}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-events","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-events","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-events"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-events"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1540}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-events","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-events"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-events/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":468}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":350}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":350}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":350}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-events","module":"plugins/forms-events/index.js"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-events","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"events.observed","on":1,"bail":"blocked","wf":"hey!"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-events"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-events"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-events"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1916}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-events"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"events.detached","on":1}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"plugin tree write","data":[{"spec":"forms-greet"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-greet/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-greet/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"plugin tree write","data":[{"spec":"forms-logger"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-logger/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-logger/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-greet"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-greet","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-greet/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":212}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":158}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":158}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":158}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-greet","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-greet","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-greet"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-greet"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1920}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-greet","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-greet"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-greet/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":748}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":561}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":561}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":561}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-greet","module":"plugins/forms-greet/index.js"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-greet","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-logger"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-logger","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-logger/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":212}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":159}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-logger","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-logger","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-logger"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-logger"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":2292}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-logger","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-logger"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-logger/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":472}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":354}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":354}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":354}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-logger","module":"plugins/forms-logger/index.js"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-logger","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"greet","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"greet","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"tool.greeted","text":"Hello, Cordis!","observed":1}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-greet"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-greet"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-greet"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":2668}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-greet"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-logger"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-logger"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-logger"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":2668}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-logger"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"cascade phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"plugin tree write","data":[{"spec":"forms-customer"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-customer/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-customer/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-customer"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-customer","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-customer/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":216}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":161}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":161}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":161}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-customer","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-customer","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-customer"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-customer"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":2668}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-customer","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-customer"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-customer/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":320}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":240}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":240}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":240}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-customer","module":"plugins/forms-customer/index.js"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-customer","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-service"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-service"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-service"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3052}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-service"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"cascade.disposed","alive":false}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-service"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-service","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-service/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":216}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":160}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":160}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":160}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-service","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-service","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-service"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-service"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3056}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-service","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-service"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-service/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":372}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":277}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":277}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":277}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-service","module":"plugins/forms-service/index.js?e=1"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-service","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"cascade.reloaded","alive":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-customer"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-customer"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-customer"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3052}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-customer"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"pending phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"plugin tree write","data":[{"spec":"forms-pending"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-pending/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-pending/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-pending"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-pending","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-pending/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":216}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":160}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":160}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":160}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-pending","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-pending","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-pending"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-pending"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3056}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-pending","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-pending"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-pending/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":224}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":167}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":167}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":167}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-pending","module":"plugins/forms-pending/index.js"}]}
+dsh.runtime.log: {"level":"warn","module":"dsh.plugin-mount","message":"plugin mount refused","data":[{"step":"mounted","spec":"forms-pending","reason":"plugin is PENDING — an injected service is missing (tutorial ch.6: PENDING is a legal state, but a live mount must run now or not at all)"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3436}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"pending.refused","step":"mounted"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"llm phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"plugin tree write","data":[{"spec":"forms-llm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-llm/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"encodeUtf8 face probe","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-llm/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-llm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-llm","prefix":"tmp/plugin-forms"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-llm/manifest.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":208}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":156}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":156}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":156}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.read","spec":"forms-llm","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.validated","spec":"forms-llm","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approval gate","data":[{"spec":"forms-llm"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-llm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3436}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-llm","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-llm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-llm/index.js"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1100}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":823}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":823}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":823}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-llm","module":"plugins/forms-llm/index.js"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-llm","version":"1.0.0"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"llm.streamed","text":"forms-llm-echo","stop":"stop"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-llm"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-llm"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-llm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3800}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-llm"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"unload phase begin","data":[{}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-hello"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-hello"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-hello"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1164}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3800}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-hello"}]}
@@ -181,7 +643,7 @@ dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","da
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-fn"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1164}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3804}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-fn"}]}
@@ -191,7 +653,7 @@ dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","da
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-service"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1168}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3804}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-service"}]}
@@ -221,7 +683,7 @@ dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approva
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-hello"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1168}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3804}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-hello","version":"1.0.0"}]}
@@ -243,7 +705,7 @@ dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","da
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-hello"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1168}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3804}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.unregistered","spec":"forms-hello"}]}
@@ -256,13 +718,13 @@ dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","da
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1168}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3804}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount-enabled-registry begin","data":[{}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1536}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4172}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount begin","data":[{"spec":"forms-boot"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"manifest read begin","data":[{"spec":"forms-boot","prefix":"tmp/plugin-forms"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-boot/manifest.json"}]}
@@ -279,7 +741,7 @@ dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"approva
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.approved","spec":"forms-boot"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/dsh.plugins/1/registry.json"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1536}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4172}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.adopted","spec":"forms-boot","version":"1.0.0"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-boot"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-boot/index.js"}]}

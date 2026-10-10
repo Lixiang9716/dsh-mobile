@@ -79,13 +79,123 @@ edit → relaunch is a true reload, not a stale module. Removing through the
 plugin manager (`marketplace/remove`) disposes a live mount first — a tree
 never disappears under a running fiber.
 
+## Writing a tool (develop/basic/tool)
+
+The tutorial's `greet` tool runs verbatim — `defineTool` resolves through the
+loader's bare map, the registration is an effect, and execution goes through
+the REAL ToolRuntime:
+
+```js
+import { defineTool } from '@deepseek-ai/dsh-tools';
+
+export const name = 'greet-tool';
+export const inject = ['tools'];
+
+export function apply(ctx) {
+  ctx.tools.register(defineTool({
+    name: 'greet',
+    description: 'Greet someone by name.',
+    parameters: { name: { type: 'string', required: true, description: 'Who to greet' } },
+    output: { schema: { type: 'string' }, render: (_a, value) => [{ type: 'text', text: value }] },
+    async execute(args) { return `Hello, ${args.name}!`; },
+  }));
+}
+```
+
+Other plugins observe every call independently through `ctx.on('tools/result',
+(exec, result) => …)` — loose coupling, no imports between the two.
+
+## Plugin config (develop/basic/config)
+
+Export a `Config` schema (Schemastery — any Standard Schema validator works)
+and `apply(ctx, config)` receives the validated config with defaults filled:
+
+```js
+import Schema from '@deepseek-ai/schemastery';
+
+export const Config = Schema.object({
+  greeting: Schema.string().default('Hello'),
+});
+export const apply = (ctx, config) => { /* config.greeting is always set */ };
+```
+
+The config travels in the mount options (`pluginOpts` — `dev.sh` gains a
+`--config` passthrough for this). Validation runs inside `ctx.plugin` itself:
+an invalid config fails the mount **loud** with the ValidationError, and the
+adoption (the enabled registry row) is rolled back — a broken plugin never
+stays enabled to retry at every boot. The tutorial's `.volatile()` fields and
+`!!js` YAML tags are desktop-composition features; on the mobile host config
+is fixed at mount time — remount with new options instead.
+
+## Events (develop/framework/events)
+
+The four dispatch modes are the cordis kernel's, verbatim: `ctx.emit`
+(broadcast), `ctx.bail` (first non-null answer short-circuits),
+`ctx.serial`, `ctx.waterfall` (each listener wraps `next()`). Every
+`ctx.on` is an effect — unmount detaches the listeners. `tools/result` and
+the other `namespace/action` harness events observe exactly as the tutorial
+shows.
+
+## Services and the dependency cascade (develop/framework/service)
+
+Providing is the class form (`super(ctx, 'myService')`); consuming is
+`inject: ['myService']` (required) or `ctx.get('myService')` (optional). The
+cascade contract holds on this host and is proven: **disposing the provider
+disposes the dependent; restoring the service reloads it.**
+
+## When a mount refuses: the PENDING diagnosis (cordis-tutorial 06)
+
+A plugin whose `inject` names a service nobody provides would silently wait
+forever upstream. On this host the mount **refuses** with
+`plugin is PENDING — an injected service is missing`, unwinds the fiber, and
+rolls back the adoption. A mount must run now or not at all.
+
+## LLM adapters (develop/practice/llm-adapter)
+
+A workspace plugin can serve its own provider — subclass `LlmAdapter` from
+`@deepseek-ai/dsh-llm` and override `stream()` (the base class owns
+`providerInfo`/`providerRetryPolicy`/`resolveModel`/`prepareCall`):
+
+```js
+import { LlmAdapter } from '@deepseek-ai/dsh-llm';
+
+class MyAdapter extends LlmAdapter {
+  async *stream(options) { /* yield the StreamChunk protocol */ }
+}
+
+export const inject = ['llm'];
+export const apply = (ctx) => { ctx.llm.registerAdapter(['my-provider'], new MyAdapter()); };
+```
+
+The registration is an effect (unmount retires the provider) and the stream
+flows through the real `LlmRuntime` waterfall.
+
+## The three-layer seam (develop/practice/) and publishing (develop/basic/publish)
+
+Definition / Provider / Consumer map onto three workspace trees (or three
+marketplace packages) speaking the same Service name — the mechanics are the
+Service form + `inject` proven above; the repo's own capability planes
+(shell → bash-local → tool-bash) are the reference. Publishing maps onto the
+marketplace plane: `dsh plugin add` ≈ `plugin_manager install_bundle`
+(signed uSTAR tarballs from a marketplace index), `remove` ≈
+`marketplace/remove` (which disposes a live mount first), and the profile
+bundle list ≈ the `dsh.plugins/1` registry the boot-list mounts from. The
+npm/pnpm packaging chapter is desktop-only by design — the device never
+builds; authors compile on their machines (`dev.sh`) or ship prebuilt
+tarballs.
+
 ## Where the E2E proof lives
 
 `scenario/plugin-forms.js` (deterministic, no model): all three forms mount,
 `inject` orders the load, the service answers through the resolver, effect
-cleanups run on unload, edited source reloads, and the boot list mounts
-exactly the enabled rows. Run it with `runtime/dsh/ci/run-plugin-forms-e2e.sh`
-(wired into `build/build.sh test core`); the manifest is
+cleanups run on unload, edited source reloads, config validates (explicit →
+default → invalid-loud), the four event modes dispatch, the greet tool runs
+through the real ToolRuntime under an independent observer, the dependency
+cascade disposes and reloads, a PENDING mount refuses with its diagnosis, a
+workspace LLM adapter serves a real stream, and the boot list mounts exactly
+the enabled rows — 23 events, one-to-one. Run it with
+`runtime/dsh/ci/run-plugin-forms-e2e.sh` (wired into
+`build/build.sh test core`); the manifest is
 `test/e2e/scenarios/plugin-forms.json`.
 
 ---

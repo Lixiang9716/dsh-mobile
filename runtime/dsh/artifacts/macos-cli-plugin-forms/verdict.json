@@ -1,8 +1,8 @@
 {
   "scenario": "plugin.forms",
   "pass": true,
-  "expected": 13,
-  "logged": 13,
+  "expected": 23,
+  "logged": 23,
   "failures": [],
   "parseErrors": []
 }

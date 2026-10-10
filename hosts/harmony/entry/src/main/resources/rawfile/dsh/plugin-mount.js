@@ -211,6 +211,33 @@ const linkEntry = async (manifest, spec, prefix) => {
   return { plugin, moduleName: importName };
 };
 
+/** Load the linked plugin and settle its fiber (FiberState is a const enum
+ * cordis does not re-export at runtime — the numeric spelling IS the
+ * contract, types/fiber.d.ts: 0 PENDING, 2 ACTIVE, 3 FAILED). `await fiber`
+ * settles on load inertia, so a plugin whose inject names a missing service
+ * lands PENDING — the tutorial's "silently waiting" trap; this seat refuses
+ * it (and unwinds: a half-mounted state has no honest meaning here). */
+const settleFiber = async (ctx, linked, opts) => {
+  log.debug('fiber settle begin', { spec: linked.spec });
+  try {
+    const fiber = ctx.plugin(linked.plugin, opts.pluginOpts ?? {});
+    await fiber;
+    if (fiber.state === 0) {
+      await fiber.dispose().catch(() => {});
+      return refused('mounted', linked.spec,
+        'plugin is PENDING — an injected service is missing (tutorial ch.6: PENDING is a legal state,'
+        + ' but a live mount must run now or not at all)');
+    }
+    if (fiber.state !== 2) {
+      await fiber.dispose().catch(() => {});
+      return refused('mounted', linked.spec, `fiber settled in state ${fiber.state}, not ACTIVE`);
+    }
+    return { fiber };
+  } catch (error) {
+    return refused('mounted', linked.spec, `ctx.plugin refused: ${error?.message ?? error}`);
+  }
+};
+
 /**
  * `mountWorkspacePlugin(ctx, spec, opts?)` — adopt + live-mount the
  * workspace tree at plugins/<spec>/ (manifest grammar as above). Steps
@@ -235,15 +262,25 @@ export const mountWorkspacePlugin = async (ctx, spec, opts = {}) => {
   const manifest = read.manifest;
   const adopted = await adoptAfterApproval(manifest, spec, prefix, opts);
   if (adopted.adopted !== true) return adopted;
+  // Adoption enables the registry row BEFORE the load, so a refused mount
+  // must roll the enable back — otherwise a broken plugin retries (and
+  // refuses) at every boot, and the boot-list sees a phantom enabled row.
+  const rollbackRow = async () => {
+    await setRegistryRowEnabled({
+      fsRead, fsWrite, path: `${prefix ? prefix + '/' : ''}dsh.plugins/1/registry.json`,
+    }, spec, false).catch(() => {});
+  };
   const linked = await linkEntry(manifest, spec, prefix);
-  if (linked.plugin === undefined) return linked;
-  try {
-    const fiber = ctx.plugin(linked.plugin, opts.pluginOpts ?? {});
-    await fiber;
-    liveFibers.set(spec, fiber);
-  } catch (error) {
-    return refused('mounted', spec, `ctx.plugin refused: ${error?.message ?? error}`);
+  if (linked.plugin === undefined) {
+    await rollbackRow();
+    return linked;
   }
+  const settled = await settleFiber(ctx, { ...linked, spec }, opts);
+  if (settled.fiber === undefined) {
+    await rollbackRow();
+    return settled;
+  }
+  liveFibers.set(spec, settled.fiber);
   log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.mounted',
     spec, version: manifest.version });
   return { mounted: true, spec, version: manifest.version, module: linked.moduleName };
