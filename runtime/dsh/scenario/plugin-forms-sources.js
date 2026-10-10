@@ -84,6 +84,10 @@ export const apply = (ctx) => {
   ctx.on('forms/order', (_input, next) => next().then((v) => v + '-tail'));
   ctx.on('forms/order', (_input, next) => next().then((v) => 'head:' + v),
     { prepend: true });
+  // once detaches itself; global ignores context filters.
+  ctx.once('forms/ping', () => { globalThis.__formsEvents.once = 1; });
+  ctx.on('forms/ping', () => { globalThis.__formsEvents.global = (globalThis.__formsEvents.global ?? 0) + 1; },
+    { global: true });
 };
 `;
 
@@ -126,13 +130,31 @@ export const POLICY_SOURCE = `
 export const name = 'forms-policy';
 export const inject = ['tools'];
 export const apply = (ctx) => {
-  globalThis.__formsPolicy = { denied: 0 };
+  globalThis.__formsPolicy = { denied: 0, blocked: 0, rewritten: 0 };
   ctx.on('tools/pre-execute', (exec) => {
     if (exec.name === 'greet' && exec.arguments?.name === 'Villain') {
       globalThis.__formsPolicy.denied += 1;
       return { kind: 'deny', reason: 'the policy plugin refuses to greet Villain' };
     }
     return { kind: 'allow' };
+  });
+  // The THIRD waterfall (reference/tool-execution-pipeline): post-execute
+  // may accept (replacing content), block with corrective feedback, or
+  // attach additionalContexts.
+  ctx.on('tools/post-execute', (exec, result) => {
+    if (exec.name !== 'greet') return { kind: 'accept' };
+    if (exec.arguments?.name === 'Blocked') {
+      globalThis.__formsPolicy.blocked += 1;
+      return { kind: 'block', feedback: [{ type: 'text', text: 'the policy blocks this greeting' }] };
+    }
+    if (exec.arguments?.name === 'Rewritten') {
+      globalThis.__formsPolicy.rewritten += 1;
+      // VALUE is authoritative: finalization re-renders content from the
+      // canonical value, so a rewrite replaces the VALUE (content
+      // replacement only survives on tools without a canonical value).
+      return { kind: 'accept', value: '[redacted]' };
+    }
+    return { kind: 'accept' };
   });
 };
 `;

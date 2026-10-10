@@ -179,7 +179,10 @@ const eventsPhase = async (ctx) => {
   await writeTree('forms-events', MANIFEST('forms-events'), EVENTS_SOURCE);
   await mountOk(ctx, 'forms-events');
   ctx.emit('forms/ping', {});
-  demand(globalThis.__formsEvents?.on === 1, 'the broadcast listener did not run');
+  ctx.emit('forms/ping', {});
+  demand(globalThis.__formsEvents?.on === 2, 'the broadcast listener did not run twice');
+  demand(globalThis.__formsEvents?.once === 1, 'once fired more than once (or never)');
+  demand(globalThis.__formsEvents?.global === 2, 'the global listener missed a dispatch');
   const bail = ctx.bail('forms/check', 'bad');
   demand(bail === 'blocked', `bail did not short-circuit: ${String(bail)}`);
   const wf = await ctx.waterfall('forms/transform', 'hey', async () => 'hey');
@@ -190,10 +193,10 @@ const eventsPhase = async (ctx) => {
   demand(globalThis.__formsEvents?.par === 1, 'the parallel listener did not run');
   const order = await ctx.waterfall('forms/order', 'x', async () => 'x');
   demand(order === 'head:x-tail', `prepend ordering broken: ${String(order)}`);
-  emit('events.observed', { on: 1, bail, wf, serial, parallel: 1, order });
+  emit('events.observed', { on: 2, once: 1, global: 2, bail, wf, serial, parallel: 1, order });
   void await unmountWorkspacePlugin('forms-events', { prefix: PREFIX });
   ctx.emit('forms/ping', {});
-  demand(globalThis.__formsEvents?.on === 1, 'the listener survived unmount (ctx.on is not an effect)');
+  demand(globalThis.__formsEvents?.on === 2, 'the listener survived unmount (ctx.on is not an effect)');
   emit('events.detached', { on: globalThis.__formsEvents.on });
 };
 
@@ -220,6 +223,15 @@ const toolPhase = async (ctx) => {
   demand(denied?.isError === true,
     `the pre-execute policy did not deny: ${JSON.stringify(denied).slice(0, 200)}`);
   emit('policy.denied', { denied: true });
+  // post-execute: the third waterfall REWRITES the canonical value and
+  // BLOCKS with corrective feedback while the policy plugin is mounted.
+  const rewritten = await call('Rewritten');
+  const rewrittenText = (rewritten?.content ?? []).map((b) => (b.type === 'text' ? b.text : '')).join('');
+  demand(rewrittenText === '[redacted]', `post-execute did not rewrite: "${rewrittenText}" policy=${JSON.stringify(globalThis.__formsPolicy)}`);
+  const blockedCall = await call('Blocked');
+  demand(blockedCall?.isError === true
+    && JSON.stringify(blockedCall.content ?? []).includes('blocks this greeting'),
+  `post-execute did not block: ${JSON.stringify(blockedCall).slice(0, 160)}`);
   void await unmountWorkspacePlugin('forms-policy', { prefix: PREFIX });
   const lifted = await call('Villain');
   const liftedText = (lifted?.content ?? []).map((b) => (b.type === 'text' ? b.text : '')).join('');
@@ -237,7 +249,7 @@ const toolPhase = async (ctx) => {
   for (const spec of ['forms-greet', 'forms-logger']) {
     void await unmountWorkspacePlugin(spec, { prefix: PREFIX });
   }
-  emit('tool.greeted', { policed: true, guarded: true });
+  emit('tool.greeted', { policed: true, guarded: true, rewritten: 1, blocked: 1 });
 };
 
 /** cookbook/background: the real LocalJobRegistry — start → wait → read,

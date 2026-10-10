@@ -79,7 +79,9 @@
   {
    "event": "events.observed",
    "match": {
-    "on": 1,
+    "on": 2,
+    "once": 1,
+    "global": 2,
     "bail": "blocked",
     "wf": "hey!",
     "serial": "serial-answer",
@@ -90,7 +92,7 @@
   {
    "event": "events.detached",
    "match": {
-    "on": 1
+    "on": 2
    }
   },
   {
@@ -103,7 +105,9 @@
    "event": "tool.greeted",
    "match": {
     "policed": true,
-    "guarded": true
+    "guarded": true,
+    "rewritten": 1,
+    "blocked": 1
    }
   },
   {
