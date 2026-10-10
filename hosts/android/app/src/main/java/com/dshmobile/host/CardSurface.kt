@@ -150,37 +150,9 @@ class CardSurface private constructor(activity: Activity) {
             if (bold) setTypeface(typeface, Typeface.BOLD)
         }
 
-        titleView = cardText(15f, bold = true)
-        timeView = cardText(if (kind == "timer") 34f else 18f, bold = true)
-        subtitleView = cardText(12f).apply {
-            text = subtitle
-            setTextColor(Color.parseColor("#6B6B6B"))
-        }
-        progress = ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal).apply {
-            max = 10_000
-            if (kind != "timer") alpha = 0f
-        }
-        val close = TextView(activity).apply {
-            text = "✕"
-            textSize = 15f
-            setPadding((6 * density).toInt(), (2 * density).toInt(),
-                (6 * density).toInt(), (2 * density).toInt())
-            setOnClickListener { dismiss() }
-        }
-
-        val content = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding((16 * density).toInt(), (14 * density).toInt(),
-                (16 * density).toInt(), (12 * density).toInt())
-            addView(titleView, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(timeView, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(progress, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(subtitleView, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-        }
+        buildViews(activity, kind, subtitle)
+        val close = buildClose(activity)
+        val content = buildContent(activity)
 
         val box = FrameLayout(activity).apply {
             background = GradientDrawable().apply {
@@ -206,6 +178,49 @@ class CardSurface private constructor(activity: Activity) {
         cardBox = box
         startTick()
         render()
+    }
+
+    /** Builds the card's views (title/time/progress/subtitle) per kind. */
+    private fun buildViews(activity: Activity, kind: String, subtitle: String) {
+        fun cardText(size: Float, bold: Boolean = false) = TextView(activity).apply {
+            textSize = size
+            gravity = Gravity.CENTER
+            if (bold) setTypeface(typeface, Typeface.BOLD)
+        }
+
+        titleView = cardText(15f, bold = true)
+        timeView = cardText(if (kind == "timer") 34f else 18f, bold = true)
+        subtitleView = cardText(12f).apply {
+            text = subtitle
+            setTextColor(Color.parseColor("#6B6B6B"))
+        }
+        progress = ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal).apply {
+            max = 10_000
+            if (kind != "timer") alpha = 0f
+        }
+    }
+
+    /** The ✕ close control. */
+    private fun buildClose(activity: Activity): TextView = TextView(activity).apply {
+        text = "✕"
+        textSize = 15f
+        val d = activity.resources.displayMetrics.density
+        setPadding((6 * d).toInt(), (2 * d).toInt(), (6 * d).toInt(), (2 * d).toInt())
+        setOnClickListener { dismiss() }
+    }
+
+    /** The card's content column (title/time/progress/subtitle). */
+    private fun buildContent(activity: Activity): LinearLayout {
+        val pad = fun(v: Int) = (v * activity.resources.displayMetrics.density).toInt()
+        return LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad(16), pad(14), pad(16), pad(12))
+            for (sub in listOf(titleView, timeView, progress, subtitleView)) {
+                addView(sub, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT))
+            }
+        }
     }
 
     /** The touch drag: reposition the floating card within the overlay. */

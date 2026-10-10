@@ -187,15 +187,7 @@ class SessionServe private constructor(
         activity.runOnUiThread { cardSurface = CardSurface.attach(activity) }
         // The app block of the GET /api/state seam: the scripted-approval
         // flag this launch ran under + the card face's projection.
-        bridge.appState = {
-            val app = JSONObject()
-            val script = activity.intent?.getStringExtra("dsh.script.approval")
-            app.put("scriptApproval",
-                if (script in setOf("approve", "remember", "decline")) script
-                else JSONObject.NULL)
-            cardSurface?.let { app.put("card", it.snapshot().optJSONObject("card")) }
-            app
-        }
+        bridge.appState = { appStateBlock() }
         seam = SessionWriteSeam(bridge)
         wireEvidence()
         carrier.registerFallback(dist.handler)
@@ -445,6 +437,18 @@ class SessionServe private constructor(
      * the settings probes are in, OR the runtime failed — the page shows its
      * own boot state, never a blank WebView). */
     @Synchronized
+    /** The app block of the /api/state snapshot (any thread): the
+     * scripted-approval flag this launch ran under + the card face. */
+    private fun appStateBlock(): JSONObject {
+        val app = JSONObject()
+        val script = activity.intent?.getStringExtra("dsh.script.approval")
+        app.put("scriptApproval",
+            if (script in setOf("approve", "remember", "decline")) script
+            else JSONObject.NULL)
+        cardSurface?.let { app.put("card", it.snapshot().optJSONObject("card")) }
+        return app
+    }
+
     private fun maybeOpenOrigin() {
         if (carrier.port == 0 || originOpened) return
         val ready = runtimeBootApplied && probesDone
