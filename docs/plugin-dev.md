@@ -119,13 +119,17 @@ export const Config = Schema.object({
 export const apply = (ctx, config) => { /* config.greeting is always set */ };
 ```
 
-The config travels in the mount options (`pluginOpts` — `dev.sh` gains a
-`--config` passthrough for this). Validation runs inside `ctx.plugin` itself:
-an invalid config fails the mount **loud** with the ValidationError, and the
-adoption (the enabled registry row) is rolled back — a broken plugin never
-stays enabled to retry at every boot. The tutorial's `.volatile()` fields and
-`!!js` YAML tags are desktop-composition features; on the mobile host config
-is fixed at mount time — remount with new options instead.
+The config travels in the mount options (`pluginOpts`). Validation runs
+inside `ctx.plugin` itself: an invalid config fails the mount **loud** with
+the ValidationError, and the adoption (the enabled registry row) is rolled
+back — a broken plugin never stays enabled to retry at every boot.
+
+Config can also be HOT-UPDATED on a live mount — the kernel's config-HMR
+face, exposed as `updateWorkspacePluginConfig(spec, config)`: the update is
+validated, the fiber restarts IN PLACE (unload effects run, apply re-runs),
+and an invalid update refuses while the old config keeps running. The
+tutorial's `.volatile()` fields and `!!js` YAML tags remain
+desktop-composition features.
 
 ## Events (develop/framework/events)
 

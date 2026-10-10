@@ -53,6 +53,18 @@
    }
   },
   {
+   "event": "config.updated",
+   "match": {
+    "greeting": "Bonjour"
+   }
+  },
+  {
+   "event": "config.update-invalid",
+   "match": {
+    "refused": true
+   }
+  },
+  {
    "event": "config.default",
    "match": {
     "greeting": "Hello"

@@ -1,8 +1,8 @@
 {
   "scenario": "seam.inventory",
   "pass": true,
-  "expected": 3,
-  "logged": 3,
+  "expected": 4,
+  "logged": 4,
   "failures": [],
   "parseErrors": []
 }
