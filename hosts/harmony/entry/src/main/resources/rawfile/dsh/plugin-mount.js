@@ -6,16 +6,33 @@
  * on the host loader seam (`__dshModuleDefine`, checked before the bare
  * map, so a registered name wins), linking it as a real module (`import()`
  * — its own imports resolve through the ordinary bundle-root/bare map),
- * and mounting the namespace as a cordis plugin (`ctx.plugin(ns)`), all at
+ * and mounting the plugin on the cordis context (`ctx.plugin`), all at
  * runtime, after boot, on the serial thread (D2/D8: every step is either
  * an async gateway round trip or loader work the runtime owns).
+ *
+ * All three upstream plugin forms are first-class (the tutorial's one-to-one
+ * promise): an OBJECT module (named `name`/`inject`/`apply` exports — or
+ * the same under `default`), a FUNCTION module (`export default (ctx) =>`),
+ * and a CLASS module (`export class X extends Service` — a single
+ * function/class export is picked; `Service` itself imports from
+ * '@deepseek-ai/cordis', which the loader's bare map serves).
+ *
+ * Unload is a first-class operation too: the mount keeps the fiber
+ * `ctx.plugin` returned, `unmountWorkspacePlugin` awaits its `dispose()`
+ * (cordis unwinds everything the plugin registered — listeners, tools,
+ * timers, `ctx.effect` cleanups — as effects on that fiber) and disables
+ * the registry row. A remount after an unmount re-links under a fresh
+ * epoch query (`?e=n`, the loader's node-style cache-buster), so edited
+ * source re-reads exactly like node re-reading the file.
  *
  * The approval gate: mounting third-party-authored code is a checkpoint
  * boundary, so the default flow asks presentApproval first (contract §4:
  * approval while pending may checkpoint; the native dialog on hosts that
  * present it) and refuses the mount on `{approved: false}` — the "user
  * dismissal is a value" rule. Callers that already hold an approval may
- * pass `{ approved: true }` to skip the dialog.
+ * pass `{ approved: true }` to skip the dialog; `mountEnabledRegistry`
+ * (the boot-time cordis.yml-insert equivalent — every enabled workspace
+ * row mounts at spine boot, the approval happened at adoption) does.
  *
  * The manifest grammar is the workspace-authored shape (validated by the
  * same function the plugin_manager tool uses — imported from the system
@@ -25,18 +42,26 @@
  * mounted plugin IS an installed plugin to every other consumer (settings
  * panel, list legs).
  *
- * Lifecycle logging is the E2E surface (scenario plugin.mount.*): each
- * step logs one structured line; the mount leg's verdict lines are what
- * the manifests assert against.
+ * Lifecycle logging is the E2E surface (scenario plugin.mount.* /
+ * plugin.unmount.*): each step logs one structured line; the legs' verdict
+ * lines are what the manifests assert against.
  */
 import { createLogger } from 'logger.js';
 import { fsRead, fsWrite, presentApproval } from 'gateway.js';
-import { workspacePrefix as prefixOf, upsertRegistryRow }
+import { workspacePrefix as prefixOf, upsertRegistryRow,
+  setRegistryRowEnabled, readWorkspaceRegistryDoc }
   from 'workspace-registry.js';
 import { validateWorkspaceManifest }
   from 'system-plugins/dsh-plugin-manager-tools/index.js';
 
 const log = createLogger('dsh.plugin-mount');
+
+/** Live mounts: spec → the fiber `ctx.plugin` returned (its `dispose()`
+ * unloads the plugin and settles once cordis finished the cleanup). */
+const liveFibers = new Map();
+/** Link epochs per spec: a remount after an unmount links under `?e=<n>` so
+ * the import cache serves a FRESH compile of the (possibly edited) source. */
+const epochs = new Map();
 
 /** The workspace prefix for gateway paths, the same derivation the plugin
  * manager tool uses (a seat with no pinned scope root has its workspace AT
@@ -127,8 +152,29 @@ const adoptAfterApproval = async (manifest, spec, prefix, opts) => {
   return { adopted: true };
 };
 
+/** Normalize a linked module's exports to the plugin cordis expects (a
+ * function, or an object with an `apply` method — cordis's own contract).
+ * The namespace itself works only for the object form's named exports;
+ * `default` interop and the single-class pick cover the other two tutorial
+ * forms. Returns null when no export is a plugin (refused loud upstream). */
+const resolvePluginExport = (ns, spec) => {
+  if (ns && typeof ns.apply === 'function') return ns;
+  if (ns && ns.default !== undefined) {
+    const d = ns.default;
+    if (typeof d === 'function') return d;
+    if (d && typeof d.apply === 'function') return d;
+  }
+  const keys = Object.keys(ns ?? {}).filter((k) => k !== 'default');
+  const callables = keys.filter((k) => typeof ns[k] === 'function');
+  if (keys.length === 1 && callables.length === 1) return ns[keys[0]];
+  log.warn('entry exports no plugin', { spec, exports: keys });
+  return null;
+};
+
 /** Register the entry bytes on the loader seam and import them (step:
- * linked) — the REAL dynamic load, post-boot. */
+ * linked) — the REAL dynamic load, post-boot. A spec remounted after an
+ * unmount links under `?e=<epoch>`: the loader's node-style cache-buster,
+ * so the fresh compile of the current source is what links. */
 const linkEntry = async (manifest, spec, prefix) => {
   log.debug('entry link begin', { spec });
   const entryRel = manifest.entry.replace(/^\.?\//, '');
@@ -145,23 +191,32 @@ const linkEntry = async (manifest, spec, prefix) => {
   if (typeof define !== 'function') {
     return refused('linked', spec, 'this host loader has no __dshModuleDefine seam');
   }
+  const epoch = epochs.get(spec) ?? 0;
+  const importName = epoch > 0 ? `${moduleName}?e=${epoch}` : moduleName;
   define(moduleName, await decodeUtf8(entryBytes));
   let ns;
   try {
-    ns = await import(moduleName);
+    ns = await import(importName);
   } catch (error) {
     return refused('linked', spec, `the entry did not link: ${error?.message ?? error}`);
   }
+  const plugin = resolvePluginExport(ns, spec);
+  if (plugin === null) {
+    return refused('linked', spec,
+      'the entry exports no plugin: need an `apply` export, a `default` plugin,'
+      + ' or a single Service class export');
+  }
   log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.linked',
-    spec, module: moduleName });
-  return { ns, moduleName };
+    spec, module: importName });
+  return { plugin, moduleName: importName };
 };
 
 /**
  * `mountWorkspacePlugin(ctx, spec, opts?)` — adopt + live-mount the
  * workspace tree at plugins/<spec>/ (manifest grammar as above). Steps
  * (each an E2E log line, one round trip each): read → validated →
- * approved → adopted → linked → mounted. See the option docs above.
+ * approved → adopted → linked → mounted. The fiber cordis returned is
+ * retained for `unmountWorkspacePlugin`. See the option docs above.
  */
 export const mountWorkspacePlugin = async (ctx, spec, opts = {}) => {
   log.debug('mount begin', { spec });
@@ -171,6 +226,9 @@ export const mountWorkspacePlugin = async (ctx, spec, opts = {}) => {
   if (typeof spec !== 'string' || !/^[a-z0-9][a-z0-9.-]*$/.test(spec)) {
     return refused('spec', spec, 'a spec must be a bare plugin id');
   }
+  if (liveFibers.has(spec)) {
+    return refused('context', spec, 'already mounted — unmount first (reload is unmount + mount)');
+  }
   const prefix = typeof opts.prefix === 'string' ? opts.prefix : workspacePrefix();
   const read = await readManifest(spec, prefix);
   if (read.manifest === undefined) return read;
@@ -178,15 +236,99 @@ export const mountWorkspacePlugin = async (ctx, spec, opts = {}) => {
   const adopted = await adoptAfterApproval(manifest, spec, prefix, opts);
   if (adopted.adopted !== true) return adopted;
   const linked = await linkEntry(manifest, spec, prefix);
-  if (linked.ns === undefined) return linked;
+  if (linked.plugin === undefined) return linked;
   try {
-    await ctx.plugin(linked.ns, opts.pluginOpts ?? {});
+    const fiber = ctx.plugin(linked.plugin, opts.pluginOpts ?? {});
+    await fiber;
+    liveFibers.set(spec, fiber);
   } catch (error) {
     return refused('mounted', spec, `ctx.plugin refused: ${error?.message ?? error}`);
   }
   log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.mounted',
     spec, version: manifest.version });
   return { mounted: true, spec, version: manifest.version, module: linked.moduleName };
+};
+
+/** `unmountWorkspacePlugin(spec, opts?)` — the unload half of the tutorial's
+ * lifecycle: awaits the fiber's `dispose()` (cordis unwinds every effect the
+ * plugin registered — listeners, tools, timers, `ctx.effect` cleanups), then
+ * disables the registry row. Steps (E2E log lines): live → disposed →
+ * unregistered. The NEXT mount of the spec links a fresh compile (epoch). */
+export const unmountWorkspacePlugin = async (spec, opts = {}) => {
+  log.debug('unmount begin', { spec });
+  const fiber = liveFibers.get(spec);
+  if (fiber === undefined) {
+    return refused('live', spec, 'not mounted (nothing to unload)');
+  }
+  log.info('e2e', { scenario: 'plugin.unmount', event: 'plugin.unmount.live', spec });
+  try {
+    await fiber.dispose();
+  } catch (error) {
+    return refused('disposed', spec, `fiber.dispose failed: ${error?.message ?? error}`);
+  }
+  log.info('e2e', { scenario: 'plugin.unmount', event: 'plugin.unmount.disposed', spec });
+  liveFibers.delete(spec);
+  epochs.set(spec, (epochs.get(spec) ?? 0) + 1);
+  const prefix = typeof opts.prefix === 'string' ? opts.prefix : workspacePrefix();
+  const registry = await setRegistryRowEnabled({
+    fsRead, fsWrite, path: `${prefix ? prefix + '/' : ''}dsh.plugins/1/registry.json`,
+  }, spec, false);
+  if (!registry.ok) {
+    return refused('unregistered', spec, `${registry.code}: ${registry.message}`);
+  }
+  log.info('e2e', { scenario: 'plugin.unmount', event: 'plugin.unmount.unregistered', spec });
+  return { unmounted: true, spec };
+};
+
+/** Whether a spec is live-mounted (the plugin manager's remove face checks
+ * before disposing). */
+export const isMounted = (spec) => liveFibers.has(spec);
+
+/**
+ * `mountEnabledRegistry(ctx, opts?)` — the boot-time cordis.yml-insert
+ * equivalent: every ENABLED workspace row in the dsh.plugins/1 registry
+ * mounts at spine boot (the approval happened at adoption; rows pass
+ * `{approved: true}`). A missing registry is the fresh roster — nothing to
+ * mount, not an error. Returns the mount outcomes (mounted + refused).
+ */
+export const mountEnabledRegistry = async (ctx, opts = {}) => {
+  log.debug('mount-enabled-registry begin', {});
+  const prefix = typeof opts.prefix === 'string' ? opts.prefix : workspacePrefix();
+  const doc = await readWorkspaceRegistryDoc({
+    fsRead, path: `${prefix ? prefix + '/' : ''}dsh.plugins/1/registry.json`,
+  });
+  if (!doc.ok) {
+    return { ok: false, code: doc.code, message: doc.message, mounted: [], refused: [] };
+  }
+  const outcomes = { ok: true, mounted: [], refused: [] };
+  for (const row of doc.plugins) {
+    if (row?.enabled !== true || row.source !== 'workspace') continue;
+    const outcome = await mountWorkspacePlugin(ctx, row.id, { ...opts, approved: true });
+    if (outcome.mounted) outcomes.mounted.push(outcome);
+    else outcomes.refused.push(outcome);
+  }
+  log.info('e2e', { scenario: 'plugin.mount', event: 'plugin.mount.boot-list',
+    mounted: outcomes.mounted.map((m) => m.spec),
+    refused: outcomes.refused.map((r) => `${r.spec}@${r.step}`) });
+  return outcomes;
+};
+
+/** The boot-time caller's wrapper (boot.js): mount the enabled rows and
+ * report the outcome as one `upstream/boot-plugins` event — a boot never
+ * dies on a plugin; refusals ride the event and the spine stands. */
+export const mountBootRows = async (ctx, onEvent) => {
+  log.debug('boot rows begin', {});
+  try {
+    const rows = await mountEnabledRegistry(ctx);
+    onEvent('upstream/boot-plugins', {
+      mounted: rows.ok ? rows.mounted.map((m) => m.spec) : [],
+      refused: rows.ok
+        ? rows.refused.map((r) => `${r.spec}@${r.step}`)
+        : [`${rows.code}: ${rows.message}`],
+    });
+  } catch (error) {
+    onEvent('upstream/boot-plugins', { mounted: [], refused: [String(error?.message ?? error)] });
+  }
 };
 
 /** The turn-settled hook the creation seats call: if the session authored

@@ -1,0 +1,89 @@
+{
+ "scenario": "plugin.forms",
+ "extract": {
+  "prefix": "dsh.runtime.log:"
+ },
+ "expect": [
+  {
+   "event": "spine.booted",
+   "match": {
+    "sessionId": "s-plugin-forms-0001"
+   }
+  },
+  {
+   "event": "authored.trees",
+   "match": {
+    "specs": ["forms-hello", "forms-fn", "forms-service"]
+   }
+  },
+  {
+   "event": "form.mounted",
+   "match": {
+    "spec": "forms-hello"
+   }
+  },
+  {
+   "event": "form.mounted",
+   "match": {
+    "spec": "forms-fn"
+   }
+  },
+  {
+   "event": "form.mounted",
+   "match": {
+    "spec": "forms-service"
+   }
+  },
+  {
+   "event": "forms.live",
+   "match": {
+    "object": true,
+    "function": true,
+    "service": true
+   }
+  },
+  {
+   "event": "form.unmounted",
+   "match": {
+    "spec": "forms-hello"
+   }
+  },
+  {
+   "event": "form.unmounted",
+   "match": {
+    "spec": "forms-fn"
+   }
+  },
+  {
+   "event": "form.unmounted",
+   "match": {
+    "spec": "forms-service"
+   }
+  },
+  {
+   "event": "unload.effects",
+   "match": {
+    "disposed": 1
+   }
+  },
+  {
+   "event": "reload.edited",
+   "match": {
+    "loaded": 2
+   }
+  },
+  {
+   "event": "bootlist.mounted",
+   "match": {
+    "spec": "forms-boot",
+    "skipped": "forms-hello(disabled)"
+   }
+  },
+  {
+   "event": "scenario.complete",
+   "match": {
+    "status": "pass"
+   }
+  }
+ ]
+}

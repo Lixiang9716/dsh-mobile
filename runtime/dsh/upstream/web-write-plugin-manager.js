@@ -48,6 +48,7 @@ import { validateManifest } from 'install-pipeline.js';
 import { readJournal, appendReceipt } from 'receipt-journal.js';
 import { fetchIndex, lookupEntry, MarketplaceRejected } from 'marketplace-resolver.js';
 import { installedFromJournal } from 'upstream/web-write-marketplace.js';
+import { isMounted, unmountWorkspacePlugin } from 'plugin-mount.js';
 
 const log = createLogger('dsh.web.plugin-manager');
 
@@ -261,6 +262,16 @@ const removeBundle = (registryPath) => inBand('remove', (a) => a?.name, async (a
   if (installed === undefined && registryRow(regDoc, name) === undefined) {
     return changeFailed('remove', name, 'unknown-plugin',
       `no committed install and no registry row names "${name}"`);
+  }
+  // A LIVE mount goes first: removing the tree while the fiber still runs
+  // would strand a loaded plugin with no source behind it. The dispose
+  // unwinds everything the plugin registered (cordis fiber semantics).
+  if (isMounted(name)) {
+    const unload = await unmountWorkspacePlugin(name);
+    if (!unload.unmounted) {
+      return changeFailed('remove', name, 'unload-failed',
+        `the live mount refused to unload: ${unload.step}: ${unload.reason ?? ''}`);
+    }
   }
   if (installed !== undefined) {
     await fsRemove('app', `plugins/${installed.id}@${installed.version}`,
