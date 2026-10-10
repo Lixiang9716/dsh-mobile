@@ -126,6 +126,18 @@ Definition / Provider / Consumer 对应三个工作区树(或三个市场包),�
 
 `scenario/plugin-forms.js`(确定性、无模型):三形态全部挂载、`inject` 排序加载、服务经解析器应答、effect 清理在卸载时运行、编辑后的源码重载、配置校验(显式值 → 默认值 → 非法响亮失败)、四种事件模式分发、greet 工具经真实 ToolRuntime 执行且有独立观察者、依赖级联销毁与重载、PENDING 挂载带诊断拒绝、工作区 LLM 适配器服务真实流、启动列表恰好挂载启用的行——23 个事件一一对应。用 `runtime/dsh/ci/run-plugin-forms-e2e.sh` 运行(已接入 `build/build.sh test core`);清单在 `test/e2e/scenarios/plugin-forms.json`。
 
+## 策略钩子、后台任务与工具编写参考的其余部分(reference/cookbook)
+
+深水区的工具编写面就是同一套 vendored `dsh-tools`,腿里已实证:
+
+- **策略**:`tools/pre-execute` 瀑布可以拒绝调用(`{kind: 'deny', reason}`),`ctx.tools.guard` 单调拒绝——任何后续面都不能强行放行。两者都是 effect:卸载即解除。
+- **后台工作**:组合面挂载的是真实 `LocalJobRegistry`——`ctx.jobs.start({kind, label, run})`、`wait`、`read`、`kill`。必须遵守的一个契约:合规生产者的 `cancel()` **必须最终兑现 `done`**(运行时等的是资源释放,不是 kill 请求)。`dsh-tool-jobs` 负责把任务状态渲染给模型。
+- **UI 卡片**(`presentCall`/`presentResult`/`presentationMeta`):同一个 `defineTool` 的面;本宿主上面向模型的是 `output.render`,产品自己的原生卡面(`card.*` 事件)才是 UI 面。web `tool.call.toolview` 客户端槽位一章属于桌面 web 面。
+- **PTC 模式**:程序化工具访问已经由 `ctx.tools.execute` 实证;完整 `run_code` PTC 面依赖 PTC host runner,移动墙(`preset-mobile-rows.js`)按设计将其禁用。
+- `ctx.serial` 补齐四种分发模式;嵌套 `ctx.plugin(child)` 随父递归销毁;`ctx.provide` 是纯值提供面。
+
+quickstart 的 Web-UI 流程(模型设置 → 工作区选择 → 带审批的真实回合)就是本应用的产品面——无需插件开发映射。
+
 ---
 
 [English version](plugin-dev.md)

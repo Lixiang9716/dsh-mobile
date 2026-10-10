@@ -13,7 +13,11 @@
   {
    "event": "authored.trees",
    "match": {
-    "specs": ["forms-hello", "forms-fn", "forms-service"]
+    "specs": [
+     "forms-hello",
+     "forms-fn",
+     "forms-service"
+    ]
    }
   },
   {
@@ -65,7 +69,8 @@
    "match": {
     "on": 1,
     "bail": "blocked",
-    "wf": "hey!"
+    "wf": "hey!",
+    "serial": "serial-answer"
    }
   },
   {
@@ -75,10 +80,30 @@
    }
   },
   {
+   "event": "policy.denied",
+   "match": {
+    "denied": true
+   }
+  },
+  {
    "event": "tool.greeted",
    "match": {
-    "text": "Hello, Cordis!",
-    "observed": 1
+    "policed": true,
+    "guarded": true
+   }
+  },
+  {
+   "event": "jobs.lifecycle",
+   "match": {
+    "completed": "bash-1",
+    "killed": "bash-2"
+   }
+  },
+  {
+   "event": "nested.provided",
+   "match": {
+    "child": true,
+    "provide": true
    }
   },
   {
@@ -91,6 +116,12 @@
    "event": "cascade.reloaded",
    "match": {
     "alive": true
+   }
+  },
+  {
+   "event": "nested.recursive",
+   "match": {
+    "child": false
    }
   },
   {

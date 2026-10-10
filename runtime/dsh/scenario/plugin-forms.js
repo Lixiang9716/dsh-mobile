@@ -1,30 +1,36 @@
 /**
- * Scenario `plugin.forms` — the upstream plugin tutorial's one-to-one
- * proof on the mobile host (docs/plugin-dev.md): ALL THREE plugin forms
- * mount live, declare dependencies, clean up on unload, and reload with
- * edited source — no model in the path, fully deterministic.
+ * Scenario `plugin.forms` — the upstream develop guide's one-to-one proof
+ * on the mobile host (docs/plugin-dev.md), deterministic and model-free.
+ * Plugin SOURCES live in plugin-forms-sources.js; this file is the driver.
  *
- * Flow (every expected event = one structured log line, in the order the
+ * Phases (every expected event = one structured log line, in the order the
  * manifest test/e2e/scenarios/plugin-forms.json declares):
  *
- *   1. spine: the mobile profile boots (dummy LLM route — no turn runs);
- *   2. authored: three workspace plugin trees are written through the
- *      gateway fs —
- *        forms-hello   the tutorial's hello-plugin, object form
- *                      (name/inject/apply + a ctx.effect cleanup flag),
- *        forms-fn      function form (export default (ctx) => …),
- *        forms-service class form (export class extends Service, static
- *                      inject ['tools'], provides formsService.beat());
- *   3. mount: all three mount live (approved: true — the scripted leg),
- *      the service form answers through the cordis service resolver
- *      (the inject ordering proof: apply ran only after tools was up);
- *   4. effect: the object form's ctx.effect disposer ran on unload —
- *      unmount disposes every fiber, the service no longer resolves;
- *   5. reload: the object form's source is EDITED and remounted — the
- *      epoch query re-links a fresh compile (the loader's node-style
- *      cache-buster), the edited line is what runs;
- *   6. boot-list: a relaunch-equivalent pass — mountEnabledRegistry mounts
- *      the still-enabled rows (the cordis.yml-insert equivalent).
+ *   1. spine: the mobile profile boots (mock LLM route — no turn runs);
+ *   2. mount: the three plugin FORMS (object / function / Service class)
+ *      mount live; the service answers through the cordis resolver;
+ *   3. config (basic/config): the exported Config schema validates inside
+ *      ctx.plugin — explicit value, schema default, invalid → loud refusal
+ *      with the adoption rolled back;
+ *   4. events (framework/events): emit / bail / serial / waterfall, and
+ *      ctx.on proven to detach on unmount;
+ *   5. tool + policy (basic/tool + cookbook): the tutorial-verbatim greet
+ *      tool runs through the real ToolRuntime under an independent
+ *      observer; tools/pre-execute deny and the monotonic ctx.tools.guard
+ *      both deny — and both lift when their plugin unmounts;
+ *   6. jobs (cookbook/background): ctx.jobs.start → wait → read, and the
+ *      kill path, against the real LocalJobRegistry;
+ *   7. cascade + nested + provide (framework/service, tutorial 02/03):
+ *      provider unload disposes the dependent and service restore reloads
+ *      it; a child mounted through ctx.plugin disposes recursively with
+ *      its parent; ctx.provide answers;
+ *   8. pending (tutorial 06): a mount whose inject names a missing service
+ *      refuses with the diagnosis — never a phantom mount;
+ *   9. llm (practice/llm-adapter): a workspace-authored LlmAdapter serves a
+ *      real LlmRuntime stream for its own provider;
+ *  10. unload / reload / boot-list: fiber.dispose runs the cleanups, edited
+ *      source re-links under the epoch cache-buster, and the boot list
+ *      mounts exactly the enabled registry rows.
  *
  * Artifacts: runtime/dsh/artifacts/macos-cli-plugin-forms/.
  */
@@ -35,6 +41,10 @@ import { mountWorkspacePlugin, unmountWorkspacePlugin,
   mountEnabledRegistry, isMounted }
   from 'plugin-mount.js';
 import { upsertRegistryRow } from 'workspace-registry.js';
+import { HELLO_SOURCE, HELLO_EDITED, FN_SOURCE, BOOT_SOURCE, SERVICE_SOURCE,
+  CONFIG_SOURCE, EVENTS_SOURCE, GREET_SOURCE, LOGGER_SOURCE, POLICY_SOURCE,
+  NESTED_SOURCE, CUSTOMER_SOURCE, PENDING_SOURCE, LLM_SOURCE, MANIFEST }
+  from './plugin-forms-sources.js';
 
 const SCENARIO = 'plugin.forms';
 const AGENT_ID = 'main';
@@ -74,161 +84,12 @@ const writeTree = async (spec, manifest, source) => {
   await fsWrite('app', `${PREFIX}/plugins/${spec}/index.js`, await encodeUtf8(source));
 };
 
-// The three forms. The object form is the tutorial verbatim in spirit
-// (name + apply + ctx.effect cleanup). NOTE the vendored cordis@4.0.2
-// effect semantics (lib/index.js _execute): the callback runs IMMEDIATELY
-// as setup and its RETURN VALUE is the disposer — so cleanups are written
-// `ctx.effect(() => () => …)`. The counters ride globalThis so the
-// scenario observes load/disposal without a second round trip.
-const HELLO_SOURCE = `
-export const name = 'forms-hello';
-export const inject = ['tools'];
-export const apply = (ctx) => {
-  globalThis.__formsProbe = { loaded: (globalThis.__formsProbe?.loaded ?? 0) + 1 };
-  ctx.effect(() => () => {
-    globalThis.__formsProbe = {
-      ...globalThis.__formsProbe,
-      disposed: (globalThis.__formsProbe?.disposed ?? 0) + 1,
-    };
-  });
+const mountOk = async (ctx, spec, opts = {}) => {
+  log.debug('mount helper', { spec });
+  const outcome = await mountWorkspacePlugin(ctx, spec, { approved: true, prefix: PREFIX, ...opts });
+  demand(outcome.mounted === true, `${spec} mount refused at ${outcome.step}: ${outcome.reason ?? ''}`);
+  return outcome;
 };
-`;
-const HELLO_EDITED = HELLO_SOURCE.replace("name = 'forms-hello'",
-  "name = 'forms-hello-edited'");
-const FN_SOURCE = `
-export default (ctx) => {
-  globalThis.__formsFn = { loaded: true };
-  ctx.effect(() => () => { globalThis.__formsFn = { loaded: false }; });
-};
-`;
-const BOOT_SOURCE = `
-export const name = 'forms-boot';
-export const apply = (ctx) => {
-  globalThis.__formsBoot = { loaded: true };
-};
-`;
-const SERVICE_SOURCE = `
-import { Service } from '@deepseek-ai/cordis';
-export class FormsService extends Service {
-  static inject = ['tools'];
-  constructor(ctx) {
-    super(ctx, 'formsService');
-    globalThis.__formsService = { constructed: true };
-  }
-  beat() { return 'forms-service-beat'; }
-}
-`;
-
-// --- the framework-capabilities chapters, proven on this host -------------
-
-// ch.5 config: an exported Config schema (Schemastery — a Standard Schema
-// validator) is applied by ctx.plugin itself; apply receives the validated
-// config, defaults filled.
-const CONFIG_SOURCE = `
-import Schema from '@deepseek-ai/schemastery';
-export const name = 'forms-config';
-export const Config = Schema.object({
-  greeting: Schema.string().default('Hello'),
-});
-export const apply = (ctx, config) => {
-  globalThis.__formsConfig = { greeting: config.greeting };
-};
-`;
-
-// ch.4 events: broadcast, bail short-circuit, waterfall transform; every
-// ctx.on is an effect — unmount removes the listeners.
-const EVENTS_SOURCE = `
-export const name = 'forms-events';
-export const apply = (ctx) => {
-  globalThis.__formsEvents = { on: 0, bail: 0, wf: 0 };
-  ctx.on('forms/ping', () => { globalThis.__formsEvents.on += 1; });
-  ctx.on('forms/check', (input) => (input === 'bad' ? 'blocked' : undefined));
-  ctx.on('forms/transform', async (input, next) => (await next()) + '!');
-};
-`;
-
-// basic/tool + ch.7: the tutorial's greet tool verbatim (defineTool from
-// '@deepseek-ai/dsh-tools') plus an INDEPENDENT observer over tools/result
-// (the two plugins connect only through the registry service and events).
-const GREET_SOURCE = `
-import { defineTool } from '@deepseek-ai/dsh-tools';
-export const name = 'forms-greet';
-export const inject = ['tools'];
-export const apply = (ctx) => {
-  ctx.tools.register(defineTool({
-    name: 'greet',
-    description: 'Greet someone by name.',
-    parameters: { name: { type: 'string', required: true, description: 'Who to greet' } },
-    output: { schema: { type: 'string' }, render: (_a, value) => [{ type: 'text', text: value }] },
-    async execute(args) { return \`Hello, \${args.name}!\`; },
-  }));
-  globalThis.__formsGreet = { registered: true };
-};
-`;
-const LOGGER_SOURCE = `
-export const name = 'forms-logger';
-export const inject = ['tools'];
-export const apply = (ctx) => {
-  globalThis.__formsLogger = { seen: [] };
-  ctx.on('tools/result', (exec, result) => {
-    globalThis.__formsLogger.seen.push({
-      name: exec.name,
-      text: result.content.map((b) => (b.type === 'text' ? b.text : '')).join(''),
-    });
-  });
-};
-`;
-
-// ch.3 dependency cascade: a consumer whose REQUIRED service is the
-// Service-form provider. Unload the provider — cordis disposes the
-// dependent; bring the provider back — the dependent reloads.
-const CUSTOMER_SOURCE = `
-export const name = 'forms-customer';
-export const inject = ['formsService'];
-export const apply = (ctx) => {
-  globalThis.__formsCustomer = { alive: true };
-  ctx.effect(() => () => { globalThis.__formsCustomer = { alive: false }; });
-};
-`;
-
-// ch.6 diagnosis: a required service NOBODY provides — the mount must
-// refuse with the PENDING diagnosis instead of reporting a phantom mount.
-const PENDING_SOURCE = `
-export const name = 'forms-pending';
-export const inject = ['nonexistentService'];
-export const apply = (ctx) => {
-  globalThis.__formsPending = { loaded: true };
-};
-`;
-
-// practice/llm-adapter: a workspace-authored LLM adapter — the tutorial's
-// minimal stream() over the StreamChunk protocol, registered for its own
-// provider through ctx.llm.registerAdapter (the registration is an effect:
-// unmounting the plugin retires the provider).
-const LLM_SOURCE = `
-import { LlmAdapter } from '@deepseek-ai/dsh-llm';
-export const name = 'forms-llm';
-export const inject = ['llm'];
-class FormsAdapter extends LlmAdapter {
-  // The tutorial's minimal adapter: override stream() only — the base
-  // class owns providerInfo/providerRetryPolicy/resolveModel/prepareCall.
-  async *stream() {
-    yield { type: 'block-start', index: 0, blockType: 'text' };
-    yield { type: 'text-delta', index: 0, delta: 'forms-llm-echo' };
-    yield { type: 'block-end', index: 0, block: { type: 'text', text: 'forms-llm-echo' } };
-    yield { type: 'usage', inputTokens: 1, outputTokens: 3 };
-    yield { type: 'finish', reason: { kind: 'stop' } };
-  }
-}
-export const apply = (ctx) => {
-  ctx.llm.registerAdapter(['forms-provider'], new FormsAdapter());
-  globalThis.__formsLlm = { registered: true };
-};
-`;
-const MANIFEST = (id) => ({
-  schemaVersion: 1, type: 'service', id, version: '1.0.0',
-  entry: 'index.js', capabilities: { required: [] },
-});
 
 const bootPhase = async () => {
   log.debug('boot phase begin', {});
@@ -250,6 +111,10 @@ const bootPhase = async () => {
       baseURL: env.DSH_MOCK_LLM_URL, apiKey: env.DSH_MOCK_LLM_KEY,
       provider: 'mock', model: 'mock-1',
     },
+    // The composition host plane (jobs/tokenMeter/userQuestions/shell rows)
+    // is what the production serve boot composes — mirror it so the jobs
+    // phase drives the REAL LocalJobRegistry, not a stub.
+    presetJoin: true,
   });
   emit('spine.booted', { sessionId: SESSION_ID });
   return ctx;
@@ -258,8 +123,7 @@ const bootPhase = async () => {
 const mountPhase = async (ctx) => {
   log.debug('mount phase begin', {});
   for (const spec of ['forms-hello', 'forms-fn', 'forms-service']) {
-    const outcome = await mountWorkspacePlugin(ctx, spec, { approved: true, prefix: PREFIX });
-    demand(outcome.mounted === true, `${spec} mount refused at ${outcome.step}: ${outcome.reason ?? ''}`);
+    await mountOk(ctx, spec);
     emit('form.mounted', { spec });
   }
   demand(globalThis.__formsProbe?.loaded === 1, 'object form apply did not run');
@@ -271,6 +135,192 @@ const mountPhase = async (ctx) => {
     object: true, function: true,
     service: ctx.get('formsService').beat() === 'forms-service-beat',
   });
+};
+
+/** ch.5 config: explicit value → apply, missing → schema default, invalid →
+ * loud refusal (the ValidationError surfaces as a 'mounted' refusal). */
+const configPhase = async (ctx) => {
+  log.debug('config phase begin', {});
+  await writeTree('forms-config', MANIFEST('forms-config'), CONFIG_SOURCE);
+  await mountOk(ctx, 'forms-config', { pluginOpts: { greeting: 'Hola' } });
+  demand(globalThis.__formsConfig?.greeting === 'Hola', 'the explicit config value did not reach apply');
+  emit('config.validated', { greeting: globalThis.__formsConfig.greeting });
+  void await unmountWorkspacePlugin('forms-config', { prefix: PREFIX });
+  await mountOk(ctx, 'forms-config');
+  demand(globalThis.__formsConfig?.greeting === 'Hello', 'the schema default did not fill in');
+  emit('config.default', { greeting: globalThis.__formsConfig.greeting });
+  void await unmountWorkspacePlugin('forms-config', { prefix: PREFIX });
+  const bad = await mountWorkspacePlugin(ctx, 'forms-config',
+    { approved: true, prefix: PREFIX, pluginOpts: { greeting: 7 } });
+  demand(bad.mounted === false && bad.step === 'mounted'
+    && /invalid config/i.test(bad.reason ?? ''),
+  `an invalid config did not fail the mount loud: ${JSON.stringify(bad)}`);
+  emit('config.invalid', { refused: true });
+};
+
+/** ch.4 events: broadcast, bail short-circuit, serial await, waterfall
+ * transform — and unmount detaches the listeners (ctx.on is an effect). */
+const eventsPhase = async (ctx) => {
+  log.debug('events phase begin', {});
+  await writeTree('forms-events', MANIFEST('forms-events'), EVENTS_SOURCE);
+  await mountOk(ctx, 'forms-events');
+  ctx.emit('forms/ping', {});
+  demand(globalThis.__formsEvents?.on === 1, 'the broadcast listener did not run');
+  const bail = ctx.bail('forms/check', 'bad');
+  demand(bail === 'blocked', `bail did not short-circuit: ${String(bail)}`);
+  const wf = await ctx.waterfall('forms/transform', 'hey', async () => 'hey');
+  demand(wf === 'hey!', `waterfall did not transform: ${String(wf)}`);
+  const serial = await ctx.serial('forms/slow', {});
+  demand(serial === 'serial-answer', `serial did not await the listener: ${String(serial)}`);
+  emit('events.observed', { on: 1, bail, wf, serial });
+  void await unmountWorkspacePlugin('forms-events', { prefix: PREFIX });
+  ctx.emit('forms/ping', {});
+  demand(globalThis.__formsEvents?.on === 1, 'the listener survived unmount (ctx.on is not an effect)');
+  emit('events.detached', { on: globalThis.__formsEvents.on });
+};
+
+/** basic/tool + cookbook/policy: greet executes through the real
+ * ToolRuntime under an independent observer; the pre-execute waterfall and
+ * the monotonic guard both deny, and both lift when their plugin unmounts. */
+const toolPhase = async (ctx) => {
+  log.debug('tool phase begin', {});
+  await writeTree('forms-greet', MANIFEST('forms-greet'), GREET_SOURCE);
+  await writeTree('forms-logger', MANIFEST('forms-logger'), LOGGER_SOURCE);
+  await writeTree('forms-policy', MANIFEST('forms-policy'), POLICY_SOURCE);
+  for (const spec of ['forms-greet', 'forms-logger', 'forms-policy']) await mountOk(ctx, spec);
+  const call = (name) => ctx.tools.execute({
+    callId: `forms-greet-${name}`,
+    name: 'greet', arguments: { name }, signal: new AbortController().signal,
+  });
+  const ok = await call('Cordis');
+  const text = (ok?.content ?? []).map((b) => (b.type === 'text' ? b.text : '')).join('');
+  demand(text === 'Hello, Cordis!', `the greet tool replied "${text}"`);
+  const seen = globalThis.__formsLogger?.seen ?? [];
+  demand(seen.length === 1 && seen[0].text === text,
+    `the tools/result observer missed the call: ${JSON.stringify(seen)}`);
+  const denied = await call('Villain');
+  demand(denied?.isError === true,
+    `the pre-execute policy did not deny: ${JSON.stringify(denied).slice(0, 200)}`);
+  emit('policy.denied', { denied: true });
+  void await unmountWorkspacePlugin('forms-policy', { prefix: PREFIX });
+  const lifted = await call('Villain');
+  const liftedText = (lifted?.content ?? []).map((b) => (b.type === 'text' ? b.text : '')).join('');
+  demand(liftedText === 'Hello, Villain!', 'the policy survived its plugin unmount');
+  // ctx.tools.guard: monotonic — a returned string denies, no later face
+  // can force-allow; the disposer lifts it.
+  const lift = ctx.tools.guard((exec) => (exec.name === 'greet'
+    && exec.arguments?.name === 'Guarded' ? 'guarded name' : undefined));
+  const blocked = await call('Guarded');
+  demand(blocked?.isError === true, 'the monotonic guard did not deny');
+  lift();
+  const after = await call('Guarded');
+  demand((after?.content ?? []).some((b) => b.text === 'Hello, Guarded!'),
+    'the guard survived its disposer');
+  for (const spec of ['forms-greet', 'forms-logger']) {
+    void await unmountWorkspacePlugin(spec, { prefix: PREFIX });
+  }
+  emit('tool.greeted', { policed: true, guarded: true });
+};
+
+/** cookbook/background: the real LocalJobRegistry — start → wait → read,
+ * and the kill path settles 'killed'. */
+const jobsPhase = async (ctx) => {
+  log.debug('jobs phase begin', {});
+  demand(ctx.get?.('jobs') !== undefined, 'the jobs service is not mounted');
+  // Production attaches the controller through dsh-tool-jobs; the seam face
+  // is attachController — the leg attaches its own and detaches at the end.
+  const detachController = ctx.jobs.attachController('forms-leg');
+  const id = ctx.jobs.start({
+    kind: 'bash', label: 'forms leg background job',
+    run() {
+      return {
+        cancel() {},
+        done: Promise.resolve({ status: 'completed', output: 'forms-job-output' }),
+      };
+    },
+  });
+  const settled = await ctx.jobs.wait(id, 5000);
+  demand(settled?.status === 'completed', `the job did not complete: ${settled?.status}`);
+  const read = ctx.jobs.read(id);
+  demand(read.text === 'forms-job-output', `the job output read back "${read.text}"`);
+  // A compliant producer: cancel() MUST eventually settle done (the
+  // runtime waits for resource release, not merely the kill request).
+  let settleSlow;
+  const slowDone = new Promise((resolve) => { settleSlow = resolve; });
+  const slow = ctx.jobs.start({
+    kind: 'bash', label: 'forms leg killed job',
+    run() {
+      return {
+        cancel(reason) { settleSlow({ status: 'killed', detail: reason }); },
+        done: slowDone,
+      };
+    },
+  });
+  demand(ctx.jobs.kill(slow) === 'requested', 'kill did not request');
+  const killed = await ctx.jobs.wait(slow, 5000);
+  demand(killed?.status === 'killed', `the killed job settled "${killed?.status}"`);
+  detachController();
+  emit('jobs.lifecycle', { completed: id, killed: slow });
+};
+
+/** ch.3 nested fibers + provide + the dependency cascade: a child mounted
+ * through ctx.plugin disposes recursively with its parent; ctx.provide
+ * answers; provider unload disposes the dependent, restore reloads it. */
+const cascadePhase = async (ctx) => {
+  log.debug('cascade phase begin', {});
+  await writeTree('forms-nested', MANIFEST('forms-nested'), NESTED_SOURCE);
+  await writeTree('forms-customer', MANIFEST('forms-customer'), CUSTOMER_SOURCE);
+  await mountOk(ctx, 'forms-nested');
+  demand(globalThis.__formsNested?.child === true, 'the nested child did not load');
+  demand(ctx.get?.('formsProvided')?.hello() === 'provided', 'ctx.provide did not answer');
+  emit('nested.provided', { child: true, provide: true });
+  await mountOk(ctx, 'forms-customer');
+  demand(globalThis.__formsCustomer?.alive === true, 'the dependent did not load on its required service');
+  void await unmountWorkspacePlugin('forms-service', { prefix: PREFIX });
+  demand(globalThis.__formsCustomer?.alive === false, 'the dependent survived its provider unload');
+  emit('cascade.disposed', { alive: globalThis.__formsCustomer.alive });
+  await mountOk(ctx, 'forms-service');
+  demand(globalThis.__formsCustomer?.alive === true, 'the dependent did not reload with its service');
+  emit('cascade.reloaded', { alive: globalThis.__formsCustomer.alive });
+  void await unmountWorkspacePlugin('forms-customer', { prefix: PREFIX });
+  const off = await unmountWorkspacePlugin('forms-nested', { prefix: PREFIX });
+  demand(off.unmounted === true, 'nested unmount refused');
+  demand(globalThis.__formsNested?.child === false, 'the child survived its parent dispose');
+  emit('nested.recursive', { child: globalThis.__formsNested.child });
+};
+
+/** ch.6 diagnosis: a required service nobody provides leaves the fiber
+ * PENDING — the mount must refuse with the diagnosis, never a phantom. */
+const pendingPhase = async (ctx) => {
+  log.debug('pending phase begin', {});
+  await writeTree('forms-pending', MANIFEST('forms-pending'), PENDING_SOURCE);
+  const outcome = await mountWorkspacePlugin(ctx, 'forms-pending', { approved: true, prefix: PREFIX });
+  demand(outcome.mounted === false && outcome.step === 'mounted'
+    && /PENDING/.test(outcome.reason ?? ''),
+  `a PENDING mount was not refused with the diagnosis: ${JSON.stringify(outcome)}`);
+  demand(globalThis.__formsPending === undefined, 'the pending plugin ran its apply');
+  emit('pending.refused', { step: outcome.step });
+};
+
+/** practice/llm-adapter: a workspace-authored adapter serves its provider —
+ * the stream() call flows through the real LlmRuntime waterfall. */
+const llmPhase = async (ctx) => {
+  log.debug('llm phase begin', {});
+  await writeTree('forms-llm', MANIFEST('forms-llm'), LLM_SOURCE);
+  await mountOk(ctx, 'forms-llm');
+  let text = '';
+  let stop = null;
+  for await (const chunk of ctx.llm.stream({
+    provider: 'forms-provider', model: 'forms-m1',
+    messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
+    tools: [], signal: new AbortController().signal,
+  })) {
+    if (chunk.type === 'text-delta') text += chunk.delta;
+    if (chunk.type === 'finish') stop = chunk.reason?.kind ?? null;
+  }
+  demand(text === 'forms-llm-echo' && stop === 'stop', `the adapter stream lied: "${text}" / ${String(stop)}`);
+  emit('llm.streamed', { text, stop });
+  void await unmountWorkspacePlugin('forms-llm', { prefix: PREFIX });
 };
 
 const unloadPhase = async (ctx) => {
@@ -297,139 +347,6 @@ const reloadPhase = async (ctx) => {
   emit('reload.edited', { module: reload.module, loaded: globalThis.__formsProbe.loaded });
 };
 
-/** ch.5 config: ctx.plugin validates against the plugin's exported Config
- * schema (Standard Schema) before apply — explicit values pass through,
- * missing fields get the schema default, and an INVALID config must fail
- * the mount loud (the ValidationError surfaces as a 'mounted' refusal). */
-const configPhase = async (ctx) => {
-  log.debug('config phase begin', {});
-  await writeTree('forms-config', MANIFEST('forms-config'), CONFIG_SOURCE);
-  const set = await mountWorkspacePlugin(ctx, 'forms-config',
-    { approved: true, prefix: PREFIX, pluginOpts: { greeting: 'Hola' } });
-  demand(set.mounted === true, `config mount refused: ${set.step}: ${set.reason ?? ''}`);
-  demand(globalThis.__formsConfig?.greeting === 'Hola', 'the explicit config value did not reach apply');
-  emit('config.validated', { greeting: globalThis.__formsConfig.greeting });
-  const off = await unmountWorkspacePlugin('forms-config', { prefix: PREFIX });
-  demand(off.unmounted === true, 'config unmount refused');
-  const def = await mountWorkspacePlugin(ctx, 'forms-config', { approved: true, prefix: PREFIX });
-  demand(def.mounted === true, `default-config mount refused: ${def.step}`);
-  demand(globalThis.__formsConfig?.greeting === 'Hello', 'the schema default did not fill in');
-  emit('config.default', { greeting: globalThis.__formsConfig.greeting });
-  void await unmountWorkspacePlugin('forms-config', { prefix: PREFIX });
-  const bad = await mountWorkspacePlugin(ctx, 'forms-config',
-    { approved: true, prefix: PREFIX, pluginOpts: { greeting: 7 } });
-  demand(bad.mounted === false && bad.step === 'mounted'
-    && /invalid config/i.test(bad.reason ?? ''),
-  `an invalid config did not fail the mount loud: ${JSON.stringify(bad)}`);
-  emit('config.invalid', { refused: true });
-};
-
-/** basic/tool + ch.7: the greet tool registers through defineTool, executes
- * through the REAL ToolRuntime, and an independent plugin observes it via
- * tools/result — the two connect only through the registry + events. */
-const toolPhase = async (ctx) => {
-  log.debug('tool phase begin', {});
-  await writeTree('forms-greet', MANIFEST('forms-greet'), GREET_SOURCE);
-  await writeTree('forms-logger', MANIFEST('forms-logger'), LOGGER_SOURCE);
-  for (const spec of ['forms-greet', 'forms-logger']) {
-    const mount = await mountWorkspacePlugin(ctx, spec, { approved: true, prefix: PREFIX });
-    demand(mount.mounted === true, `${spec} mount refused: ${mount.step}: ${mount.reason ?? ''}`);
-  }
-  const outcome = await ctx.tools.execute({
-    callId: 'forms-greet-1', name: 'greet',
-    arguments: { name: 'Cordis' }, signal: new AbortController().signal,
-  });
-  const text = (outcome?.content ?? []).map((b) => (b.type === 'text' ? b.text : '')).join('');
-  demand(text === 'Hello, Cordis!', `the greet tool replied "${text}"`);
-  const seen = globalThis.__formsLogger?.seen ?? [];
-  demand(seen.length === 1 && seen[0].name === 'greet' && seen[0].text === text,
-    `the tools/result observer missed the call: ${JSON.stringify(seen)}`);
-  emit('tool.greeted', { text, observed: seen.length });
-  for (const spec of ['forms-greet', 'forms-logger']) {
-    const off = await unmountWorkspacePlugin(spec, { prefix: PREFIX });
-    demand(off.unmounted === true, `${spec} unmount refused`);
-  }
-};
-
-/** ch.3 dependency cascade: disposing the provider disposes the dependent;
- * restoring the service reloads it (the cordis dependency contract). */
-const cascadePhase = async (ctx) => {
-  log.debug('cascade phase begin', {});
-  await writeTree('forms-customer', MANIFEST('forms-customer'), CUSTOMER_SOURCE);
-  const mount = await mountWorkspacePlugin(ctx, 'forms-customer', { approved: true, prefix: PREFIX });
-  demand(mount.mounted === true, `customer mount refused: ${mount.step}: ${mount.reason ?? ''}`);
-  demand(globalThis.__formsCustomer?.alive === true, 'the dependent did not load on its required service');
-  const off = await unmountWorkspacePlugin('forms-service', { prefix: PREFIX });
-  demand(off.unmounted === true, 'provider unmount refused');
-  demand(globalThis.__formsCustomer?.alive === false, 'the dependent survived its provider unload');
-  emit('cascade.disposed', { alive: globalThis.__formsCustomer.alive });
-  const back = await mountWorkspacePlugin(ctx, 'forms-service', { approved: true, prefix: PREFIX });
-  demand(back.mounted === true, `provider remount refused: ${back.step}`);
-  demand(globalThis.__formsCustomer?.alive === true, 'the dependent did not reload with its service');
-  emit('cascade.reloaded', { alive: globalThis.__formsCustomer.alive });
-  const done = await unmountWorkspacePlugin('forms-customer', { prefix: PREFIX });
-  demand(done.unmounted === true, 'customer unmount refused');
-};
-
-/** ch.6 diagnosis: a required service nobody provides leaves the fiber
- * PENDING — the mount must refuse with the diagnosis, never a phantom. */
-const pendingPhase = async (ctx) => {
-  log.debug('pending phase begin', {});
-  await writeTree('forms-pending', MANIFEST('forms-pending'), PENDING_SOURCE);
-  const outcome = await mountWorkspacePlugin(ctx, 'forms-pending', { approved: true, prefix: PREFIX });
-  demand(outcome.mounted === false && outcome.step === 'mounted'
-    && /PENDING/.test(outcome.reason ?? ''),
-  `a PENDING mount was not refused with the diagnosis: ${JSON.stringify(outcome)}`);
-  demand(globalThis.__formsPending === undefined, 'the pending plugin ran its apply');
-  emit('pending.refused', { step: outcome.step });
-};
-
-/** practice/llm-adapter: a workspace-authored adapter serves its provider —
- * the stream() call flows through the real LlmRuntime waterfall, and the
- * registration being an effect means unmount retires the provider. */
-const llmPhase = async (ctx) => {
-  log.debug('llm phase begin', {});
-  await writeTree('forms-llm', MANIFEST('forms-llm'), LLM_SOURCE);
-  const mount = await mountWorkspacePlugin(ctx, 'forms-llm', { approved: true, prefix: PREFIX });
-  demand(mount.mounted === true, `llm mount refused: ${mount.step}: ${mount.reason ?? ''}`);
-  let text = '';
-  let stop = null;
-  for await (const chunk of ctx.llm.stream({
-    provider: 'forms-provider', model: 'forms-m1',
-    messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
-    tools: [], signal: new AbortController().signal,
-  })) {
-    if (chunk.type === 'text-delta') text += chunk.delta;
-    if (chunk.type === 'finish') stop = chunk.reason?.kind ?? null;
-  }
-  demand(text === 'forms-llm-echo' && stop === 'stop', `the adapter stream lied: "${text}" / ${String(stop)}`);
-  emit('llm.streamed', { text, stop });
-  const off = await unmountWorkspacePlugin('forms-llm', { prefix: PREFIX });
-  demand(off.unmounted === true, 'llm unmount refused');
-};
-
-/** ch.4 events: broadcast emit, bail short-circuit, waterfall transform —
- * and every ctx.on is an effect, so unmount detaches the listeners. */
-const eventsPhase = async (ctx) => {
-  log.debug('events phase begin', {});
-  await writeTree('forms-events', MANIFEST('forms-events'), EVENTS_SOURCE);
-  const mount = await mountWorkspacePlugin(ctx, 'forms-events', { approved: true, prefix: PREFIX });
-  demand(mount.mounted === true, `events mount refused: ${mount.step}`);
-  ctx.emit('forms/ping', {});
-  demand(globalThis.__formsEvents?.on === 1, 'the broadcast listener did not run');
-  const bail = ctx.bail('forms/check', 'bad');
-  demand(bail === 'blocked', `bail did not short-circuit: ${String(bail)}`);
-  const pass = ctx.bail('forms/check', 'ok');
-  demand(pass === undefined, `bail answered when every listener passed: ${String(pass)}`);
-  const wf = await ctx.waterfall('forms/transform', 'hey', async () => 'hey');
-  demand(wf === 'hey!', `waterfall did not transform: ${String(wf)}`);
-  emit('events.observed', { on: 1, bail, wf });
-  const off = await unmountWorkspacePlugin('forms-events', { prefix: PREFIX });
-  demand(off.unmounted === true, 'events unmount refused');
-  ctx.emit('forms/ping', {});
-  demand(globalThis.__formsEvents?.on === 1, 'the listener survived unmount (ctx.on is not an effect)');
-  emit('events.detached', { on: globalThis.__formsEvents.on });
-};
 /** The boot-list (cordis.yml-insert equivalent): unmount leaves the row
  * DISABLED (skipped at boot), the dev-script-style enable of a fresh row
  * mounts exactly that row. forms-hello staying live would refuse. */
@@ -466,6 +383,7 @@ const main = async () => {
   await configPhase(ctx);
   await eventsPhase(ctx);
   await toolPhase(ctx);
+  await jobsPhase(ctx);
   await cascadePhase(ctx);
   await pendingPhase(ctx);
   await llmPhase(ctx);
