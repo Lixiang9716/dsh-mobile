@@ -144,8 +144,8 @@ if (summary.failed !== 0) {
 }
 SUMMARY
 
-REF_PASSED="$(grep -o '"passed":[0-9]*' "$ART/reference-smoke.txt" | head -1 | grep -o '[0-9]*')"
-DEV_PASSED="$(grep -o '"passed":[0-9]*' "$ART/suite-summary.json" | head -1 | grep -o '[0-9]*')"
+REF_PASSED="$(grep -Eo '"passed":[[:space:]]*[0-9]+' "$ART/reference-smoke.txt" | head -1 | grep -o '[0-9]*')"
+DEV_PASSED="$(grep -Eo '"passed":[[:space:]]*[0-9]+' "$ART/suite-summary.json" | head -1 | grep -o '[0-9]*')"
 [ "$REF_PASSED" = "$DEV_PASSED" ] \
   || die "device leg ($DEV_PASSED passed) disagrees with the Node reference ($REF_PASSED passed) — see $ART"
 

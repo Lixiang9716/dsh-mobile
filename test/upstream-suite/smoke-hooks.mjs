@@ -61,5 +61,15 @@ export async function resolve(specifier, context, nextResolve) {
       shortCircuit: true,
     };
   }
+  // The legacy rt spelling the C host's loader serves as a dedicated row
+  // (dsh_runtime_host.c DSH_PKG_CRYPTO): 'dsh:util-crypto' → the vendored
+  // package. The Node reference leg must speak the same row.
+  if (specifier === 'dsh:util-crypto') {
+    return {
+      url: pathToFileURL(pathResolve(
+        ROOT, 'runtime/dsh/vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js')).href,
+      shortCircuit: true,
+    };
+  }
   return nextResolve(specifier, context);
 }
