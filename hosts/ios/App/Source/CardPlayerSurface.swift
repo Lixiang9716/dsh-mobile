@@ -178,6 +178,13 @@ final class CardPlayerSurface {
             ? .systemOrange : .systemBlue
         if kind != "timer" { card.progress.alpha = 0 }
 
+        wireChrome(card)
+        return card
+    }
+
+    /** The close ✕ + drag gesture + the subview layout — the chrome a card
+     * needs to be a movable, closable PiP widget. */
+    private func wireChrome(_ card: CardView) {
         card.closeButton.setImage(UIImage(systemName: "xmark"), for: .normal)
         card.closeButton.tintColor = .secondaryLabel
         card.closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
@@ -206,7 +213,6 @@ final class CardPlayerSurface {
             card.subtitleLabel.topAnchor.constraint(equalTo: card.progress.bottomAnchor, constant: 8),
             card.subtitleLabel.centerXAnchor.constraint(equalTo: card.centerXAnchor),
         ])
-        return card
     }
 
     /// Frame placement, TOP-anchored under the safe area (the composer is
