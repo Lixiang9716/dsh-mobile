@@ -11,7 +11,7 @@
     "unload is first-class: fiber.dispose() runs the ctx.effect cleanups and the service stops resolving (plugin.forms/form.unmounted + unload.effects)",
     "an edited source reloads under the epoch cache-buster (?e=1) \u2014 the fresh compile is what runs (plugin.forms/reload.edited)",
     "the boot-list mounts exactly the ENABLED registry rows (the cordis.yml-insert equivalent); a disabled row is skipped (plugin.forms/bootlist.mounted)",
-    "execution policy (the cookbook + reference/tool-execution-pipeline): ALL THREE waterfalls proven \u2014 tools/pre-execute denies, tools/post-execute REWRITES the canonical value (finalization re-renders content from value \u2014 value is authoritative) and BLOCKS with corrective feedback, both lifting on plugin unmount; ctx.tools.guard refuses monotonically and lifts on its disposer (policy.denied + tool.greeted)"
+    "the event system: ALL FIVE dispatch modes (emit broadcast, bail short-circuit, serial await, waterfall transform, parallel await-all) + the prepend listener option + once self-detach + the global filter bypass; ctx.on detaches on unmount (events.observed + events.detached)"
   ],
   "checker": "test/e2e/scenarios/plugin-forms.json",
   "events": 918,

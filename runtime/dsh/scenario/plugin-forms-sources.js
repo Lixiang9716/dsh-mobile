@@ -84,6 +84,10 @@ export const apply = (ctx) => {
   ctx.on('forms/order', (_input, next) => next().then((v) => v + '-tail'));
   ctx.on('forms/order', (_input, next) => next().then((v) => 'head:' + v),
     { prepend: true });
+  // once detaches itself; global ignores context filters.
+  ctx.once('forms/ping', () => { globalThis.__formsEvents.once = 1; });
+  ctx.on('forms/ping', () => { globalThis.__formsEvents.global = (globalThis.__formsEvents.global ?? 0) + 1; },
+    { global: true });
 };
 `;
 
