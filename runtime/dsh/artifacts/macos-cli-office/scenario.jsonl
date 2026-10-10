@@ -35,7 +35,7 @@ dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway erro
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"echo.wasm"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"boot phase done","data":[{"root":"/tmp/dsh-runtime-smoke.byJ2QT"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"boot phase done","data":[{"root":"/tmp/dsh-runtime-smoke.ydjDxl"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"session/created","sessionId":"s-office-0001"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"agent/created","id":"main","sessionId":"s-office-0001"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"offered phase begin","data":[{}]}

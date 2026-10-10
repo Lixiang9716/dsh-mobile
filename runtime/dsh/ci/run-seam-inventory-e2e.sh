@@ -72,7 +72,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
   "scenario": "seam.inventory",
   "proves": [
     "the production-equivalent mobile spine (all product flags + composition plane) boots and holds a non-empty plugin registry (seam.inventory/registry.walk)",
-    "every upstream-catalog service name resolves or is answered absent through the SAME resolver inject uses — the runtime's own seam inventory (seam.inventory/inventory.proved)"
+    "every upstream-catalog service name resolves or is answered absent through the SAME resolver inject uses — the runtime's own seam inventory (seam.inventory/inventory.probed)"
   ],
   "checker": "test/e2e/scenarios/seam-inventory.json",
   "events": $EVENTS,
