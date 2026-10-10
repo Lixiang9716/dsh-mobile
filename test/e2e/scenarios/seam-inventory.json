@@ -65,7 +65,8 @@
    "event": "cordis.face",
    "match": {
     "methods": 18,
-    "instances": 5
+    "instances": 5,
+    "serviceSymbols": 7
    }
   },
   {

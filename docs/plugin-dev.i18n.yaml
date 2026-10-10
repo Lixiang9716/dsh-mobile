@@ -8,9 +8,9 @@
 # last_confirmed is the UTC ISO-8601 instant of the confirmation
 # (datetime.isoformat(), +00:00).
 pair:
-  en: 43bfc8f4f905852b3fb4fa4a7ba0796e12016bb1
-  zh: 6ce42d658ec9bc253ec043f56f747dac241e3020
+  en: 323096dd1e59859da995797d3202b39e7a88a9b9
+  zh: 96deb84cb7b676d24305ccb262a4089f8939239b
 counterpart: plugin-dev.zh.md
-last_confirmed: 2026-10-10T12:09:30+00:00
-en_commit: 6eb6806c
-zh_commit: 6eb6806c
+last_confirmed: 2026-10-10T13:00:06+00:00
+en_commit: 5175fd1c
+zh_commit: 5175fd1c
