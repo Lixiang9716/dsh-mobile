@@ -213,6 +213,12 @@ dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","da
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"fiber settle begin","data":[{"spec":"forms-config"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-config","version":"1.0.0"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"config.validated","greeting":"Hola"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"config update begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.update","event":"plugin.update.applied","spec":"forms-config"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"config.updated","greeting":"Bonjour"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"config update begin","data":[{"spec":"forms-config"}]}
+dsh.runtime.log: {"level":"warn","module":"dsh.plugin-mount","message":"plugin mount refused","data":[{"step":"updated","spec":"forms-config","reason":"fiber.update refused: invalid config:\n  - $.greeting expected string but got 7 (at greeting)"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"config.update-invalid","refused":true}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-config"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-config"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-config"}]}

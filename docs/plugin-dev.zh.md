@@ -87,7 +87,9 @@ export const Config = Schema.object({
 export const apply = (ctx, config) => { /* config.greeting 总是有值 */ };
 ```
 
-配置经挂载选项传递(`pluginOpts`)。校验发生在 `ctx.plugin` 内部:非法配置会让挂载**响亮失败**(ValidationError),并回滚 adoption(启用位)——坏插件绝不会保持启用、每次启动重试。教程的 `.volatile()` 字段与 `!!js` YAML 标签是桌面组合层的特性;移动宿主的配置在挂载时定格——要改就带新选项重挂。
+配置经挂载选项传递(`pluginOpts`)。校验发生在 `ctx.plugin` 内部:非法配置会让挂载**响亮失败**(ValidationError),并回滚 adoption(启用位)——坏插件绝不会保持启用、每次启动重试。
+
+活挂载上的配置还可以**热更新**——内核的 config-HMR 面,暴露为 `updateWorkspacePluginConfig(spec, config)`:更新先校验,fiber 原位重启(卸载 effect 运行、apply 重跑),非法更新被拒且旧配置继续运行。教程的 `.volatile()` 字段与 `!!js` YAML 标签仍是桌面组合层特性。
 
 ## 事件(develop/framework/events)
 

@@ -38,7 +38,7 @@ import { createLogger } from 'logger.js';
 import { fsScope, fsWrite, fsRead } from 'gateway.js';
 import { bootUpstream } from 'upstream/boot.js';
 import { mountWorkspacePlugin, unmountWorkspacePlugin,
-  mountEnabledRegistry, isMounted }
+  mountEnabledRegistry, isMounted, updateWorkspacePluginConfig }
   from 'plugin-mount.js';
 import { upsertRegistryRow } from 'workspace-registry.js';
 import { HELLO_SOURCE, HELLO_EDITED, FN_SOURCE, BOOT_SOURCE, SERVICE_SOURCE,
@@ -145,6 +145,20 @@ const configPhase = async (ctx) => {
   await mountOk(ctx, 'forms-config', { pluginOpts: { greeting: 'Hola' } });
   demand(globalThis.__formsConfig?.greeting === 'Hola', 'the explicit config value did not reach apply');
   emit('config.validated', { greeting: globalThis.__formsConfig.greeting });
+  // The kernel's config-HMR face (fiber.update): validated + restarted IN
+  // PLACE — no unmount, no epoch bump; an invalid update leaves the old
+  // config running.
+  const up = await updateWorkspacePluginConfig('forms-config', { greeting: 'Bonjour' });
+  demand(up.updated === true, `config update refused: ${up.step}: ${up.reason ?? ''}`);
+  demand(globalThis.__formsConfig?.greeting === 'Bonjour', 'the updated config did not reach apply');
+  demand(isMounted('forms-config') === true, 'the update dismounted the plugin');
+  emit('config.updated', { greeting: globalThis.__formsConfig.greeting });
+  const badUp = await updateWorkspacePluginConfig('forms-config', { greeting: 7 });
+  demand(badUp.updated !== true && badUp.step === 'updated'
+    && /invalid config/i.test(badUp.reason ?? ''),
+  `an invalid config update did not refuse: ${JSON.stringify(badUp)}`);
+  demand(globalThis.__formsConfig?.greeting === 'Bonjour', 'the failed update clobbered the running config');
+  emit('config.update-invalid', { refused: true });
   void await unmountWorkspacePlugin('forms-config', { prefix: PREFIX });
   await mountOk(ctx, 'forms-config');
   demand(globalThis.__formsConfig?.greeting === 'Hello', 'the schema default did not fill in');

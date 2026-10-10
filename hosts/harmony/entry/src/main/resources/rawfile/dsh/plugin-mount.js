@@ -321,6 +321,26 @@ export const unmountWorkspacePlugin = async (spec, opts = {}) => {
  * before disposing). */
 export const isMounted = (spec) => liveFibers.has(spec);
 
+/** `updateWorkspacePluginConfig(spec, config)` — the kernel's config-HMR
+ * face (cordis-tutorial ch.5): validates against the plugin's Config schema
+ * and RESTARTS the fiber in place (unload effects run, apply re-runs) — no
+ * unmount, no epoch bump, no registry churn. A ValidationError surfaces as
+ * a refused outcome and the old config keeps running. */
+export const updateWorkspacePluginConfig = async (spec, config) => {
+  log.debug('config update begin', { spec });
+  const fiber = liveFibers.get(spec);
+  if (fiber === undefined) {
+    return refused('live', spec, 'not mounted (nothing to update)');
+  }
+  try {
+    await fiber.update(config);
+  } catch (error) {
+    return refused('updated', spec, `fiber.update refused: ${error?.message ?? error}`);
+  }
+  log.info('e2e', { scenario: 'plugin.update', event: 'plugin.update.applied', spec });
+  return { updated: true, spec };
+};
+
 /**
  * `mountEnabledRegistry(ctx, opts?)` — the boot-time cordis.yml-insert
  * equivalent: every ENABLED workspace row in the dsh.plugins/1 registry
