@@ -1,0 +1,71 @@
+{
+ "scenario": "seam.inventory",
+ "extract": {
+  "prefix": "dsh.runtime.log:"
+ },
+ "expect": [
+  {
+   "event": "spine.booted",
+   "match": {
+    "sessionId": "s-seam-inventory-0001"
+   }
+  },
+  {
+   "event": "inventory.probed",
+   "match": {
+    "present": [
+     "sessions",
+     "agents",
+     "systemPrompt",
+     "tools",
+     "sessionProjections",
+     "settings",
+     "agentLoop",
+     "llm",
+     "tokenMeter",
+     "jobs",
+     "userQuestions",
+     "subagentModelSelection",
+     "shell",
+     "shellEnv",
+     "goals",
+     "commands",
+     "agentPresets",
+     "skills",
+     "fileReferences",
+     "web",
+     "sessionQuery",
+     "sessionFeedback"
+    ],
+    "absent": [
+     "credentials",
+     "approval",
+     "compaction",
+     "sessionPersistence",
+     "sessionTitle",
+     "attachments",
+     "schedule",
+     "planMode",
+     "messageFeedback",
+     "invariant",
+     "configEditor",
+     "setting",
+     "workspaceRegistry",
+     "mcpResources",
+     "spillStore",
+     "subprocess",
+     "sandbox",
+     "terminals",
+     "workflowEngine",
+     "lsp"
+    ]
+   }
+  },
+  {
+   "event": "scenario.complete",
+   "match": {
+    "status": "pass"
+   }
+  }
+ ]
+}

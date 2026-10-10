@@ -227,6 +227,33 @@ The quickstart's Web-UI flow (model settings → workspace picking → a real
 turn with approvals) is this app's product surface — no plugin-dev mapping
 needed.
 
+## The seam inventory (reference/capability-seams, runtime-audited)
+
+`scenario/seam-inventory.js` boots the production-equivalent spine (every
+product flag + the composition plane) and probes every upstream-catalog
+service name through the same resolver `inject` uses. Frozen by
+`test/e2e/scenarios/seam-inventory.json`; run
+`runtime/dsh/ci/run-seam-inventory-e2e.sh`. The runtime's answer:
+
+**Mounted (22)**: sessions, agents, systemPrompt, tools, sessionProjections,
+settings, agentLoop, llm, tokenMeter, jobs, userQuestions,
+subagentModelSelection, shell (wasm executor), shellEnv, goals, commands,
+agentPresets, skills, fileReferences, web (keyless plane), sessionQuery,
+sessionFeedback.
+
+**Absent, by design** — each maps to a mobile equivalent or a recorded wall:
+
+| Absent | Mobile disposition |
+| --- | --- |
+| credentials | host-side store: the gateway keychain + the profile credential file (`loadCredential`) |
+| approval | the gateway `presentApproval` primitive (contract-first; the native dialog) |
+| fs (gateway, not a seam) | the host gateway's fs primitives are THE fs |
+| subprocess, sandbox, terminals | the mobile wall: no processes — the wasm shell (+ optional iSH) story |
+| compaction | the only closure consumer is `/compact` (command-compact), a desktop row the upstream README records as not carried; long-session auto-compaction is a flagged product follow-up |
+| sessionPersistence | the abstract seam is vendored but the jsonl backend is not pinned; resume fails loud ("cannot resume: session persistence is not configured") — sessions are per-launch; durability is a flagged product follow-up |
+| sessionTitle, attachments, schedule, planMode, messageFeedback, mcpResources, spillStore, workflowEngine, lsp | desktop product features not yet carried (each a candidate follow-up, none silently broken) |
+| invariant, configEditor, setting, workspaceRegistry | desktop diagnostics/composition faces; mobile's equivalents are the settings service, the gateway workspace picker, and the host workspace model |
+
 ---
 
 [中文版](plugin-dev.zh.md)
