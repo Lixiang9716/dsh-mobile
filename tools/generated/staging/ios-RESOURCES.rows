@@ -96,6 +96,7 @@ scenario_upstream_suite_js=scenario/upstream-suite-leg.js
 scenario_agent_flow_js=scenario/agent-flow.js
 scenario_card_player_js=scenario/card-player.js
 scenario_create_card_js=scenario/create-card.js
+scenario_create_calendar_live_js=scenario/create-calendar-live.js
 scenario_b1_web_live_js=web-live/officialweb-web-live.js
 scenario_b3_web_live_js=web-live/session-web-live.js
 scenario_b4_web_live_js=web-live/composer-web-live.js

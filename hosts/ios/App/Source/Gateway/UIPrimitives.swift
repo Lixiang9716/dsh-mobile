@@ -21,6 +21,9 @@ final class UIPrimitives: NSObject, UIDocumentPickerDelegate, PHPickerViewContro
     private var pendingPicker: GatewayDone?
     private var pickerMode = "file"
     private var mediaDir: URL?
+    /// One settle per approval presentation (main-thread only; guards the
+    /// scripted seam racing a live driver tap).
+    private var approvalSettled = false
 
     init(core: GatewayCore, fs: FSPrimitives) {
         self.core = core
@@ -43,6 +46,7 @@ final class UIPrimitives: NSObject, UIDocumentPickerDelegate, PHPickerViewContro
                     code: "unavailable", primitive: "presentApproval",
                     message: "no key window to present on")))
             }
+            self.approvalSettled = false
             self.presentApprovalAlert(
                 root: root, title: title, detail: detail, remember: remember, done: done)
         }
@@ -65,11 +69,49 @@ final class UIPrimitives: NSObject, UIDocumentPickerDelegate, PHPickerViewContro
             self.settleApproval(done, approved: false, remember: false)
         })
         root.present(alert, animated: true)
+        scriptAnswerIfAsked(alert, remember: remember, done: done)
+    }
+
+    /// The scripted-approver test seam (`-dsh-script-approval
+    /// approve|remember|decline`): the alert still presents — the native
+    /// path is exercised — then settles exactly the way the tapped button
+    /// would, so drives retire their WDA coordinate taps on the one dialog
+    /// the API plane cannot answer by design. Absent the flag the human
+    /// answers; the product default is unchanged.
+    private func scriptAnswerIfAsked(
+        _ alert: UIAlertController, remember: Bool, done: @escaping GatewayDone
+    ) {
+        guard let script = Self.scriptedApprovalFlag() else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            GatewayCore.uiMarker("approval", "script")
+            NSLog("dsh.approval: script answered %@", script)
+            alert.dismiss(animated: false)
+            switch script {
+            case "remember": self.settleApproval(done, approved: true, remember: remember)
+            case "decline": self.settleApproval(done, approved: false, remember: false)
+            default: self.settleApproval(done, approved: true, remember: false)
+            }
+        }
+    }
+
+    /// Reads the launch flag (drives relaunch per leg, so no caching). Also
+    /// surfaced through the GET /api/state snapshot so evidence shows the
+    /// seam state the leg ran under.
+    static func scriptedApprovalFlag() -> String? {
+        let args = ProcessInfo.processInfo.arguments
+        guard let flag = args.firstIndex(of: "-dsh-script-approval"),
+              flag + 1 < args.count else { return nil }
+        let value = args[flag + 1]
+        return ["approve", "remember", "decline"].contains(value) ? value : nil
     }
 
     private func settleApproval(
         _ done: @escaping GatewayDone, approved: Bool, remember: Bool
     ) {
+        // Exactly one settle per presentation: the scripted seam and a live
+        // driver tap can race (all settle paths run on main).
+        guard !approvalSettled else { return }
+        approvalSettled = true
         GatewayCore.uiMarker("approval", "done")
         var result: [String: Any] = ["approved": approved]
         if remember { result["remember"] = true }

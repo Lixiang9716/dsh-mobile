@@ -37,6 +37,26 @@ final class CardPlayerSurface {
         hostView = view
     }
 
+    /// The projection-consistency read for the GET /api/state seam: what
+    /// the NATIVE face holds right now, so a drive can assert that runtime
+    /// truth (the bus records), the page projection, and this surface all
+    /// agree. Main-thread only — the snapshot endpoint hops here
+    /// synchronously from its own queue.
+    func snapshot() -> [String: Any] {
+        var face: [String: Any] = [
+            "attached": hostView != nil,
+            "visible": cardView != nil,
+        ]
+        if cardView != nil, let id = card["id"] as? String {
+            face["id"] = id
+            face["title"] = (card["title"] as? String) ?? id
+            face["kind"] = (card["kind"] as? String) ?? "info"
+            if let label = card["label"] as? String { face["label"] = label }
+            if let subtitle = card["subtitle"] as? String { face["subtitle"] = subtitle }
+        }
+        return ["card": face]
+    }
+
     // ---- the four contract events -------------------------------------------
 
     /// Main-thread only (the drive hops bus events onto main before calling).
@@ -136,9 +156,16 @@ final class CardPlayerSurface {
         card.titleLabel.text = title
         card.titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
 
-        card.timeLabel.font = .monospacedDigitSystemFont(ofSize: 44, weight: .medium)
+        // Non-timer cards (calendar/info/…): no countdown — the subtitle IS
+        // the face (a calendar shows its date line, not 00:00).
+        if kind != "timer" {
+            card.timeLabel.font = .systemFont(ofSize: 20, weight: .medium)
+        } else {
+            card.timeLabel.font = .monospacedDigitSystemFont(ofSize: 44, weight: .medium)
+        }
         card.timeLabel.textAlignment = .center
         card.timeLabel.adjustsFontSizeToFitWidth = true
+        card.timeLabel.numberOfLines = kind == "timer" ? 1 : 3
 
         card.subtitleLabel.text = subtitle ?? ""
         card.subtitleLabel.font = .systemFont(ofSize: 13)
@@ -148,6 +175,7 @@ final class CardPlayerSurface {
         card.progress.progressViewStyle = .default
         card.progress.progressTintColor = kind == "timer"
             ? .systemOrange : .systemBlue
+        if kind != "timer" { card.progress.alpha = 0 }
 
         for sub in [card.titleLabel, card.timeLabel, card.subtitleLabel, card.progress] {
             sub.translatesAutoresizingMaskIntoConstraints = false
@@ -180,6 +208,13 @@ final class CardPlayerSurface {
 
     private func render() {
         guard let view = cardView else { return }
+        if (card["kind"] as? String) != "timer" {
+            // Non-timer cards: the label face (a calendar's date line) —
+            // no countdown clock on a card that isn't counting.
+            view.timeLabel.text = (card["label"] as? String)
+                ?? view.subtitleLabel.text ?? ""
+            return
+        }
         let elapsed = Date().timeIntervalSince(anchor) * 1000
         let current = max(0, remainingMs - elapsed)
         let total = (card["durationMs"] as? Double) ?? 0

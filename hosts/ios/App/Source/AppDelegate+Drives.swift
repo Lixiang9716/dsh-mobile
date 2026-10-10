@@ -71,6 +71,41 @@ extension AppDelegate {
         }
     }
 
+    /// The calendar live leg (`-dsh-mode calendar-live`): the serve seat
+    /// with the create-calendar-live scenario — ONE real-backend turn (no
+    /// page in the path), then the cordis live mount with its native
+    /// approval, the plugin's own apply() driving the card.
+    func runCalendarLiveDrive() {
+        let surface = CardPlayerSurface()
+        cardSurface = surface
+        let serve = SessionServe(
+            credential: SessionServe.loadCredential(),
+            interactive: true)
+        self.serve = serve
+        serve.scenarioEntry = (
+            accessor: dsh_runtime_res_scenario_create_calendar_live_js,
+            path: "scenario/create-calendar-live.js"
+        )
+        serve.onOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        serve.onCardEvent = { [weak surface] msg in
+            DispatchQueue.main.async { surface?.handle(msg) }
+        }
+        serve.cardState = { [weak surface] in surface?.snapshot() ?? [:] }
+        serve.onRuntimeFailure = { message in
+            NSLog("%@", "dsh.session.serve: runtime failed: \(message)")
+        }
+        if let host = webView?.superview {
+            surface.attach(to: host)
+        }
+        do {
+            try serve.start()
+        } catch {
+            NSLog("%@", "dsh.session.serve: bootstrap failed: \(error)")
+        }
+    }
+
     /// The WEB-seat launch modes' table (one line each in the dispatch
     /// switch): banner + canonical stdout line + the drive. The serve and
     /// card-player comments explain the seat's contract — see

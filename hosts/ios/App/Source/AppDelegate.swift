@@ -111,6 +111,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             announce("DSH create card — create.card, the create-approve-hotmount chain live…",
                      line: "rt: app launched in create-card mode", web: false)
             runCreateCardDrive()
+        case "calendar-live":
+            // The cordis-native calendar leg: ONE real-backend turn driven
+            // on the agent (no page), then the live mount + native card.
+            announce("DSH calendar live — create.calendar.live, a real turn then the cordis mount…",
+                     line: "rt: app launched in calendar-live mode", web: true)
+            runCalendarLiveDrive()
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
@@ -295,20 +301,18 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self?.webView?.load(URLRequest(url: origin))
         }
         // A plugin's live card renders in the app's OWN chrome (PR-1): the
-        // serve/release seats surface the card.* bus lines natively — the
-        // chat-created pomodoro ticks beside the conversation.
+        // serve/release seats surface the card.* bus lines natively.
         let surface = CardPlayerSurface()
         cardSurface = surface
         serve.onCardEvent = { [weak surface] msg in
             DispatchQueue.main.async { surface?.handle(msg) }
         }
+        serve.cardState = { [weak surface] in surface?.snapshot() ?? [:] }
         if let host = webView?.superview {
             surface.attach(to: host)
         }
-        // A failure here leaves an inert page, which is indistinguishable
-        // from a working-but-idle one. Say so on BOTH channels: the screen
-        // (which is what the user is looking at) and the Console (which is
-        // what a warn-keeping release build records).
+        // A failure here leaves an inert page, indistinguishable from an
+        // idle one — say so on BOTH channels (screen + warn-keeping log).
         serve.onRuntimeFailure = { [weak self] message in
             NSLog("%@", "dsh.session.serve: runtime failed: \(message)")
             DispatchQueue.main.async { self?.showBootFailure(message) }

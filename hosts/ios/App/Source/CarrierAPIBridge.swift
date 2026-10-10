@@ -47,6 +47,17 @@ final class CarrierAPIBridge {
     private var muxClaimed = false
     /// Responses awaiting the runtime, by rpcId (bridge queue only).
     private var pendingRPC: [String: NWConnection] = [:]
+    /// rpcId -> endpoint for the pending RPCs (response attribution: the
+    /// page's session/create answer is where the active session is born).
+    private var pendingEndpoint: [String: String] = [:]
+    /// The session the PAGE last opened (created or prompted) — the API
+    /// relay drive targets it so turn events flow into the page's own mux
+    /// subscription and render live, exactly like hand-typing.
+    private var pageSession = ""
+
+    /// App-level extras for the GET /api/state snapshot (the owning drive
+    /// wires the card face; the seam flag the bridge adds itself).
+    var appState: (() -> [String: Any])?
 
     init(sessionToken: String) {
         self.sessionToken = sessionToken
@@ -72,6 +83,19 @@ final class CarrierAPIBridge {
         }
         NSLog("dsh.bridge: api path=%@ authed=%d", path,
               request.isAuthed(token: sessionToken) ? 1 : 0)
+        // The state-snapshot observation seam: a read-only GET beside the
+        // POST envelope plane, same token gate — diagnostics for the drive,
+        // never a page surface.
+        if path == "/api/state" {
+            guard request.method == "GET" else {
+                return answer(conn, status: 405, body: Data(), mime: "text/plain")
+            }
+            guard request.isAuthed(token: sessionToken) else {
+                return answer(conn, status: 401, body: Data(), mime: "text/plain")
+            }
+            queue.async { [weak self] in self?.snapshotState(conn: conn) }
+            return
+        }
         guard request.method == "POST" else {
             return answer(conn, status: 405, body: Data(), mime: "text/plain")
         }
@@ -87,6 +111,8 @@ final class CarrierAPIBridge {
             guard let self else { return }
             if self.claimedEndpoints.contains(endpoint) {
                 self.pendingRPC[envelope.rpcId] = conn
+                self.pendingEndpoint[envelope.rpcId] = endpoint
+                self.snoopPageSession(endpoint: endpoint, payload: envelope.payload)
                 self.deliverToRuntime?([
                     "type": "api.request", "rpcId": envelope.rpcId,
                     "endpoint": endpoint, "payload": envelope.payload,
@@ -106,11 +132,64 @@ final class CarrierAPIBridge {
         answer(conn, status: 200, body: Data(body.utf8), mime: "application/json")
     }
 
+    /// GET /api/state — the state-snapshot observation seam. The bridge's
+    /// own facts (page session, claimed endpoints, in-flight RPCs) plus the
+    /// app layer's (card face, scripted-approval flag). Every fetch also
+    /// lands as one structured line in the unified log, so the D7 matcher
+    /// sees the SAME evidence the driver asserted — one observation channel,
+    /// not a second one.
+    private func snapshotState(conn: NWConnection) {
+        var snapshot: [String: Any] = [
+            "pageSession": pageSession,
+            "claimedEndpoints": claimedEndpoints.sorted(),
+            "muxClaimed": muxClaimed,
+            "pendingRPC": pendingRPC.count,
+        ]
+        var app: [String: Any] = [
+            "scriptApproval": UIPrimitives.scriptedApprovalFlag() ?? NSNull(),
+        ]
+        if let appState {
+            // The card face is main-thread confined; handlers arrive on this
+            // serial queue, never main, so the sync hop cannot self-deadlock.
+            let extra = Thread.isMainThread
+                ? appState() : DispatchQueue.main.sync { appState() }
+            app.merge(extra) { _, new in new }
+        }
+        snapshot["app"] = app
+        guard let data = try? JSONSerialization.data(withJSONObject: snapshot) else {
+            return answer(conn, status: 500, body: Data(), mime: "text/plain")
+        }
+        NSLog("dsh.snapshot: %@", String(data: data, encoding: .utf8) ?? "{}")
+        answer(conn, status: 200, body: data, mime: "application/json")
+    }
+
     /// Runtime → carrier: settle one claimed RPC with the frozen result
     /// envelope (`result` = the already-shaped ok/error JSON object).
+    private func snoopPageSession(endpoint: String, payload: Any) {
+        guard endpoint == "session/prompt" else { return }
+        guard let args = (payload as? [String: Any])?["args"] as? [String: Any],
+              let request = args["request"] as? [String: Any],
+              let sessionId = request["sessionId"] as? String, !sessionId.isEmpty
+        else { return }
+        notePageSession(sessionId)
+    }
+
+    /// The one source of truth for "the page is looking at this session".
+    private func notePageSession(_ sessionId: String) {
+        guard sessionId != pageSession else { return }
+        pageSession = sessionId
+        NSLog("dsh.bridge: page session %@", sessionId)
+    }
+
     func respondAPI(rpcId: String, result: [String: Any]) {
         queue.async { [weak self] in
             guard let self, let conn = self.pendingRPC.removeValue(forKey: rpcId) else { return }
+            let endpoint = self.pendingEndpoint.removeValue(forKey: rpcId) ?? ""
+            if endpoint == "session/create",
+               let value = (result["value"] as? [String: Any]),
+               let sessionId = value["sessionId"] as? String, !sessionId.isEmpty {
+                self.notePageSession(sessionId)
+            }
             let envelope: [String: Any] = ["type": "server-response", "rpcId": rpcId, "result": result]
             guard let data = try? JSONSerialization.data(withJSONObject: envelope) else { return }
             self.answer(conn, status: 200, body: data, mime: "application/json")

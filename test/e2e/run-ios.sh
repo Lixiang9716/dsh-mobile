@@ -315,7 +315,7 @@ drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
   # (verified live by the probe walk: 浏览 tab → DSH Dsh → gateway-e2e →
   # the notes cell, every hop visible in WDA's tree), so there is no index
   # to wait for and no pre-launch settle to bet. The ~0.15s press on the
-  # notes cell = select+confirm in one gesture; `dsh: ui-done picker` is
+  # notes cell = select+confirm in one gesture; `ui-done picker` is (prefix-agnostic)
   # the verdict marker. Labels tried in the runtime's language first (浏览/
   # 我的iPhone on this zh sim), then English — the hop CELLS (gateway-e2e,
   # notes) are locale-neutral names.
@@ -347,7 +347,7 @@ drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
   shot 05-picker-search   # historical name: the folder-content frame (notes cell visible)
   for _ in 1 2 3; do
     if wda_find_tap "notes" 0.15; then   # duration press = select+confirm
-      if wait_line "dsh: ui-done picker" 6; then
+      if wait_line "ui-done picker" 6; then
         shot 06-picker-selected
         return 0
       fi
@@ -475,17 +475,17 @@ exec 3<"$FIFO"
 while true; do
   if IFS= read -r -t 5 line <&3; then
     case "$line" in
-      *"dsh: ui-wait notification-permission"*)
+      *"ui-wait notification-permission"*)
         shot 01-notification-permission
         sleep 1.5   # alert presentation completes before the press lands
         wda_click "允许" || wda_click "Allow" || idb ui tap --udid "$UDID" "${PT_ALLOW[@]}" --duration 0.15 || true ;;
       *"dsh.runtime.log:"*"notify.scheduled"*)
         log "notify.scheduled seen -> HOME (background)"; idb ui button --udid "$UDID" HOME >/dev/null ;;
-      *"dsh: ui-wait notification-banner"*) drive_banner ;;
-      *"dsh: ui-wait approval"*)
+      *"ui-wait notification-banner"*) drive_banner ;;
+      *"ui-wait approval"*)
         shot 03-approval
         wda_click "Approve" || tap_label "Approve" "${PT_APPROVE[@]}" ;;
-      *"dsh: ui-wait picker"*) drive_picker ;;
+      *"ui-wait picker"*) drive_picker ;;
       *"dsh: sequence"*)
         log "terminal marker: $line"; break ;;
     esac

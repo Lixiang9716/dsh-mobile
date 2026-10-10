@@ -35,6 +35,7 @@ enum CardPlayerDrive {
         serve.onCardEvent = { [weak surface] msg in
             DispatchQueue.main.async { surface?.handle(msg) }
         }
+        serve.cardState = { [weak surface] in surface?.snapshot() ?? [:] }
         serve.onRuntimeFailure = { message in
             NSLog("%@", "dsh.session.serve: runtime failed: \(message)")
         }
