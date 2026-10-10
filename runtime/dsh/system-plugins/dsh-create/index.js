@@ -1,44 +1,52 @@
 // dsh:logging-exempt (plugin entry; logging happens through the mounted logger)
 /**
- * dsh-create — the create-approve-hotmount loop's product face (PR-2/PR-3):
- * ONE tool, `plugin_create`, carrying a chat-authored plugin from generation
- * to a LIVE native card:
+ * dsh-create — the creation seat's product face, CORDIS-NATIVE (the
+ * owner's bar: 基于cordis插件模式、在线插入,不是自造插件系统):
  *
- *   1. SCHEMA — the tool's args ARE the creation schema: the model is guided
- *      (by the description) to author a cordis plugin package
- *      (manifest.json + index.js, the workspace-authored grammar) — either
- *      inline via `indexSource`, or picked up from files it already wrote
- *      under plugins/<name>/.
- *   2. APPROVE — `presentApproval` through the gateway: the NATIVE Approve
- *      dialog (the m2-proven primitive, no new plumbing). Decline settles
- *      in-band; nothing is installed.
- *   3. INSTALL — the workspace dsh.plugins/1 registry row (the #340
- *      semantics, the plugin_manager install_bundle core reused through
- *      the shared workspace-registry helpers).
- *   4. HOT-LOAD THE CARD FACE — the plugin's card declaration (manifest
- *      `card: {kind, title, durationMs?}`) drives the LIVE native surface
- *      (PR-1's card.* bus contract): present, one-shot-timer re-arm ticks
- *      (contract v1.4.0 §5 — NO setInterval), complete. The plugin's
- *      cordis code itself mounts into the spine on the NEXT session (the
- *      honest boundary, documented — the card face is live immediately).
- *
- * The flow the owner demoed: 创作模式聊天"生成番茄时钟插件" → the model
- * calls plugin_create → Approve → the pomodoro card ticks in the app's own
- * chrome.
+ *   1. SCHEMA — plugin_create's args are the creation schema; the model
+ *      authors the plugin's SOURCE (indexSource — a real cordis plugin
+ *      exporting name/inject/apply) or takes the generated template.
+ *   2. WRITE — the package lands at plugins/<name>/ (workspace grammar).
+ *   3. LIVE MOUNT — plugin-mount.js's mountWorkspacePlugin(ctx, name) is
+ *      the WHOLE product pipeline: the native presentApproval checkpoint
+ *      (挂载插件…), the dsh.plugins/1 registry row, the __dshModuleDefine
+ *      loader-seam registration + dynamic import() (real code, loaded
+ *      post-boot), and ctx.plugin(ns) — the plugin is inserted INTO THE
+ *      RUNNING SPINE as a real cordis plugin. Every step is
+ *      plugin.mount.* E2E evidence.
+ *   4. THE PLUGIN RUNS — its own apply() executes on mount: it posts the
+ *      card.* bus lines itself (its own JS computes the face — a calendar
+ *      computes today's date, a timer runs its own 1Hz re-arm loop). The
+ *      host CardPlayerSurface only RENDERS what the plugin's code sends —
+ *      the running is the plugin's, not this tool's.
  */
 import { createLogger } from 'logger.js';
 import { defineTool } from '@deepseek-ai/dsh-tools';
-import { fsRead, fsWrite, presentApproval } from 'gateway.js';
-import {
-  workspacePrefix, joinScoped, workspaceRegistryPath, upsertRegistryRow,
-} from 'workspace-registry.js';
+import { fsWrite } from 'gateway.js';
+import { mountWorkspacePlugin } from 'plugin-mount.js';
+import { workspacePrefix, joinScoped } from 'workspace-registry.js';
 import 'upstream/shims/timers.js';
 
 const log = createLogger('dsh.create');
 
-/** The UTF-8 face (the workspace-registry resolution: the dsh buffer shim's
- * encodeUtf8 on the host, TextEncoder on real node — quickjs has neither
- * global by default, so this MUST resolve, not construct). */
+export const manifest = {
+  schemaVersion: 1,
+  id: 'dsh-create',
+  version: '0.2.0',
+  type: 'service',
+  entry: 'index.js',
+  capabilities: { required: ['fsRead', 'fsWrite', 'presentApproval'], optional: [] },
+  hooks: { activate: 'activate' },
+};
+
+const PKG_ID = /^[a-z0-9][a-z0-9.-]*$/;
+
+/** The spine context, captured at apply — the live mount needs the REAL
+ * cordis context (ctx.plugin). */
+let spine = null;
+
+/** The UTF-8 face (the workspace-registry resolution — quickjs has no
+ * TextEncoder global by default; this MUST resolve, not construct). */
 let utf8Encode = null;
 const encodeUtf8 = async (text) => {
   if (utf8Encode === null) {
@@ -50,63 +58,46 @@ const encodeUtf8 = async (text) => {
   return utf8Encode(text);
 };
 
-export const manifest = {
-  schemaVersion: 1,
-  id: 'dsh-create',
-  version: '0.1.0',
-  type: 'service',
-  entry: 'index.js',
-  capabilities: { required: ['fsRead', 'fsWrite', 'presentApproval'], optional: [] },
-  hooks: { activate: 'activate' },
-};
-
-const PKG_ID = /^[a-z0-9][a-z0-9.-]*$/;
-/** One tick per second; a card runs at most an hour before completing on
- * its own (a safety fuse — the honest duration still governs). */
-const TICK_MS = 1000;
-const MAX_TICKS = 3600;
-
+/** The generated plugin — a REAL cordis plugin whose apply() IS the run:
+ * a timer runs its own one-shot re-arm loop; a calendar computes today's
+ * date in its own JS. The card face is the plugin's own bus posts. */
+const generatedIndex = ({ id, title, kind, durationMs }) => `// Authored by the creation turn — a real cordis plugin, mounted LIVE.
+import 'upstream/shims/timers.js';
+import { createLogger } from 'logger.js';
+const log = createLogger('plugin.${id}');
 const post = (msg) => globalThis.__dshBusPost?.(JSON.stringify(msg));
-
-/** The generated package's cordis index — real code, spine-mountable on
- * the next session (the workspace plugin grammar's consumer). */
-const generatedIndex = ({ id, title }) => `// Generated by dsh-create (creation mode) — the ${title} plugin.
+const CARD = 'create-${id}';
 export const name = '${id}';
-export const inject = ['tools'];
+export const inject = [];
 export const apply = (ctx) => {
-  ctx.logger?.info?.('${id} activated (next-session spine mount)', {});
+  log.info('e2e', { scenario: 'plugin.${id}', event: 'plugin.running', kind: '${kind}' });
+  post({ type: 'card.present', card: {
+    id: CARD, kind: '${kind}', title: '${title}',
+    subtitle: '创作插件 · 已在线挂载', durationMs: ${durationMs} } });
+  log.info('e2e', { scenario: 'plugin.${id}', event: 'card.posted', id: CARD });
+${
+  kind === 'timer'
+    ? `  let remaining = ${durationMs};
+  (async () => {
+    while (remaining > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      remaining -= 1000;
+      post({ type: 'card.state', id: CARD, state: {
+        remainingMs: remaining, label: '剩 ' + Math.ceil(remaining / 1000) + ' 秒' } });
+    }
+    post({ type: 'card.complete', id: CARD, message: '${title} 完成' });
+  })();`
+    : `  const now = new Date();
+  const label = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0')
+    + '-' + String(now.getDate()).padStart(2, '0');
+  post({ type: 'card.state', id: CARD, state: { label } });`
+}
 };
 `;
 
-/** The live card face: present, tick by one-shot re-arm, complete. The
- * loop is fire-and-forget — the seat stays resident (the composer's own
- * contract) and the surface resnaps on every authoritative patch. */
-const runCardFace = async ({ id, kind, title, subtitle, durationMs }) => {
-  post({
-    type: 'card.present',
-    card: { id, kind, title, subtitle, durationMs },
-  });
-  log.info('e2e', { scenario: 'create.card', event: 'card.face.presented',
-    id, kind, durationMs });
-  let remaining = durationMs;
-  let ticks = 0;
-  while (remaining > 0 && ticks < MAX_TICKS) {
-    await new Promise((resolve) => setTimeout(resolve, TICK_MS));
-    remaining -= TICK_MS;
-    ticks += 1;
-    post({
-      type: 'card.state', id,
-      state: { remainingMs: remaining, label: `${title} · 剩 ${Math.ceil(remaining / 1000)} 秒` },
-    });
-  }
-  post({ type: 'card.complete', id, message: `${title} 完成` });
-  log.info('e2e', { scenario: 'create.card', event: 'card.face.completed',
-    id, ticks });
-};
-
-/** Steps 1–2: write the package, ask the NATIVE approval. Returns
- * { approved, name, kind, title, durationMs } or a refusal string. */
-const writeAndApprove = async (args, dir) => {
+/** Write the package (step: package.written). Returns {name,title} or a
+ * refusal string. */
+const writePackage = async (args, dir) => {
   const name = String(args.name ?? '');
   if (!PKG_ID.test(name)) {
     return `plugin_create: name must match ${PKG_ID} (got ${JSON.stringify(name)})`;
@@ -119,94 +110,55 @@ const writeAndApprove = async (args, dir) => {
   }
   const indexSource = typeof args.indexSource === 'string' && args.indexSource.length > 0
     ? args.indexSource
-    : generatedIndex({ id: name, title });
+    : generatedIndex({ id: name, title, kind, durationMs });
   const pluginManifest = {
     id: name, name: title, version: '1.0.0', entry: 'index.js',
-    capabilities: [],
-    card: { kind, title, durationMs },
+    capabilities: [], kind,
   };
   await fsWrite('app', `${dir}/manifest.json`,
     await encodeUtf8(`${JSON.stringify(pluginManifest, null, 2)}\n`));
   await fsWrite('app', `${dir}/index.js`, await encodeUtf8(indexSource));
   log.info('e2e', { scenario: 'create.card', event: 'package.written', name });
-
-  // The native approval — the m2 primitive, the user's own finger.
-  let approved = false;
-  try {
-    const verdict = await presentApproval({
-      title: `安装插件「${title}」`,
-      detail: `来源:本会话创作 · 包:${name} · 卡片:${kind}`
-        + (kind === 'timer' ? ` · ${Math.round(durationMs / 60000)} 分钟` : ''),
-    });
-    approved = verdict?.approved === true;
-  } catch (error) {
-    log.warn('plugin_create approval failed', { message: String(error?.message ?? error) });
-    return `plugin_create: 审批通道失败 — ${String(error?.message ?? error)}`;
-  }
-  log.info('e2e', { scenario: 'create.card', event: 'approval.answered',
-    name, approved });
-  if (!approved) {
-    return `plugin_create: 用户取消了「${title}」的安装(包已留在 plugins/${name}/)。`;
-  }
-  return { approved: true, name, kind, title, durationMs };
+  return { name, title };
 };
 
+/** Live-mount through the cordis seam: approval → registry → dynamic
+ * import → ctx.plugin — the plugin's apply() runs as a result. */
 const execute = async (args) => {
   const name = String(args.name ?? '');
   const dir = joinScoped(workspacePrefix(), `plugins/${name}`);
-  const approved = await writeAndApprove(args, dir);
-  if (typeof approved === 'string') return approved;
-
-  // The registry install (the #340 row, the plugin_manager semantics).
-  try {
-    const outcome = await upsertRegistryRow(
-      { fsRead, fsWrite, path: workspaceRegistryPath() },
-      { id: approved.name, name: approved.title, version: '1.0.0', entry: 'index.js',
-        enabled: true, origin: 'creation', source: `plugins/${approved.name}/` });
-    if (!outcome.ok) {
-      return `plugin_create: 注册表写入失败 — ${JSON.stringify(outcome.error ?? outcome)}`;
-    }
-  } catch (error) {
-    return `plugin_create: 注册表写入异常 — ${String(error?.message ?? error)}`;
+  const written = await writePackage(args, dir);
+  if (typeof written === 'string') return written;
+  if (!spine) return 'plugin_create: no cordis spine on this seat (mount impossible)';
+  const outcome = await mountWorkspacePlugin(spine, written.name);
+  if (!outcome.mounted) {
+    return `plugin_create: 挂载未完成(${outcome.step}): ${outcome.reason ?? ''}`;
   }
-  log.info('e2e', { scenario: 'create.card', event: 'registry.installed',
-    name: approved.name });
-
-  // The live card face (fire-and-forget; the surface resnaps per patch).
-  if (approved.kind === 'timer') {
-    void runCardFace({ id: `create-${approved.name}`, kind: approved.kind,
-      title: approved.title, subtitle: '创作模式 · 已安装',
-      durationMs: approved.durationMs });
-  }
-
-  return `插件「${approved.title}」已安装并激活:注册表行已提交(enabled),卡片已在原生界面启动`
-    + (approved.kind === 'timer'
-      ? `,计时 ${Math.round(approved.durationMs / 60000)} 分钟;插件代码将于下次会话挂载进 spine。`
-      : '。');
+  return `插件「${written.title}」已作为真实 cordis 插件在线插入:审批通过 → 注册表落库 → `
+    + '动态加载 → ctx.plugin 挂载,插件自身代码已在运行(plugin.mount.* 事件链为证)。';
 };
 
 const pluginCreateTool = () => defineTool({
   name: 'plugin_create',
-  description: 'Create and install a plugin from this chat (创作模式). Call this '
-    + 'when the user asks to 生成/创建 a plugin (e.g. 生成一个番茄时钟插件): it '
-    + 'writes the plugin package (manifest.json + a cordis index.js) under '
-    + 'plugins/<name>/, asks the user for NATIVE approval (Approve/Decline '
-    + 'dialog), installs it into the workspace registry, and immediately '
-    + 'starts its LIVE card in the app UI (kind "timer" renders a native '
-    + 'countdown card). Pass name (kebab-case), title (Chinese display '
-    + 'name), kind ("timer"), durationMs (e.g. 1500000 for a 25-minute '
-    + 'pomodoro), and optionally indexSource (your own cordis plugin code '
-    + 'exporting name/inject/apply — omit it to use the generated shape).',
+  description: 'Create and insert a cordis plugin LIVE (创作模式). Call this '
+    + 'when the user asks to 生成/创建/做一个 plugin (e.g. 做一个日历): you may '
+    + 'AUTHOR the plugin source yourself (indexSource — a cordis plugin '
+    + 'exporting name/inject/apply; its apply() runs on mount and drives '
+    + 'its card via __dshBusPost card.* lines), or take the generated '
+    + 'template (kind "timer" = countdown; anything else e.g. "calendar" = '
+    + 'a date-face card). The plugin is mounted into the RUNNING spine '
+    + 'after the user approves the native dialog — real online insertion.',
   parameters: {
     name: { type: 'string', required: true,
-      description: 'Package id, kebab-case (e.g. "pomodoro-timer").' },
+      description: 'Package id, kebab-case (e.g. "calendar-plugin").' },
     title: { type: 'string', required: true,
-      description: 'Display title shown in the approval dialog and the card.' },
-    kind: { type: 'string', description: 'Card kind; "timer" (default).' },
-    durationMs: { type: 'number', required: true,
-      description: 'Timer duration in ms (1500000 = 25 minutes).' },
+      description: 'Display title (approval dialog + card).' },
+    kind: { type: 'string',
+      description: 'Card kind: "timer" (needs durationMs) or e.g. "calendar".' },
+    durationMs: { type: 'number',
+      description: 'Timer duration in ms (1500000 = 25 min); omit for calendar.' },
     indexSource: { type: 'string',
-      description: 'Optional cordis plugin source (exports name/inject/apply).' },
+      description: 'YOUR authored cordis plugin source (exports name/inject/apply) — preferred over the template.' },
   },
   output: {
     schema: { type: 'string' },
@@ -219,15 +171,14 @@ export function activate() {
   log.debug('dsh-create activated', {});
 }
 
-/** The E2E drive's entry (scenario/create-card.js): the same function the
- * agent loop dispatches through ctx.tools — exported so the leg exercises
- * the product code path without depending on page-send mechanics. */
+/** The E2E drive's entry (scenario/create-card.js): the same execute. */
 export const pluginCreateExecute = execute;
 
 export const name = 'dsh-create';
 export const inject = ['tools'];
 
 export const apply = (ctx) => {
+  spine = ctx;
   ctx.tools.register(pluginCreateTool());
-  log.debug('plugin_create registered', {});
+  log.debug('plugin_create registered (spine captured)', {});
 };

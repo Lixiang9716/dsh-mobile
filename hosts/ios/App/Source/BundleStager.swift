@@ -285,6 +285,8 @@ enum BundleStager {
                   data: resData(dsh_runtime_res_upstream_web_write_presets_js), under: root)
         try write("upstream/web-write-session.js",
                   data: resData(dsh_runtime_res_upstream_web_write_session_js), under: root)
+        try write("upstream/web-write-session-delete.js",
+                  data: resData(dsh_runtime_res_upstream_web_write_session_delete_js), under: root)
         try write("upstream/web-write-subagents.js",
                   data: resData(dsh_runtime_res_upstream_web_write_subagents_js), under: root)
         try write("upstream/wire-logger.js",
