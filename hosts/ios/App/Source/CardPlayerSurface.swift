@@ -31,6 +31,7 @@ final class CardPlayerSurface {
         let timeLabel = UILabel()
         let subtitleLabel = UILabel()
         let progress = UIProgressView(progressViewStyle: .default)
+        let closeButton = UIButton(type: .system)
     }
 
     func attach(to view: UIView) {
@@ -125,7 +126,7 @@ final class CardPlayerSurface {
         dismiss()
         guard let host = hostView else { return }
         let card = buildCardView(id: id, title: title, subtitle: subtitle, kind: kind)
-        activateCardConstraints(card, in: host)
+        placeCard(card, in: host)
         cardView = card
         card.alpha = 0
         card.transform = CGAffineTransform(translationX: 0, y: 60)
@@ -177,22 +178,23 @@ final class CardPlayerSurface {
             ? .systemOrange : .systemBlue
         if kind != "timer" { card.progress.alpha = 0 }
 
-        for sub in [card.titleLabel, card.timeLabel, card.subtitleLabel, card.progress] {
+        card.closeButton.setImage(UIImage(systemName: "xmark"), for: .normal)
+        card.closeButton.tintColor = .secondaryLabel
+        card.closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
+
+        card.addGestureRecognizer(UIPanGestureRecognizer(
+            target: self, action: #selector(dragCard(_:))))
+
+        for sub in [card.titleLabel, card.timeLabel, card.subtitleLabel, card.progress,
+                    card.closeButton] {
             sub.translatesAutoresizingMaskIntoConstraints = false
             card.addSubview(sub)
         }
-        return card
-    }
-
-    private func activateCardConstraints(_ card: CardView, in host: UIView) {
-        card.translatesAutoresizingMaskIntoConstraints = false
-        host.addSubview(card)
-        let safe = host.safeAreaLayoutGuide
         NSLayoutConstraint.activate([
-            card.leadingAnchor.constraint(equalToSystemSpacingAfter: safe.leadingAnchor, multiplier: 1.5),
-            safe.trailingAnchor.constraint(equalToSystemSpacingAfter: card.trailingAnchor, multiplier: 1.5),
-            safe.bottomAnchor.constraint(equalToSystemSpacingBelow: card.bottomAnchor, multiplier: 2),
-            card.heightAnchor.constraint(equalToConstant: 148),
+            card.closeButton.topAnchor.constraint(equalTo: card.topAnchor, constant: 6),
+            card.closeButton.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -6),
+            card.closeButton.widthAnchor.constraint(equalToConstant: 26),
+            card.closeButton.heightAnchor.constraint(equalToConstant: 26),
             card.titleLabel.topAnchor.constraint(equalTo: card.topAnchor, constant: 16),
             card.titleLabel.centerXAnchor.constraint(equalTo: card.centerXAnchor),
             card.timeLabel.topAnchor.constraint(equalTo: card.titleLabel.bottomAnchor, constant: 8),
@@ -204,6 +206,39 @@ final class CardPlayerSurface {
             card.subtitleLabel.topAnchor.constraint(equalTo: card.progress.bottomAnchor, constant: 8),
             card.subtitleLabel.centerXAnchor.constraint(equalTo: card.centerXAnchor),
         ])
+        return card
+    }
+
+    /// Frame placement, TOP-anchored under the safe area (the composer is
+    /// bottom-docked — a bottom card covered the input): the card is a PiP
+    /// widget the user can DRAG anywhere and CLOSE locally; neither action
+    /// crosses the contract (dismissal authority stays the plugin's — a
+    /// locally closed card just ignores later card.state/complete records
+    /// and the next card.present re-shows it).
+    private func placeCard(_ card: CardView, in host: UIView) {
+        let inset: CGFloat = 12
+        let width = min(host.bounds.width - inset * 2, 420)
+        let top = host.safeAreaInsets.top + inset
+        let frame = CGRect(x: host.bounds.width - width - inset, y: top,
+            width: width, height: 148)
+        card.frame = frame
+        host.addSubview(card)
+    }
+
+    /** The drag: reposition the floating card within the host bounds. */
+    @objc private func dragCard(_ gesture: UIPanGestureRecognizer) {
+        guard let card = gesture.view, let host = card.superview else { return }
+        let t = gesture.translation(in: host)
+        gesture.setTranslation(.zero, in: host)
+        let halfW = card.bounds.width / 2 + 4
+        let halfH = card.bounds.height / 2 + 4
+        let x = min(max(card.center.x + t.x, halfW), host.bounds.width - halfW)
+        let y = min(max(card.center.y + t.y, halfH), host.bounds.height - halfH)
+        card.center = CGPoint(x: x, y: y)
+    }
+
+    @objc private func closeTapped() {
+        dismiss()
     }
 
     private func render() {
