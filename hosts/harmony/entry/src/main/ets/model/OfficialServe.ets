@@ -44,6 +44,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { util } from '@kit.ArkTS';
 import { fileIo as fs } from '@kit.CoreFileKit';
 import { CarrierRequest, CarrierServer, HttpHandler } from './CarrierServer';
+import { CardFace } from './CardFace';
 import { WebDist, BootRow } from './WebDist';
 import { WebPlugins } from './WebPlugins';
 import { ApiBridge } from './ApiBridge';
@@ -159,6 +160,12 @@ export type ApprovalFn = (title: string,
   resolve: (approved: boolean) => void) => void;
 
 export class OfficialServe {
+  /** The card record hook: the owning phase/page re-reads CardFace and
+   * refreshes its bindings (the @State push). */
+  onCardRecord: (() => void) | undefined = undefined;
+  /** App-level extras for the /api/state snapshot (the card face + the
+   * scripted-approval flag; wired by the phase). */
+  appState: (() => Record<string, Object>) | undefined = undefined;
   // ---- the evidence seam ------------------------------------------------------
   // All no-ops: a user-facing boot installs none of them (no record, no
   // probe, no verdict). The harness drive assigns the ones it needs before
@@ -246,6 +253,9 @@ export class OfficialServe {
   private started = false;
   private bootApplied = false;
   private originOpened = false;
+  /** The origin facts the drives harvest (the iOS `dsh.serve: origin
+   * token=` sibling — Android carries the same line). */
+  private originLogged = false;
   /** Set by `finish()`: the drive has closed this leg's evidence, so a late
    * composition must not remount a page a verdict already covered. Only a
    * MOUNTING leg clears it again (`startLeg(…, mounts = true)`). */
@@ -474,6 +484,21 @@ export class OfficialServe {
     bridge.onMuxErrorFrame = (endpoint: string): void => {
       this.onMuxErrorFrame(endpoint);
     };
+    bridge.appState = (): Record<string, Object> => {
+      const app: Record<string, Object> = {
+        'scriptApproval': this.scriptApprovalFlag() as Object,
+        'card': CardFace.snapshot()['card'],
+      };
+      return app;
+    };
+  }
+
+  /** The scripted-approval launch want (the iOS -dsh-script-approval
+   * sibling): the E2E leg's `dsh.e2e.scriptapproval` want, or null when a
+   * human answers. */
+  private scriptApprovalFlag(): string | null {
+    const value = AppStorage.get<string>('dsh.script.approval') ?? '';
+    return value.length > 0 ? value : null;
   }
 
   /** Creates the seat runtime (the drive's sink is live from here on) and
@@ -817,6 +842,16 @@ export class OfficialServe {
       this.applyWebBoot(line);
       return;
     }
+    // The native card face's contract events (the iOS #452 sibling): the
+    // model updates and the page's @State bindings render the PiP card.
+    if (msg.type === 'card.present' || msg.type === 'card.state' ||
+      msg.type === 'card.complete' || msg.type === 'card.dismiss') {
+      CardFace.handle(msg.type, msg as Record<string, Object>);
+      if (this.onCardRecord !== undefined) {
+        this.onCardRecord();
+      }
+      return;
+    }
     if (this.bridge === null) {
       return; // before the seats exist: nothing to route to
     }
@@ -893,6 +928,11 @@ export class OfficialServe {
     }
     this.originOpened = true;
     const url = 'http://127.0.0.1:' + this.port + '/?token=' + this.token;
+    // The harvest line (the iOS/Android `dsh.serve: origin token=` sibling —
+    // the drives talk to the /api plane through it; the token never leaves
+    // this log).
+    hilog.info(0x0000, 'dsh.serve', 'origin token=%{public}s port=%{public}d',
+      this.token, this.port);
     hilog.info(0x0000, TAG, 'official: opening origin %{public}s', url);
     this.onOrigin(url);
   }
