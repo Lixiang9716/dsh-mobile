@@ -336,18 +336,20 @@ dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","da
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"entry link begin","data":[{"spec":"forms-events"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"tmp/plugin-forms/plugins/forms-events/index.js"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":644}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":481}]}
-dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":481}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1080}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"decode utf8 face probe","data":[{"length":810}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":810}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
-dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":481}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":810}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.linked","spec":"forms-events","module":"plugins/forms-events/index.js"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"fiber settle begin","data":[{"spec":"forms-events"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.mount","event":"plugin.mount.mounted","spec":"forms-events","version":"1.0.0"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
-dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"events.observed","on":1,"bail":"blocked","wf":"hey!","serial":"serial-answer"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"plugin.forms","event":"events.observed","on":1,"bail":"blocked","wf":"hey!","serial":"serial-answer","parallel":1,"order":"head:x-tail"}]}
 dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"unmount begin","data":[{"spec":"forms-events"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.live","spec":"forms-events"}]}
 dsh.runtime.log: {"level":"info","module":"dsh.plugin-mount","message":"e2e","data":[{"scenario":"plugin.unmount","event":"plugin.unmount.disposed","spec":"forms-events"}]}

@@ -70,7 +70,9 @@
     "on": 1,
     "bail": "blocked",
     "wf": "hey!",
-    "serial": "serial-answer"
+    "serial": "serial-answer",
+    "parallel": 1,
+    "order": "head:x-tail"
    }
   },
   {

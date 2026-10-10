@@ -172,7 +172,11 @@ const eventsPhase = async (ctx) => {
   demand(wf === 'hey!', `waterfall did not transform: ${String(wf)}`);
   const serial = await ctx.serial('forms/slow', {});
   demand(serial === 'serial-answer', `serial did not await the listener: ${String(serial)}`);
-  emit('events.observed', { on: 1, bail, wf, serial });
+  await ctx.parallel('forms/parallel', {});
+  demand(globalThis.__formsEvents?.par === 1, 'the parallel listener did not run');
+  const order = await ctx.waterfall('forms/order', 'x', async () => 'x');
+  demand(order === 'head:x-tail', `prepend ordering broken: ${String(order)}`);
+  emit('events.observed', { on: 1, bail, wf, serial, parallel: 1, order });
   void await unmountWorkspacePlugin('forms-events', { prefix: PREFIX });
   ctx.emit('forms/ping', {});
   demand(globalThis.__formsEvents?.on === 1, 'the listener survived unmount (ctx.on is not an effect)');

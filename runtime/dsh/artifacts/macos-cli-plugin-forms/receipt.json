@@ -13,6 +13,6 @@
     "the boot-list mounts exactly the ENABLED registry rows (the cordis.yml-insert equivalent); a disabled row is skipped (plugin.forms/bootlist.mounted)"
   ],
   "checker": "test/e2e/scenarios/plugin-forms.json",
-  "events": 902,
+  "events": 904,
   "exitCode": 0
 }

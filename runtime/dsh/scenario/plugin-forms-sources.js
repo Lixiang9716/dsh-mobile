@@ -64,12 +64,12 @@ export const apply = (ctx, config) => {
 };
 `;
 
-// ch.4 events: broadcast, bail short-circuit, serial and waterfall dispatch;
-// every ctx.on is an effect — unmount removes the listeners.
+// ch.4 events: broadcast, bail, serial, waterfall, parallel dispatch plus
+// the prepend option; every ctx.on is an effect — unmount removes them.
 export const EVENTS_SOURCE = `
 export const name = 'forms-events';
 export const apply = (ctx) => {
-  globalThis.__formsEvents = { on: 0, bail: 0, wf: 0 };
+  globalThis.__formsEvents = { on: 0, bail: 0, wf: 0, par: 0 };
   ctx.on('forms/ping', () => { globalThis.__formsEvents.on += 1; });
   ctx.on('forms/check', (input) => (input === 'bad' ? 'blocked' : undefined));
   ctx.on('forms/transform', async (input, next) => (await next()) + '!');
@@ -77,6 +77,13 @@ export const apply = (ctx) => {
     await new Promise((resolve) => setTimeout(resolve, 5));
     return 'serial-answer';
   });
+  ctx.on('forms/parallel', async () => {
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    globalThis.__formsEvents.par += 1;
+  });
+  ctx.on('forms/order', (_input, next) => next().then((v) => v + '-tail'));
+  ctx.on('forms/order', (_input, next) => next().then((v) => 'head:' + v),
+    { prepend: true });
 };
 `;
 
