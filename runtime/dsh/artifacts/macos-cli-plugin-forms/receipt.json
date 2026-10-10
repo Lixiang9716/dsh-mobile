@@ -11,16 +11,9 @@
     "unload is first-class: fiber.dispose() runs the ctx.effect cleanups and the service stops resolving (plugin.forms/form.unmounted + unload.effects)",
     "an edited source reloads under the epoch cache-buster (?e=1) \u2014 the fresh compile is what runs (plugin.forms/reload.edited)",
     "the boot-list mounts exactly the ENABLED registry rows (the cordis.yml-insert equivalent); a disabled row is skipped (plugin.forms/bootlist.mounted)",
-    "plugin config: the exported Schemastery schema validates inside ctx.plugin \u2014 explicit value, schema default, invalid mount fails LOUD with the adoption rolled back (config.validated/default/invalid)",
-    "config HMR (fiber.update): a validated update RESTARTS the fiber in place \u2014 no unmount, no epoch bump \u2014 and an INVALID update refuses while the old config keeps running (config.updated + config.update-invalid)",
-    "the event system: emit broadcast, bail short-circuit, serial await, waterfall transform, PARALLEL await-all, and the prepend listener option; ctx.on detaches on unmount (events.observed + events.detached)",
-    "all three upstream plugin forms mount live through the workspace chain: object (name/inject/apply), function (export default), and class (extends Service from @deepseek-ai/cordis) (plugin.forms/form.mounted)",
-    "the class form's static inject ['tools'] orders the load and the service answers through the cordis resolver (plugin.forms/forms.live)",
-    "unload is first-class: fiber.dispose() runs the ctx.effect cleanups and the service stops resolving (plugin.forms/form.unmounted + unload.effects)",
-    "an edited source reloads under the epoch cache-buster (?e=1) \u2014 the fresh compile is what runs (plugin.forms/reload.edited)",
-    "the boot-list mounts exactly the ENABLED registry rows (the cordis.yml-insert equivalent); a disabled row is skipped (plugin.forms/bootlist.mounted)"
+    "execution policy (the cookbook + reference/tool-execution-pipeline): ALL THREE waterfalls proven \u2014 tools/pre-execute denies, tools/post-execute REWRITES the canonical value (finalization re-renders content from value \u2014 value is authoritative) and BLOCKS with corrective feedback, both lifting on plugin unmount; ctx.tools.guard refuses monotonically and lifts on its disposer (policy.denied + tool.greeted)"
   ],
   "checker": "test/e2e/scenarios/plugin-forms.json",
-  "events": 910,
+  "events": 918,
   "exitCode": 0
 }

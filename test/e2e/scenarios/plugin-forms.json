@@ -103,7 +103,9 @@
    "event": "tool.greeted",
    "match": {
     "policed": true,
-    "guarded": true
+    "guarded": true,
+    "rewritten": 1,
+    "blocked": 1
    }
   },
   {

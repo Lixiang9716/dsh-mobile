@@ -220,6 +220,15 @@ const toolPhase = async (ctx) => {
   demand(denied?.isError === true,
     `the pre-execute policy did not deny: ${JSON.stringify(denied).slice(0, 200)}`);
   emit('policy.denied', { denied: true });
+  // post-execute: the third waterfall REWRITES the canonical value and
+  // BLOCKS with corrective feedback while the policy plugin is mounted.
+  const rewritten = await call('Rewritten');
+  const rewrittenText = (rewritten?.content ?? []).map((b) => (b.type === 'text' ? b.text : '')).join('');
+  demand(rewrittenText === '[redacted]', `post-execute did not rewrite: "${rewrittenText}" policy=${JSON.stringify(globalThis.__formsPolicy)}`);
+  const blockedCall = await call('Blocked');
+  demand(blockedCall?.isError === true
+    && JSON.stringify(blockedCall.content ?? []).includes('blocks this greeting'),
+  `post-execute did not block: ${JSON.stringify(blockedCall).slice(0, 160)}`);
   void await unmountWorkspacePlugin('forms-policy', { prefix: PREFIX });
   const lifted = await call('Villain');
   const liftedText = (lifted?.content ?? []).map((b) => (b.type === 'text' ? b.text : '')).join('');
@@ -237,7 +246,7 @@ const toolPhase = async (ctx) => {
   for (const spec of ['forms-greet', 'forms-logger']) {
     void await unmountWorkspacePlugin(spec, { prefix: PREFIX });
   }
-  emit('tool.greeted', { policed: true, guarded: true });
+  emit('tool.greeted', { policed: true, guarded: true, rewritten: 1, blocked: 1 });
 };
 
 /** cookbook/background: the real LocalJobRegistry — start → wait → read,
