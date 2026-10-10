@@ -29,6 +29,11 @@ export default defineConfig({
       // same mapping from toolface-loader-hooks.mjs.
       { find: /^node:path$/, replacement: fileURLToPath(new URL('./path-posix.mjs', import.meta.url)) },
       { find: 'logger.js', replacement: fileURLToPath(new URL('./logger-shim.js', import.meta.url)) },
+      // web-write-plugin-manager imports the live mount chain; the panel
+      // suite never mounts (the plugin.forms CLI leg owns that proof), so the
+      // stub keeps the graph resolvable and the remove face's live-dispose
+      // branch honestly skipped.
+      { find: 'plugin-mount.js', replacement: fileURLToPath(new URL('./plugin-mount-stub.js', import.meta.url)) },
       { find: 'ed25519.js', replacement: fileURLToPath(new URL('../../runtime/dsh/ed25519.js', import.meta.url)) },
       { find: 'canonical-json.js', replacement: fileURLToPath(new URL('../../runtime/dsh/canonical-json.js', import.meta.url)) },
       { find: 'marketplace-resolver.js', replacement: fileURLToPath(new URL('../../runtime/dsh/marketplace-resolver.js', import.meta.url)) },

@@ -1,0 +1,18 @@
+{
+  "host": "darwin-cli (Darwin Darwin 27.0.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned by runtime/dsh/vendor/ensure-dsh.sh)",
+  "kernel": "@deepseek-ai/cordis@4.0.2",
+  "scenario": "plugin.forms",
+  "proves": [
+    "all three upstream plugin forms mount live through the workspace chain: object (name/inject/apply), function (export default), and class (extends Service from @deepseek-ai/cordis) (plugin.forms/form.mounted)",
+    "the class form's static inject ['tools'] orders the load and the service answers through the cordis resolver (plugin.forms/forms.live)",
+    "unload is first-class: fiber.dispose() runs the ctx.effect cleanups and the service stops resolving (plugin.forms/form.unmounted + unload.effects)",
+    "an edited source reloads under the epoch cache-buster (?e=1) — the fresh compile is what runs (plugin.forms/reload.edited)",
+    "the boot-list mounts exactly the ENABLED registry rows (the cordis.yml-insert equivalent); a disabled row is skipped (plugin.forms/bootlist.mounted)"
+  ],
+  "checker": "test/e2e/scenarios/plugin-forms.json",
+  "events": 297,
+  "exitCode": 0
+}

@@ -1,185 +1,271 @@
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"launch env phase begin","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"boot phase begin","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"llm/runtime","provider":"mock","model":"mock-1","service":"vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)","transport":"gateway httpFetch → loopback chat-completions mock server","userAgent":"deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"upstream/profile","profile":"mobile","root":"empty (patch layers compose over it)","upstream":"0.1.6-alpha.2 (vendored verbatim, sha256-pinned)","layers":["session","agent","system-prompt","tools","session-projection","settings","agent-loop"]}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"echo.wasm"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"guest root from the host declaration","data":[{"rootfs":"","offered":false}]}
-dsh.spike.log: {"level":"info","module":"dsh.shell.ish","message":"no Linux guest staged by this host; the ish tool is not offered","data":[]}
-dsh.spike.log: {"level":"info","module":"dsh.openDesign","message":"no Open Design daemon configured; the open_design tools are not offered","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word tools registering","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.excel","message":"excel tools registering","data":[{}]}
-dsh.spike.log: {"level":"info","module":"dsh.office","message":"office tools registered","data":[{"count":8}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"upstream/services","kernel":"@deepseek-ai/cordis@4.0.2","services":["sessions","agents","systemPrompt","tools","sessionProjections","settings","agentLoop","llm"],"llm":"vendored LlmRuntime + gateway adapter (provider \"mock\")"}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"boot phase done","data":[{"root":"/tmp/dsh-spike-smoke.Hg1C9k"}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"session/created","sessionId":"s-office-0001"}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"agent/created","id":"main","sessionId":"s-office-0001"}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"offered phase begin","data":[{}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office/offered","tools":8}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"word phase begin","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"word_create"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word_create","data":[{"path":"docs/demo.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":false}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"echo.wasm"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":8,"bytes":3244}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"docs/demo.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"info","module":"dsh.shell.wasm","message":"starter program written","data":[{"name":"echo","bytes":77}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"docs/demo.docx","sizeBytes":3244}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.word/created","path":"docs/demo.docx","paragraphs":3,"bullets":3,"tableRows":2}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"word_read"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word_read","data":[{"path":"docs/demo.docx","format":"markdown"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"docs/demo.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4328}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"docs/demo.docx","sizeBytes":3244}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":3244}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.word/readMarkdown","headings":1,"bullets":3,"tableRows":2}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"word_update"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word_update","data":[{"path":"docs/demo.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"docs/demo.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4328}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"docs/demo.docx","sizeBytes":3244}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":3244}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":8,"bytes":3263}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"docs/demo.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"docs/demo.docx","sizeBytes":3263}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"word_read"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word_read","data":[{"path":"docs/demo.docx","format":"text"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"docs/demo.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4352}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"docs/demo.docx","sizeBytes":3263}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":3263}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.word/appended","paragraphs":1,"verified":true}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"excel phase begin","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"excel_create"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.excel","message":"excel_create","data":[{"path":"sheets/demo.xlsx","sheets":1}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"sheets/demo.xlsx","mustExist":false}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":8,"bytes":2695}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"sheets/demo.xlsx","sizeBytes":2695}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.excel/created","path":"sheets/demo.xlsx","sheets":1,"rows":4}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"excel_read"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.excel","message":"excel_read","data":[{"path":"sheets/demo.xlsx","sheet":"Q3"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"sheets/demo.xlsx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3596}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"sheets/demo.xlsx","sizeBytes":2695}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":2695}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.excel/readBack","rows":4,"cells":12,"truncated":false}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"excel_update"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.excel","message":"excel_update","data":[{"path":"sheets/demo.xlsx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"sheets/demo.xlsx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3596}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"sheets/demo.xlsx","sizeBytes":2695}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":2695}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":8,"bytes":2697}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"sheets/demo.xlsx","sizeBytes":2697}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"excel_read"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.excel","message":"excel_read","data":[{"path":"sheets/demo.xlsx","sheet":"Q3"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"sheets/demo.xlsx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3596}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"sheets/demo.xlsx","sizeBytes":2697}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":2697}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.excel/updated","cellWrites":1,"value":"1.24"}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"ppt phase begin","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"ppt_create"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.ppt.create","message":"ppt_create","data":[{"path":"decks/demo.pptx","slides":1}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"decks/demo.pptx","mustExist":false}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":20,"bytes":9456}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"decks/demo.pptx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"decks/demo.pptx","sizeBytes":9456}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.ppt/created","path":"decks/demo.pptx","slides":2,"canvas":"13.33x7.5"}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"ppt_read"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.ppt.read","message":"ppt_read","data":[{"path":"decks/demo.pptx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"decks/demo.pptx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"decks/demo.pptx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":12608}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"decks/demo.pptx","sizeBytes":9456}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":9456}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.ppt/readBack","slides":2,"elements":4}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"fixture phase begin","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"fixtures/sample.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"fixtures/sample.xlsx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"fixtures/sample.pptx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"word_read"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word_read","data":[{"path":"fixtures/sample.docx","format":"markdown"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"fixtures/sample.docx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"fixtures/sample.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":48900}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"fixtures/sample.docx","sizeBytes":36675}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":36675}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.fixture/docx","chars":95,"markdown":true}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"excel_read"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.excel","message":"excel_read","data":[{"path":"fixtures/sample.xlsx","sheet":"(all)"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"fixtures/sample.xlsx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"fixtures/sample.xlsx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":6512}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"fixtures/sample.xlsx","sizeBytes":4882}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":4882}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.fixture/xlsx","rows":3,"sheet":"Data"}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"tool dispatch","data":[{"name":"ppt_read"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.ppt.read","message":"ppt_read","data":[{"path":"fixtures/sample.pptx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"fixtures/sample.pptx","mustExist":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"fixtures/sample.pptx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":38812}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"fixtures/sample.pptx","sizeBytes":29109}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":29109}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.fixture/pptx","slides":2,"width":13.33}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"negative phase begin","data":[{}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"raw dispatch (outcome unshaped)","data":[{"name":"word_create"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word_create","data":[{"path":"docs/demo.docx"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":false}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.negative/refused","named":"overwrite"}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"upstream/completed","status":"pass","upstream":"0.1.6-alpha.2","office":"system-plugins/dsh-office (dsh-office-tools surface over gateway fs)"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"main begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"launch env phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"boot phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"llm/runtime","provider":"mock","model":"mock-1","service":"vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)","transport":"gateway httpFetch → loopback chat-completions mock server","userAgent":"deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"upstream/profile","profile":"mobile","root":"empty (patch layers compose over it)","upstream":"0.1.6-alpha.2 (vendored verbatim, sha256-pinned)","layers":["session","agent","system-prompt","tools","session-projection","settings","agent-loop"]}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"budget parse","data":[{}]}
+dsh.runtime.log: {"level":"info","module":"dsh.tool-deadline","message":"tool deadline mounted","data":[{"budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"echo.wasm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.shell.ish","message":"guest root from the host declaration","data":[{"rootfs":"","offered":false}]}
+dsh.runtime.log: {"level":"info","module":"dsh.shell.ish","message":"no Linux guest staged by this host; the ish tool is not offered","data":[]}
+dsh.runtime.log: {"level":"info","module":"dsh.openDesign","message":"no Open Design daemon configured; the open_design tools are not offered","data":[]}
+dsh.runtime.log: {"level":"debug","module":"dsh.pluginManagerTools","message":"plugin_manager registered","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.create","message":"plugin_create registered (spine captured)","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.word","message":"word tools registering","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.excel","message":"excel tools registering","data":[{}]}
+dsh.runtime.log: {"level":"info","module":"dsh.office","message":"office tools registered","data":[{"count":8}]}
+dsh.runtime.log: {"level":"debug","module":"web.searchKeyless","message":"mountWebPlane","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"web.searchKeyless","message":"createKeylessSearchProvider","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"web.searchKeyless","message":"resolveSearchConfig","data":[{"declared":false}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.turn-watchdog","message":"budget parse","data":[{}]}
+dsh.runtime.log: {"level":"info","module":"dsh.turn-watchdog","message":"turn watchdog mounted","data":[{"budgetMs":300000,"feeds":["session/event","agent/status","agent/assistant-stream"],"assistantStreamFeed":"semantic-only (text/tool-call frames; reasoning & markers excluded)"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.retry-telemetry","message":"llm retry telemetry mounted","data":[{"on":"session/event llm/retry → one release-visible warn per scheduled attempt"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.turn-recovery","message":"turn recovery mounted","data":[{"onErroredTurn":"one durable system message + re-arm the driver when followups are queued"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.model-selection-holder","message":"mount model-selection plane","data":[{"sessionId":"s-office-0001"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.model-selection-holder","message":"install model-selection holder","data":[{"sessionId":"s-office-0001"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"upstream/services","kernel":"@deepseek-ai/cordis@4.0.2","services":["sessions","agents","systemPrompt","tools","sessionProjections","settings","agentLoop","llm"],"llm":"vendored LlmRuntime + gateway adapter (provider \"mock\")"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"boot rows begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.plugin-mount","message":"mount-enabled-registry begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"dsh.plugins/1/registry.json"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"echo.wasm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"boot phase done","data":[{"root":"/tmp/dsh-runtime-smoke.byJ2QT"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"session/created","sessionId":"s-office-0001"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"agent/created","id":"main","sessionId":"s-office-0001"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"offered phase begin","data":[{}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office/offered","tools":8}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"word phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"word_create"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"word_create","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.word","message":"word_create","data":[{"path":"docs/demo.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":false}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.shell.wasm","message":"starter program written","data":[{"name":"echo","bytes":77}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"wc.wasm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":8,"bytes":3244}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"docs/demo.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"wc.wasm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"docs/demo.docx","sizeBytes":3244}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"word_create","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.word/created","path":"docs/demo.docx","paragraphs":3,"bullets":3,"tableRows":2}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"word_read"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"word_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.word","message":"word_read","data":[{"path":"docs/demo.docx","format":"markdown"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.shell.wasm","message":"starter program written","data":[{"name":"wc","bytes":353}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"grep.wasm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"grep.wasm"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"docs/demo.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.shell.wasm","message":"starter program written","data":[{"name":"grep","bytes":467}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4328}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"docs/demo.docx","sizeBytes":3244}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":3244}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"word_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.word/readMarkdown","headings":1,"bullets":3,"tableRows":2}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"word_update"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"word_update","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.word","message":"word_update","data":[{"path":"docs/demo.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"docs/demo.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4328}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"docs/demo.docx","sizeBytes":3244}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":3244}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":8,"bytes":3263}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"docs/demo.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"docs/demo.docx","sizeBytes":3263}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"word_update","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"word_read"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"word_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.word","message":"word_read","data":[{"path":"docs/demo.docx","format":"text"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"docs/demo.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4352}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"docs/demo.docx","sizeBytes":3263}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":3263}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"word_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.word/appended","paragraphs":1,"verified":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"excel phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"excel_create"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"excel_create","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.excel","message":"excel_create","data":[{"path":"sheets/demo.xlsx","sheets":1}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"sheets/demo.xlsx","mustExist":false}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":8,"bytes":2695}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"sheets/demo.xlsx","sizeBytes":2695}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"excel_create","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.excel/created","path":"sheets/demo.xlsx","sheets":1,"rows":4}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"excel_read"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"excel_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.excel","message":"excel_read","data":[{"path":"sheets/demo.xlsx","sheet":"Q3"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"sheets/demo.xlsx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3596}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"sheets/demo.xlsx","sizeBytes":2695}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":2695}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"excel_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.excel/readBack","rows":4,"cells":12,"truncated":false}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"excel_update"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"excel_update","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.excel","message":"excel_update","data":[{"path":"sheets/demo.xlsx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"sheets/demo.xlsx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3596}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"sheets/demo.xlsx","sizeBytes":2695}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":2695}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":8,"bytes":2697}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"sheets/demo.xlsx","sizeBytes":2697}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"excel_update","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"excel_read"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"excel_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.excel","message":"excel_read","data":[{"path":"sheets/demo.xlsx","sheet":"Q3"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"sheets/demo.xlsx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"sheets/demo.xlsx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3596}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"sheets/demo.xlsx","sizeBytes":2697}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":2697}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"excel_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.excel/updated","cellWrites":1,"value":"1.24"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"ppt phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"ppt_create"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"ppt_create","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.ppt.create","message":"ppt_create","data":[{"path":"decks/demo.pptx","slides":1}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"decks/demo.pptx","mustExist":false}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip built","data":[{"entries":20,"bytes":9456}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"decks/demo.pptx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes written","data":[{"path":"decks/demo.pptx","sizeBytes":9456}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"ppt_create","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.ppt/created","path":"decks/demo.pptx","slides":2,"canvas":"13.33x7.5"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"ppt_read"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"ppt_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.ppt.read","message":"ppt_read","data":[{"path":"decks/demo.pptx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"decks/demo.pptx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"decks/demo.pptx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":12608}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"decks/demo.pptx","sizeBytes":9456}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":9456}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"ppt_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.ppt/readBack","slides":2,"elements":4}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"fixture phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"fixtures/sample.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"fixtures/sample.xlsx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"fixtures/sample.pptx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"word_read"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"word_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.word","message":"word_read","data":[{"path":"fixtures/sample.docx","format":"markdown"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"fixtures/sample.docx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"fixtures/sample.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":48900}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"fixtures/sample.docx","sizeBytes":36675}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":36675}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"word_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.fixture/docx","chars":95,"markdown":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"excel_read"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"excel_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.excel","message":"excel_read","data":[{"path":"fixtures/sample.xlsx","sheet":"(all)"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"fixtures/sample.xlsx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"fixtures/sample.xlsx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":6512}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"fixtures/sample.xlsx","sizeBytes":4882}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":4882}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"excel_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.fixture/xlsx","rows":3,"sheet":"Data"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"tool dispatch","data":[{"name":"ppt_read"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"ppt_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.ppt.read","message":"ppt_read","data":[{"path":"fixtures/sample.pptx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"fixtures/sample.pptx","mustExist":true}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"fixtures/sample.pptx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":38812}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes read","data":[{"path":"fixtures/sample.pptx","sizeBytes":29109}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":29109}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"ppt_read","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.fixture/pptx","slides":2,"width":13.33}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"negative phase begin","data":[{}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.scenario","message":"raw dispatch (outcome unshaped)","data":[{"name":"word_create"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline armed","data":[{"tool":"word_create","budgetMs":120000}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.word","message":"word_create","data":[{"path":"docs/demo.docx"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":false}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerCancel"}]}
+dsh.runtime.log: {"level":"debug","module":"dsh.tool-deadline","message":"tool deadline disarmed (done)","data":[{"tool":"word_create","budgetMs":120000}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"office.negative/refused","named":"overwrite"}]}
+dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":[{"scenario":"office","event":"upstream/completed","status":"pass","upstream":"0.1.6-alpha.2","office":"system-plugins/dsh-office (dsh-office-tools surface over gateway fs)"}]}

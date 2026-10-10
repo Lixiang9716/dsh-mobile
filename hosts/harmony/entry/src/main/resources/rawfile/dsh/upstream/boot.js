@@ -38,6 +38,7 @@ import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
 import { registerRouteDisposer, registerDirectoryHandle } from 'upstream/llm-route.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
+import { mountBootRows } from 'plugin-mount.js';
 // The GOAL/COMMAND/FILE-REFERENCE/CREATION rows (split at the code-size gate, 2026-10-03).
 import { mountCompositionHostPlane, mountCoverageRows } from 'upstream/boot-coverage-rows.js';
 export { joinDefaultPreset } from 'upstream/boot-coverage-rows.js';
@@ -442,27 +443,22 @@ const mountModelSelectionPlane = async (ctx, agentRoute, sessionId) => {
   await Holder.mountModelSelectionHolder(ctx, agentRoute, sessionId);
 };
 
-/**
- * Boot the mobile profile: empty root, the dsh-base-equivalent spine mounted
- * over the pinned vendored packages, the vendored LlmRuntime under `llm`.
- */
+/** Boot the mobile profile: empty root, the dsh-base-equivalent spine over
+ * the pinned vendored packages, the vendored LlmRuntime under `llm`. */
 export async function bootUpstream(options) {
   const { scenario, container, agentId, sessionId, cwd, onEvent } = options;
   const llm = options.llm ?? {};
   if (!llm.baseURL || !llm.apiKey || !llm.provider || !llm.model) {
     throw new Error('boot: options.llm {baseURL, apiKey, provider, model} is required — the profile boots the vendored LlmRuntime over the gateway transport');
   }
-  // The loop agent's route as ONE fact: mountSpine's config row and the
-  // holder's boot-route fallback both read it (it must reproduce the seed).
+  // The loop agent's route as ONE fact (mountSpine's row + the holder's fallback read it).
   const agentRoute = { provider: llm.provider, model: llm.model, reasoningEffort: 'off' };
   pinProfileContainer(container);
 
   const ctx = new Context();
   wireLogger(ctx);
   // Lifecycle listeners first, so boot-time creation events are observable.
-  for (const [type, fn] of Object.entries(options.listeners ?? {})) {
-    ctx.on(type, fn);
-  }
+  for (const [type, fn] of Object.entries(options.listeners ?? {})) ctx.on(type, fn);
 
   await mountLlm(ctx, llm, onEvent);
 
@@ -493,6 +489,9 @@ export async function bootUpstream(options) {
     services: MOUNTED_SERVICES,
     llm: `vendored LlmRuntime + gateway adapter (provider "${llm.provider}")`,
   });
+
+  // The cordis.yml-insert equivalent: ENABLED workspace rows mount at boot.
+  await mountBootRows(ctx, onEvent);
 
   return { ctx, sessionId, agentId };
 }
