@@ -198,6 +198,35 @@ the enabled rows — 23 events, one-to-one. Run it with
 `build/build.sh test core`); the manifest is
 `test/e2e/scenarios/plugin-forms.json`.
 
+## Policy hooks, background jobs, and the rest of the tool cookbook (reference/cookbook)
+
+The deep tool-authoring surfaces are the same vendored `dsh-tools`, proven in
+the leg:
+
+- **Policy**: the `tools/pre-execute` waterfall may deny a call
+  (`{kind: 'deny', reason}`) and `ctx.tools.guard` refuses monotonically —
+  no later face can force-allow. Both are effects: unmount lifts the policy.
+- **Background work**: the composition plane mounts the real
+  `LocalJobRegistry` — `ctx.jobs.start({kind, label, run})`, `wait`, `read`,
+  `kill`. The one contract to honor: a compliant producer's `cancel()`
+  **must eventually settle `done`** (the runtime waits for resource release,
+  not the kill request). `dsh-tool-jobs` renders job state to the model.
+- **UI cards** (`presentCall`/`presentResult`/`presentationMeta`): faces of
+  the same `defineTool`; on this host the model-facing `output.render` is
+  what surfaces serve, and the product's own native card face (`card.*`
+  events) is the UI plane. The web `tool.call.toolview` client-slot chapter
+  is desktop-web-plane.
+- **PTC mode**: programmatic tool access is proven through
+  `ctx.tools.execute`; the full `run_code` PTC plane rides the PTC host
+  runner, which the mobile wall (`preset-mobile-rows.js`) disables by design.
+- `ctx.serial` completes the four dispatch modes; nested `ctx.plugin(child)`
+  disposes recursively with its parent; `ctx.provide` is the plain-value
+  providing face.
+
+The quickstart's Web-UI flow (model settings → workspace picking → a real
+turn with approvals) is this app's product surface — no plugin-dev mapping
+needed.
+
 ---
 
 [中文版](plugin-dev.zh.md)
