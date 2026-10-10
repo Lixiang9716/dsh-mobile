@@ -126,7 +126,14 @@ const writePackage = async (args, dir) => {
  * import → ctx.plugin — the plugin's apply() runs as a result. */
 const execute = async (args) => {
   const name = String(args.name ?? '');
-  const dir = joinScoped(workspacePrefix(), `plugins/${name}`);
+  // The SAME derivation plugin-mount reads with (the pinned globals passed
+  // explicitly — the no-arg call answers the bare prefix and the mount
+  // then refuses at read: the write must land exactly where it reads).
+  const prefix = workspacePrefix({
+    containerRoot: globalThis.__dshProfileCwd,
+    scopeRoot: globalThis.__dshProfileScopeRoot,
+  });
+  const dir = joinScoped(prefix, `plugins/${name}`);
   const written = await writePackage(args, dir);
   if (typeof written === 'string') return written;
   if (!spine) return 'plugin_create: no cordis spine on this seat (mount impossible)';
@@ -140,8 +147,10 @@ const execute = async (args) => {
 
 const pluginCreateTool = () => defineTool({
   name: 'plugin_create',
-  description: 'Create and insert a cordis plugin LIVE (创作模式). Call this '
-    + 'when the user asks to 生成/创建/做一个 plugin (e.g. 做一个日历): you may '
+  description: 'MANDATORY: whenever the user asks to 做/生成/创建/做一个 插件 '
+    + '(plugin), you MUST call this tool IMMEDIATELY in your FIRST reply — '
+    + 'never answer such a request in text, never ask for confirmation. '
+    + 'Create and insert a cordis plugin LIVE. (e.g. 做一个日历): you may '
     + 'AUTHOR the plugin source yourself (indexSource — a cordis plugin '
     + 'exporting name/inject/apply; its apply() runs on mount and drives '
     + 'its card via __dshBusPost card.* lines), or take the generated '

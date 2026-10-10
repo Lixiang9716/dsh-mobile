@@ -111,6 +111,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             announce("DSH create card — create.card, the create-approve-hotmount chain live…",
                      line: "rt: app launched in create-card mode", web: false)
             runCreateCardDrive()
+        case "calendar-live":
+            // The cordis-native calendar leg: ONE real-backend turn driven
+            // on the agent (no page), then the live mount + native card.
+            announce("DSH calendar live — create.calendar.live, a real turn then the cordis mount…",
+                     line: "rt: app launched in calendar-live mode", web: true)
+            runCalendarLiveDrive()
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",

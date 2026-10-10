@@ -492,6 +492,7 @@ final class SessionServe {
                   let origin = URL(string: "http://127.0.0.1:\(self.server.port)/?token=\(self.token)")
             else { return }
             self.origin = origin
+            NSLog("dsh.serve: origin token=%@", self.token)
             self.onOrigin?(origin)
         }
     }
