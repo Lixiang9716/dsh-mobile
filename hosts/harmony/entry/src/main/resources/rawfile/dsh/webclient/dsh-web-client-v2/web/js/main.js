@@ -15,6 +15,7 @@ import { renderConnection, renderSessionList } from './render-home.js';
 import { createComposer } from './composer.js';
 import { setupOnboarding } from './onboarding.js';
 import { setupMarketplace } from './marketplace.js';
+import { setupAppshell, openSurface as openAppshell } from './appshell.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -32,6 +33,7 @@ const toast = (text) => {
 const shortId = (sessionId) => String(sessionId).slice(0, 8);
 
 const composer = createComposer($('composer'), toast);
+setupAppshell();
 const mux = new Mux();
 
 let connState = 'connecting';
@@ -128,7 +130,20 @@ const openSession = (sessionId) => {
     else renderer.renderTail(timeline);
     refreshChrome();
   });
-  renderer = createChatRenderer($('transcript'), $('jump-latest'));
+  renderer = createChatRenderer($('transcript'), $('jump-latest'), {
+    onOpenAppshell: (payload) => {
+      openAppshell({
+        title: payload.title || 'App',
+        spec: payload.spec,
+        // The action loop-back seam: app-shell actions enter the session as
+        // tagged user turns (M3 formalizes the wording; the path is live).
+        onAction: (action, label) => {
+          composer.submitText(`[appshell:${action}] ${label || '界面交互'}`);
+          toast(`动作已回流：${label || action}`);
+        },
+      });
+    },
+  });
   renderer.renderStructure(timeline);
   composer.bind(sessionId);
   showView('chat');

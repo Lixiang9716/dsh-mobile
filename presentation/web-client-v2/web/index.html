@@ -80,6 +80,18 @@
     <iframe id="creation-frame" sandbox="allow-scripts"
       title="创作内容"></iframe>
   </div>
+  <!-- App-shell presented surface: the model authors an app-shell/0.9 spec
+       and this section renders it with the page's own catalog — declarative
+       primitives only, text via textContent, never model-authored markup
+       (the security posture that separates this from a fence/iframe). -->
+  <section id="appshell-view" hidden>
+    <div class="creation-header">
+      <button id="appshell-close" class="icon-btn" type="button"
+        aria-label="关闭">×</button>
+      <span id="appshell-title-text" class="creation-title-text"></span>
+    </div>
+    <div id="appshell-root" class="appshell-root"></div>
+  </section>
   <!-- BYOK first-run onboarding: shown automatically when no usable
        credential is configured (onboarding/status answers mode=mock), or
        opened from the home 模型密钥 button — which is also the management

@@ -54,12 +54,16 @@ const makeUi = (root) => {
   return ui;
 };
 
-const submit = async (ui, toast) => {
-  if (ui.generating) return cancelTurn(ui, toast);
-  const text = ui.input.value.trim();
+const submit = async (ui, toast, override) => {
+  // override = a programmatic submission (the app-shell action loop-back);
+  // it never cancels a generating turn and never touches the input deck.
+  if (!override && ui.generating) return cancelTurn(ui, toast);
+  const text = (override ?? ui.input.value).trim();
   if (text === '' || ui.sessionId === null) return;
-  ui.input.value = '';
-  ui.autosize();
+  if (!override) {
+    ui.input.value = '';
+    ui.autosize();
+  }
   ui.optimistic = true;
   ui.refresh();
   try {
@@ -126,6 +130,8 @@ export function createComposer(root, toast) {
       ui.refresh();
     },
     onSent(callback) { ui.onSent = callback; },
+    /** Programmatic prompt submission — the app-shell action loop-back seam. */
+    submitText: (text) => submit(ui, toast, text),
     focus() { ui.input.focus(); },
   };
 }

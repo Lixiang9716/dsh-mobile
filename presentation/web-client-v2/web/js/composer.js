@@ -54,12 +54,16 @@ const makeUi = (root) => {
   return ui;
 };
 
-const submit = async (ui, toast) => {
-  if (ui.generating) return cancelTurn(ui, toast);
-  const text = ui.input.value.trim();
-  if (text === '' || ui.sessionId === null) return;
-  ui.input.value = '';
-  ui.autosize();
+const submit = async (ui, toast, override) => {
+  // override = a programmatic submission (the app-shell action loop-back);
+  // it never cancels a generating turn and never touches the input deck.
+  if (!override && ui.generating) return cancelTurn(ui, toast);
+  const text = (override ?? ui.input.value).trim();
+  if (text === '' || ui.sessionId === null) return false;
+  if (!override) {
+    ui.input.value = '';
+    ui.autosize();
+  }
   ui.optimistic = true;
   ui.refresh();
   try {
@@ -69,11 +73,13 @@ const submit = async (ui, toast) => {
     setTimeout(() => { ui.optimistic = false; ui.refresh(); }, 12000);
     window.__dshSentCount = (window.__dshSentCount ?? 0) + 1;
     ui.onSent(text);
+    return true;
   } catch (error) {
     ui.optimistic = false;
     window.__dshSendError = (isRemoteError(error)
       ? `${error.code}` : 'transport');
     toast(isRemoteError(error) ? `发送失败（${error.code}）` : '发送失败');
+    return false;
   }
 };
 
@@ -126,6 +132,12 @@ export function createComposer(root, toast) {
       ui.refresh();
     },
     onSent(callback) { ui.onSent = callback; },
+    /** True while a turn is generating or a prompt of ours is in flight. */
+    isGenerating: () => ui.running || ui.optimistic,
+    /** Programmatic prompt submission — the app-shell action loop-back seam.
+     * Resolves true when admitted, false when the host rejected it (the
+     * caller decides whether to retry). */
+    submitText: async (text) => submit(ui, toast, text),
     focus() { ui.input.focus(); },
   };
 }

@@ -59,6 +59,10 @@ const echoScript = (turn, promptText) => {
   const attemptId = `dev-a${turn}`;
   const callId = `dev-c${turn}`;
   const step = 1;
+
+  const appShell = appShellScriptFor(turn, promptText, attemptId);
+  if (appShell) return appShell;
+
   const reply = [
     `**dev 回声** — 你说的是：${promptText}`,
     '',
@@ -113,18 +117,23 @@ const runEchoTurn = (session, promptText, seq, done) => {
   session.cancelTurn = () => { cancelled = true; };
   let index = 0;
   const tick = () => {
-    if (cancelled) return finishCancelled(session, post, seq, turn, done);
-    if (index < steps.length) {
-      post({ ...steps[index++], seq: seq(), time: Date.now() / 1000 });
-      return setTimeout(tick, 30);
-    }
-    if (index < steps.length + stream.length) {
-      stepFrame(session, stream[index++ - steps.length]);
-      return setTimeout(tick, 55);
-    }
-    if (index < steps.length + stream.length + settle.length) {
-      post({ ...settle[index++ - steps.length - stream.length], seq: seq(), time: Date.now() / 1000 });
-      return setTimeout(tick, 40);
+    try {
+      console.error('[tick-probe]', turn, index, 'of', steps.length + stream.length + settle.length);
+      if (cancelled) return finishCancelled(session, post, seq, turn, done);
+      if (index < steps.length) {
+        post({ ...steps[index++], seq: seq(), time: Date.now() / 1000 });
+        return setTimeout(tick, 30);
+      }
+      if (index < steps.length + stream.length) {
+        stepFrame(session, stream[index++ - steps.length]);
+        return setTimeout(tick, 55);
+      }
+      if (index < steps.length + stream.length + settle.length) {
+        post({ ...settle[index++ - steps.length - stream.length], seq: seq(), time: Date.now() / 1000 });
+        return setTimeout(tick, 40);
+      }
+    } catch (error) {
+      console.error('[dev-web-carrier:next] turn tick threw:', error);
     }
     session.running = false;
     done();
@@ -196,6 +205,7 @@ const apiHandler = (machine, url, bodyText, respond) => {
   }
   const session = machine.sessions.get(requestOf(bodyText)?.sessionId);
   if (endpoint === 'session/prompt') {
+    console.error('[carrier-probe] session/prompt arrived; session.running =', session.running);
     if (session === undefined) return fail(respond, bodyText, 'session/not-found', 'unknown session');
     if (session.running) return fail(respond, bodyText, 'session/busy', 'dev turn already running');
     const text = (requestOf(bodyText)?.content ?? [])
@@ -360,4 +370,61 @@ export const startNextCarrier = ({ repoRoot, port, sessionsFixture, journalPath 
   return new Promise((resolve) => {
     server.listen(port, '127.0.0.1', () => resolve({ server, token }));
   });
+};
+
+/** The app-shell leg: a prompt naming a known app theme renders that theme
+ * as an appshell_render tool call whose result echoes the spec — the exact
+ * shape the plugin emits, mocked carrier-side (no runtime here). Themes are
+ * matched by regex; unknown prompts fall through to the echo turn. */
+const APP_SHELL_THEMES = {
+  wechat: { label: '微信', re: /微信|wechat|weixin/i, accent: '#07C160',
+    tabs: ['微信', '通讯录', '发现', '我'] },
+  netease: { label: '网易云音乐', re: /网易云|云音乐|netease/i, accent: '#ec4141',
+    tabs: ['我的', '音乐馆', '云村', '账号'] },
+  alipay: { label: '支付宝', re: /支付宝|alipay|支付/i, accent: '#1677FF',
+    tabs: ['首页', '理财', '生活', '我的'] },
+};
+
+const appShellScriptFor = (turn, promptText, attemptId) => {
+  const appKey = Object.keys(APP_SHELL_THEMES).find(
+    (k) => APP_SHELL_THEMES[k].re.test(promptText));
+  if (!appKey) return null;
+  const app = APP_SHELL_THEMES[appKey];
+  const spec = {
+    spec: 'app-shell/0.9', theme: { accent: app.accent, mode: 'light' },
+    tabs: app.tabs, actions: ['demo.tap'],
+    screen: { type: 'column', children: [
+      { type: 'banner-card', title: app.label, subtitle: '由一句话生成 · app-shell/0.9' },
+      { type: 'service-grid', items: [
+        { icon: '📷', label: '入口一' }, { icon: '💳', label: '入口二' },
+        { icon: '🚌', label: '入口三' }, { icon: '⚡', label: '入口四' },
+      ] },
+      { type: 'hcard-row', items: [
+        { cover: { emoji: '🎵', color: '#5a7cd4' }, title: '精选 A', sub: 'demo' },
+        { cover: { emoji: '🌙', color: '#4d9e5f' }, title: '精选 B', sub: 'demo' },
+      ] },
+      { type: 'mini-player', cover: { emoji: '▶', color: app.accent }, title: '演示条目', sub: '点按动作回流', action: 'demo.tap' },
+    ] },
+  };
+  const appCallId = `dev-app${turn}`;
+  const appText = `已按你的描述生成 **${app.label}** 表面（app-shell/0.9 · 声明式组件树）——卡片上「打开」进入全屏，点按元素动作回流。`;
+  return {
+    steps: [
+      { type: 'turn/start', data: { turn } },
+      { type: 'step/start', data: { turn, step: 1 } },
+    ],
+    stream: [
+      { type: 'start', attemptId, turn, step: 1 },
+      { type: 'chunk', attemptId, chunk: { type: 'text-delta', index: 0, text: appText } },
+      { type: 'end', attemptId },
+    ],
+    settle: [
+      { type: 'assistant/message', data: { turn, step: 1, message: { role: 'assistant', content: [{ type: 'text', text: appText }] } } },
+      { type: 'tool/call', data: { turn, step: 1, callId: appCallId, name: 'appshell_render', arguments: JSON.stringify({ fixture: appKey }) } },
+      { type: 'tool/result', data: { turn, step: 1, message: { role: 'user', content: [{ type: 'tool-result', toolCallId: appCallId, isError: false, content: [{ type: 'text', text: JSON.stringify({ ok: true, title: app.label, spec }) }] }] } } },
+      { type: 'step/end', data: { turn, step: 1 } },
+      { type: 'turn/end', data: { turn, reason: { kind: 'stop' } } },
+      { type: 'session/title', data: { title: app.label + ' · 生成表面' } },
+    ],
+  };
 };

@@ -11,6 +11,7 @@
  */
 
 import { renderMarkdown } from './markdown.js';
+import { renderPreview } from './appshell.js';
 
 const DOM_WINDOW = 400;
 const OUTPUT_CAP_CHARS = 1500;
@@ -59,7 +60,39 @@ const toolGlyph = (name) => {
   return '⚙';
 };
 
-const renderToolRow = (item) => {
+/** The app-shell tool card: preview strip from the echoed spec + an open
+ * button into the fullscreen presented surface. Falls back to the default
+ * tool row whenever the result is not a well-formed appshell payload. */
+const renderAppshellRow = (item, opts) => {
+  const row = el('div', 'tool-row appshell-tool-row');
+  const head = el('div', 'tool-head');
+  head.appendChild(el('span', undefined, '🪟'));
+  head.appendChild(el('span', 'tool-name', item.name));
+  if (item.status === 'waiting') head.appendChild(el('span', 'tool-chip chip-wait', '生成中'));
+  if (item.status === 'fail') head.appendChild(el('span', 'tool-chip chip-fail', '失败'));
+  if (item.status === 'ok') head.appendChild(el('span', 'tool-chip chip-done', '完成'));
+  row.appendChild(head);
+  let payload = null;
+  try { payload = JSON.parse(item.output || ''); } catch { /* waiting or raw */ }
+  if (item.status === 'ok' && payload && payload.ok && payload.spec) {
+    row.appendChild(renderPreview(payload.spec));
+    if (opts?.onOpenAppshell) {
+      const open = el('button', 'appshell-open-btn');
+      open.type = 'button';
+      open.textContent = '打开 ' + (payload.title || 'App');
+      open.addEventListener('click', () => opts.onOpenAppshell(payload));
+      row.appendChild(open);
+    }
+  } else if (item.status === 'fail') {
+    row.appendChild(el('div', 'tool-args', (payload && payload.errors) ? JSON.stringify(payload.errors) : (item.output || '')));
+  }
+  return row;
+};
+
+const renderToolRow = (item, opts) => {
+  if (item.name === 'appshell_render' || item.name === 'appshell_update') {
+    return renderAppshellRow(item, opts);
+  }
   const row = el('div', 'tool-row');
   const head = el('div', 'tool-head');
   head.appendChild(el('span', undefined, toolGlyph(item.name)));
@@ -86,7 +119,7 @@ const renderToolRow = (item) => {
 
 /** One collapsible process group over a consecutive run of reasoning/tool
  * rows. The header never changes height; bodies insert on expand. */
-const renderGroup = (run) => {
+const renderGroup = (run, opts) => {
   const group = el('div', 'group');
   const header = el('button', 'group-header');
   header.type = 'button';
@@ -99,7 +132,7 @@ const renderGroup = (run) => {
   header.appendChild(el('span', 'group-chevron', '▶'));
   const body = el('div', 'group-body');
   for (const item of run) {
-    body.appendChild(item.kind === 'reasoning' ? renderReasonRow(item) : renderToolRow(item));
+    body.appendChild(item.kind === 'reasoning' ? renderReasonRow(item) : renderToolRow(item, opts));
   }
   header.addEventListener('click', () => group.classList.toggle('open'));
   group.appendChild(header);
@@ -205,14 +238,14 @@ const buildTailTools = (tail) => {
   return tools;
 };
 
-const buildItems = (items) => {
+const buildItems = (items, opts) => {
   const fragment = document.createDocumentFragment();
   let index = 0;
   while (index < items.length) {
     const item = items[index];
     if (isProcess(item)) {
       const end = consecutiveProcessRun(items, index);
-      fragment.appendChild(renderGroup(items.slice(index, end)));
+      fragment.appendChild(renderGroup(items.slice(index, end), opts));
       index = end;
     } else {
       fragment.appendChild(renderItem(item));
@@ -240,7 +273,7 @@ const wirePinToBottom = (transcript, jumpButton) => {
   return pin;
 };
 
-export function createChatRenderer(transcript, jumpButton) {
+export function createChatRenderer(transcript, jumpButton, opts = {}) {
   const itemsHost = el('div');
   const tailHost = el('div');
   // REPLACE, not append: openSession builds a fresh renderer per session,
@@ -267,7 +300,7 @@ export function createChatRenderer(transcript, jumpButton) {
 
   const renderStructure = (timeline) => {
     const first = Math.max(0, timeline.items.length - DOM_WINDOW);
-    itemsHost.replaceChildren(buildItems(timeline.items.slice(first)));
+    itemsHost.replaceChildren(buildItems(timeline.items.slice(first), opts));
     renderTailInto(tailHost, timeline.tail);
     keepPinned();
   };

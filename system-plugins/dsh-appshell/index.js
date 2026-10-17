@@ -40,11 +40,14 @@ export function apply(ctx) {
         const spec = mockSpec(args.fixture || 'wechat');
         if (!spec) return 'unknown fixture; keys: ' + fixtureKeys().join('|');
         log.info({ event: 'appshell.render', mode: MODE, fixture: args.fixture || 'wechat' });
-        return verdict({ ok: true, spec });
+        // Echo the spec: any client renders from the result payload — the
+        // same contract in mock and real mode (source differs, shape equal).
+        return JSON.stringify({ ok: true, title: args.fixture || 'wechat', spec });
       }
       const result = validate(args.spec);
       log.info({ event: 'appshell.render', mode: MODE, ok: result.ok, errors: result.errors.length });
-      return result.ok ? 'app surface rendered' : 'spec rejected: ' + JSON.stringify(result.errors);
+      if (!result.ok) return 'spec rejected: ' + JSON.stringify(result.errors);
+      return JSON.stringify({ ok: true, title: args.spec.title || 'app', spec: args.spec });
     },
   });
 
