@@ -9,9 +9,9 @@
     }
   },
   "checklist": [
-    "iOS SessionServe interactiveExtras gains byokModels:true",
-    "Android SessionServe interactive block gains byokModels:true",
-    "Harmony OfficialServe interactiveConfig gains byokModels:true",
+    "[x] iOS SessionServe interactiveExtras gains byokModels:true",
+    "[x] Android SessionServe interactive block gains byokModels:true",
+    "[x] Harmony OfficialServe interactiveConfig gains byokModels:true",
     "E2E legs re-run green (settings-surfaces + models-directory + models-byok-add + upstream-boot)",
     "gov run green; PR merged"
   ],
