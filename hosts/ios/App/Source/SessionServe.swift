@@ -1,5 +1,4 @@
 import Foundation
-
 /// The SERVING seat behind the official Web Client on the loopback carrier:
 /// the carrier (`CarrierServer`), the official dist seat (`CarrierWebDist`),
 /// the `/plugins` delivery (`CarrierPlugins`), the `/api` + mux bridge
@@ -247,10 +246,9 @@ final class SessionServe {
     }
 
     /// The runtime.config delivery. `llmBaseUrl` is present exactly when the
-    /// user supplied an endpoint, which is what makes the runtime call a REAL
-    /// model instead of the carrier's scripted one; without it the scripted
-    /// loopback endpoint is the route (a launch with no credentials still
-    /// serves the whole UI, it just cannot answer a turn with a real model).
+    /// user supplied an endpoint (a launch with no credentials still serves
+    /// the whole UI on the scripted loopback; it cannot answer a turn with
+    /// a real model).
     func runtimeConfig(port: UInt16, bundleRoot: URL) -> [String: Any] {
         var config: [String: Any] = [
             "type": "runtime.config",
@@ -284,7 +282,7 @@ final class SessionServe {
             config["fullCoverage"] = true
             config["goals"] = true
             config["fileReferences"] = true
-            config["sessionPersistence"] = true // the T-0212 gate: {} = DEFAULTS (v2web drives carry it too)
+            config["sessionPersistence"] = true // the T-0212 gate: {} = DEFAULTS
             config.merge(Self.interactiveExtras()) { _, new in new }
         }
         return config
@@ -295,12 +293,14 @@ final class SessionServe {
     /// journaled as deliverables/presented for the clients to render), the
     /// skills plane's directories, and the plugin marketplace's opt-in
     /// (web-write-marketplace.js), staged exactly like the llm credential —
-    /// the container file is the deployment surface, the seat only relays it.
-    /// Absent file → no option → the panel opens with the honest
-    /// capability-gap note.
+    /// the container file is the deployment surface, the seat only relays
+    /// it; absent file → the panel opens with the capability-gap note.
     private static func interactiveExtras() -> [String: Any] {
         var extras: [String: Any] = [
             "creation": true,
+            // The BYOK-models gate (producer-registry v1): the Models
+            // page's provider form is live on the interactive seat.
+            "byokModels": true,
             "skills": [
                 "dshHome": "\(workspaceRoot.path)/home",
                 "agentsHome": "\(workspaceRoot.path)/home/agents",

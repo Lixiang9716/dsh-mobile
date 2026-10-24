@@ -1,0 +1,21 @@
+{
+  "title": "byokModels defaults on: the interactive seats mount the BYOK provider plane",
+  "created": "2026-10-24T10:21:27+00:00",
+  "rules": {
+    "hash": "06c93b1ef5c5e3e9277d3958aaa56ff5ce49e528798cdd1fd82d82bc9497a592",
+    "files": {
+      ".gov/rules.md": "fee05360fdafcd6272964a3a51a19a2c28a55e3a633743bbeac15e54298e11eb",
+      "gates.json": "9e5b678b7a67fd04baa67e6e14ff29490dc2097cd9b4193b7f5f572cb3b33d4d"
+    }
+  },
+  "checklist": [
+    "[x] iOS SessionServe interactiveExtras gains byokModels:true",
+    "[x] Android SessionServe interactive block gains byokModels:true",
+    "[x] Harmony OfficialServe interactiveConfig gains byokModels:true",
+    "E2E legs re-run green (settings-surfaces + models-directory + models-byok-add + upstream-boot)",
+    "gov run green; PR merged"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0282"
+}
