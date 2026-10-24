@@ -966,7 +966,7 @@ export class OfficialServe {
       '","containerRoot":' + JSON.stringify(workspace) +
       ',"fsScopeRoot":' + JSON.stringify(this.fsRoot) +
       ',"commands":true,"fullCoverage":true,"goals":true,' +
-      '"presetJoin":true,"fileReferences":true,"creation":true,' +
+      '"presetJoin":true,"fileReferences":true,"creation":true,"byokModels":true,' +
       // The SESSION-PERSISTENCE gate (T-0212): `{}` = DEFAULTS (root
       // inside the pinned workspace, vendored 'zstd'). The v2web drive
       // boots this interactive config and DOES carry the row (no canonical

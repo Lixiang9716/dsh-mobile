@@ -320,6 +320,9 @@ class SessionServe private constructor(
                 // workspace files as deliverables, journaled as
                 // deliverables/presented for the clients to render on screen.
                 .put("creation", true)
+                // The BYOK-models gate (producer-registry v1): the Models
+                // page's 添加提供方 form is live on the interactive seat.
+                .put("byokModels", true)
                 .put("skills", skillsConfig(workspace))
         }
         // The marketplace opt-in (the plugin marketplace panel's browse/
